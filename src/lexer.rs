@@ -6,4 +6,6 @@ pub enum Token {
     CloseBracket,
     OpenParenthesis,
     CloseParenthesis,
+    Whitespace,
+    Newline,
 }
