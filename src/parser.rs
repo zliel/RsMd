@@ -17,7 +17,7 @@ pub enum MdBlockElement {
 
 pub enum MdInlineElement {
     Text { content: String },
-    Bold { content: Vec<MdBlockElement> },
+    Bold { content: Vec<MdInlineElement> },
     Italic { content: String },
     Link { text: String, url: String }, // Look into if this is a good or bad way to do this
 }
