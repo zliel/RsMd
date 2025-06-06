@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum MdBlockElement {
     Header {
         level: u8,
@@ -10,14 +11,30 @@ pub enum MdBlockElement {
         lines: Vec<String>,
     },
     UnorderedList {
-        items: Vec<MdBlockElement>,
+        items: Vec<MdListItem>,
     },
     HorizontalRule,
 }
 
-pub enum MdInlineElement {
-    Text { content: String },
-    Bold { content: Vec<MdInlineElement> },
-    Italic { content: String },
-    Link { text: String, url: String }, // Look into if this is a good or bad way to do this
+#[derive(Debug)]
+pub struct MdListItem {
+    content: Vec<MdBlockElement>,
 }
+
+#[derive(Debug)]
+pub enum MdInlineElement {
+    Text {
+        content: String,
+    },
+    Bold {
+        content: Vec<MdInlineElement>,
+    },
+    Italic {
+        content: Vec<MdInlineElement>,
+    },
+    Link {
+        text: Vec<MdInlineElement>,
+        url: String,
+    },
+}
+
