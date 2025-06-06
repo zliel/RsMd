@@ -7,5 +7,6 @@ pub enum Token {
     OpenParenthesis,
     CloseParenthesis,
     Whitespace,
+    Escape(char),
     Newline,
 }
