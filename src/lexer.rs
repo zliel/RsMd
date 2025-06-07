@@ -10,7 +10,7 @@ pub enum Token {
     OpenParenthesis,
     CloseParenthesis,
     Whitespace,
-    Escape(char),
+    Escape(String),
     Newline,
 }
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
