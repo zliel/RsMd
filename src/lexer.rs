@@ -13,6 +13,7 @@ pub enum Token {
     Escape(String),
     // Newline,
 }
+
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut buffer: String = String::new();
