@@ -19,6 +19,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 
     let str_len = markdown_line.graphemes(true).count();
     let chars = Vec::from_iter(markdown_line.graphemes(true));
+
     // Loop through each character, and perform foward lookups for *
     let mut recent_emphasis: Token = Token::Whitespace;
     let mut i = 0;
@@ -26,10 +27,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
         match chars[i] {
             "*" => {
                 // if the current buffer isn't empty, append a Text token to the Vec<Token>
-                if !&buffer.is_empty() {
-                    tokens.push(Token::Text(buffer.clone()));
-                    buffer.drain(..buffer.len());
-                }
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
 
                 // Perform forward lookup for another *
                 if (i + 1 < str_len) && chars[i + 1] == "*" && recent_emphasis != Token::Asterisk {
@@ -45,11 +43,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 }
             }
             "\\" => {
-                // if the current buffer isn't empty, append a Text token to the Vec<Token>
-                if !&buffer.is_empty() {
-                    tokens.push(Token::Text(buffer.clone()));
-                    buffer.drain(..buffer.len());
-                }
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
 
                 if i + 1 < str_len {
                     tokens.push(Token::Escape(String::from(chars[i + 1])));
@@ -59,11 +53,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 }
             }
             " " => {
-                // if the current buffer isn't empty, append a Text token to the Vec<Token>
-                if !&buffer.is_empty() {
-                    tokens.push(Token::Text(buffer.clone()));
-                    buffer.drain(..buffer.len());
-                }
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
 
                 tokens.push(Token::Whitespace);
             }
@@ -75,11 +65,15 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
         i += 1;
     }
 
-    // if the current buffer isn't empty, append a Text token to the Vec<Token>
-    if !&buffer.is_empty() {
-        tokens.push(Token::Text(buffer.clone()));
-        buffer.drain(..buffer.len());
-    }
+    // If the current buffer isn't empty when the loop is over, append it to the tokens vector
+    push_buffer_to_tokens(&mut tokens, &mut buffer);
 
     tokens
+}
+
+fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
+    if !&buffer.is_empty() {
+        tokens.push(Token::Text(buffer.to_string()));
+        buffer.drain(..&buffer.len());
+    }
 }
