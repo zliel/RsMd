@@ -37,6 +37,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                     }
                 }
             }
+            " " => tokens.push(Token::Whitespace),
             // Note that graphemes() returns strings because graphemes can consist of things like a
             // char + a modifier
             _ => tokens.push(Token::Text(String::from(chars[i]))),
