@@ -52,6 +52,26 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                     buffer.push_str(chars[i]);
                 }
             }
+            "[" => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+
+                tokens.push(Token::OpenBracket);
+            }
+            "]" => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+
+                tokens.push(Token::CloseBracket);
+            }
+            "(" => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+
+                tokens.push(Token::OpenParenthesis);
+            }
+            ")" => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+
+                tokens.push(Token::CloseParenthesis);
+            }
             " " => {
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
 
