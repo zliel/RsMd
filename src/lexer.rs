@@ -75,5 +75,11 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
         i += 1;
     }
 
+    // if the current buffer isn't empty, append a Text token to the Vec<Token>
+    if !&buffer.is_empty() {
+        tokens.push(Token::Text(buffer.clone()));
+        buffer.drain(..buffer.len());
+    }
+
     tokens
 }
