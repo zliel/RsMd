@@ -11,7 +11,7 @@ pub enum Token {
     CloseParenthesis,
     Whitespace,
     Escape(String),
-    Newline,
+    // Newline,
 }
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
