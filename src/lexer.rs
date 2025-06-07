@@ -26,7 +26,6 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 // Perform forward lookup for another *
                 if (i + 1 < str_len) && chars[i + 1] == "*" && recent_emphasis != Token::Asterisk {
                     tokens.push(Token::DoubleAsterisk);
-                    recent_emphasis = Token::DoubleAsterisk;
                     i += 1;
                 } else {
                     tokens.push(Token::Asterisk);
