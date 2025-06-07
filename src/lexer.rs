@@ -1,4 +1,6 @@
 use unicode_segmentation::UnicodeSegmentation;
+
+#[derive(Debug, PartialEq)]
 pub enum Token {
     Text(String),
     Asterisk,
