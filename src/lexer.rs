@@ -36,6 +36,15 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                     }
                 }
             }
+            "\\" => {
+                if i + 1 < str_len {
+                    tokens.push(Token::Escape(String::from(chars[i + 1])));
+                    i += 1;
+                } else {
+                    tokens.push(Token::Text(String::from(chars[i + 1]))); // TODO Change later to add it to the
+                }
+                // buffer
+            }
             " " => tokens.push(Token::Whitespace),
             // Note that graphemes() returns strings because graphemes can consist of things like a
             // char + a modifier
