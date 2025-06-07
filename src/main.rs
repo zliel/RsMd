@@ -1,4 +1,5 @@
 mod io;
+mod lexer;
 mod parser;
 
 use io::read_file;
