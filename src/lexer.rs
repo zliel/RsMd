@@ -96,3 +96,6 @@ fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
         buffer.drain(..&buffer.len());
     }
 }
+
+#[cfg(test)]
+mod lexer_test;
