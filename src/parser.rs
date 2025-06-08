@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MdBlockElement {
     Header {
         level: u8,
@@ -16,12 +16,12 @@ pub enum MdBlockElement {
     HorizontalRule,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct MdListItem {
     content: Vec<MdBlockElement>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MdInlineElement {
     Text {
         content: String,
