@@ -1,7 +1,10 @@
 mod io;
+mod lexer;
+mod parser;
 
 use io::read_file;
 use std::env::args;
+
 fn main() {
     println!("Hello, world!");
     let args: Vec<String> = args().collect();
