@@ -98,7 +98,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
     if !&buffer.is_empty() {
         tokens.push(Token::Text(buffer.to_string()));
-        buffer.drain(..&buffer.len());
+        buffer.clear();
     }
 }
 
