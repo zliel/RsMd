@@ -66,7 +66,7 @@ impl TokenCursor {
     }
 
     fn is_at_eof(&self) -> bool {
-        self.current_position > self.tokens.len()
+        self.current_position >= self.tokens.len()
     }
 }
 
