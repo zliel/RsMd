@@ -38,3 +38,6 @@ pub enum MdInlineElement {
     },
 }
 
+
+#[cfg(test)]
+mod test;
