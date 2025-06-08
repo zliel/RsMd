@@ -85,6 +85,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
         current_token = cursor.current().expect("Token should be valid markdown");
 
         match current_token {
+            Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
             Token::Text(string) => buffer.push_str(string),
             Token::Whitespace => buffer.push(' '),
             _ => push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer),
