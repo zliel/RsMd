@@ -11,6 +11,11 @@ fn test_lexer_whitespace() {
 }
 
 #[test]
+fn test_lexer_newline() {
+    assert_eq!(tokenize("\n"), vec![Newline]);
+}
+
+#[test]
 fn test_lexer_italic() {
     assert_eq!(
         tokenize("*italic*"),
