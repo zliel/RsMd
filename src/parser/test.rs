@@ -1,3 +1,4 @@
+use crate::lexer::tokenize;
 use crate::parser::{MdBlockElement::*, MdInlineElement::*, *};
 
 mod inline {
@@ -6,7 +7,7 @@ mod inline {
     #[test]
     fn text() {
         assert_eq!(
-            parse_inline("Plain text."),
+            parse_inline(tokenize("Plain text.")),
             vec![Text {
                 content: String::from("Plain text.")
             }]
@@ -16,7 +17,7 @@ mod inline {
     #[test]
     fn bold() {
         assert_eq!(
-            parse_inline("**Bold** text"),
+            parse_inline(tokenize("**Bold** text")),
             vec![
                 Bold {
                     content: vec![Text {
@@ -33,7 +34,7 @@ mod inline {
     #[test]
     fn italic() {
         assert_eq!(
-            parse_inline("*Italic* text"),
+            parse_inline(tokenize("*Italic* text")),
             vec![
                 Italic {
                     content: vec![Text {
@@ -50,7 +51,7 @@ mod inline {
     #[test]
     fn emphasis() {
         assert_eq!(
-            parse_inline("This is **bold** and *italic* text."),
+            parse_inline(tokenize("This is **bold** and *italic* text.")),
             vec![
                 Text {
                     content: String::from("This is ")
@@ -78,7 +79,7 @@ mod inline {
     #[test]
     fn link() {
         assert_eq!(
-            parse_inline("[link text](http://example.com)"),
+            parse_inline(tokenize("[link text](http://example.com)")),
             vec![Link {
                 text: vec![Text {
                     content: String::from("link text")
@@ -91,7 +92,7 @@ mod inline {
     #[test]
     fn link_with_emphasis() {
         assert_eq!(
-            parse_inline("[**bold link text**](http://example.com)"),
+            parse_inline(tokenize("[**bold link text**](http://example.com)")),
             vec![Link {
                 text: vec![Bold {
                     content: vec![Text {
@@ -106,7 +107,7 @@ mod inline {
     #[test]
     fn link_with_internal_hashes() {
         assert_eq!(
-            parse_inline("[link text with #hash](http://example.com)"),
+            parse_inline(tokenize("[link text with #hash](http://example.com)")),
             vec![Link {
                 text: vec![Text {
                     content: String::from("link text with #hash")
@@ -119,7 +120,9 @@ mod inline {
     #[test]
     fn link_with_mixed_emphasis() {
         assert_eq!(
-            parse_inline("[*italic, **bold and italic***](http://example.com)"),
+            parse_inline(tokenize(
+                "[*italic, **bold and italic***](http://example.com)"
+            )),
             vec![Link {
                 text: vec![
                     Italic {
