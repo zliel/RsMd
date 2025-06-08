@@ -26,7 +26,6 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     let chars = Vec::from_iter(markdown_line.graphemes(true));
 
     // Loop through each character, and perform foward lookups for *
-    let mut recent_emphasis: Token = Token::Whitespace;
     let mut i = 0;
     while i < str_len {
         match chars[i] {
@@ -35,16 +34,11 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
 
                 // Perform forward lookup for another *
-                if (i + 1 < str_len) && chars[i + 1] == "*" && recent_emphasis != Token::Asterisk {
+                if (i + 1 < str_len) && chars[i + 1] == "*" {
                     tokens.push(Token::DoubleAsterisk);
                     i += 1;
                 } else {
                     tokens.push(Token::Asterisk);
-                    if recent_emphasis == Token::Asterisk {
-                        recent_emphasis = Token::Whitespace;
-                    } else {
-                        recent_emphasis = Token::Asterisk;
-                    }
                 }
             }
             "\\" => {
