@@ -103,4 +103,4 @@ fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
 }
 
 #[cfg(test)]
-mod lexer_test;
+mod test;
