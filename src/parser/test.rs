@@ -15,6 +15,16 @@ mod inline {
     }
 
     #[test]
+    fn escape_char() {
+        assert_eq!(
+            parse_inline(tokenize("\\*escaped char\\*")),
+            vec![Text {
+                content: String::from("\\*escaped char\\*")
+            }]
+        );
+    }
+
+    #[test]
     fn bold() {
         assert_eq!(
             parse_inline(tokenize("**Bold** text")),
