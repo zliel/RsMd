@@ -142,30 +142,3 @@ mod inline {
     }
 }
 
-#[test]
-    assert_eq!(
-        }]
-    );
-}
-
-#[test]
-    assert_eq!(
-        }]
-    );
-}
-
-#[test]
-    assert_eq!(
-        }]
-    );
-}
-
-#[test]
-    assert_eq!(
-                },
-                Bold {
-                    content: vec![Text {
-                    }]
-                }
-        }]
-}
