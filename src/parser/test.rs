@@ -59,7 +59,7 @@ mod inline {
     }
 
     #[test]
-    fn emphasis() {
+    fn multiple_emphasis() {
         assert_eq!(
             parse_inline(tokenize("This is **bold** and *italic* text.")),
             vec![
@@ -83,6 +83,39 @@ mod inline {
                     content: String::from(" text.")
                 }
             ]
+        )
+    }
+
+    #[test]
+    fn mixed_emphasis() {
+        assert_eq!(
+            parse_inline(tokenize("***Bold and italic.***")),
+            vec![Bold {
+                content: vec![Italic {
+                    content: vec![Text {
+                        content: String::from("Bold and italic.")
+                    }]
+                }]
+            }]
+        )
+    }
+
+    #[test]
+    fn mixed_emphasis_separated() {
+        assert_eq!(
+            parse_inline(tokenize("*Italic **and bold***")),
+            vec![Italic {
+                content: vec![
+                    Text {
+                        content: String::from("Italic ")
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("and bold")
+                        }]
+                    }
+                ]
+            }]
         )
     }
 
