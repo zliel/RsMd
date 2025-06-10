@@ -3,8 +3,7 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Text(String),
-    Asterisk,
-    DoubleAsterisk,
+    EmphasisRun { delimiter: char, length: usize },
     OpenBracket,
     CloseBracket,
     OpenParenthesis,
@@ -33,13 +32,18 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 // if the current buffer isn't empty, append a Text token to the Vec<Token>
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
 
-                // Perform forward lookup for another *
-                if (i + 1 < str_len) && chars[i + 1] == "*" {
-                    tokens.push(Token::DoubleAsterisk);
-                    i += 1;
-                } else {
-                    tokens.push(Token::Asterisk);
+                let delimiter = chars[i];
+                let mut run_length = 1;
+                while i + run_length < str_len && chars[i + run_length] == delimiter {
+                    run_length += 1;
                 }
+
+                tokens.push(Token::EmphasisRun {
+                    delimiter: delimiter.chars().next().unwrap(),
+                    length: run_length,
+                });
+
+                i += run_length - 1;
             }
             "\\" => {
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
