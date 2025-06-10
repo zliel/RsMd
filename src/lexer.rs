@@ -4,6 +4,7 @@ use unicode_segmentation::UnicodeSegmentation;
 pub enum Token {
     Text(String),
     EmphasisRun { delimiter: char, length: usize },
+    Punctuation(String),
     OpenBracket,
     CloseBracket,
     OpenParenthesis,
@@ -87,6 +88,10 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
             }
             // Note that graphemes() returns strings because graphemes can consist of things like a
             // char + a modifier
+            _ if is_punctuation(chars[i]) => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                tokens.push(Token::Punctuation(String::from(chars[i])));
+            }
             _ => buffer.push_str(chars[i]),
         }
 
@@ -97,6 +102,10 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     push_buffer_to_tokens(&mut tokens, &mut buffer);
 
     tokens
+}
+
+fn is_punctuation(input_str: &str) -> bool {
+    input_str.chars().count() == 1 && input_str.chars().next().unwrap().is_ascii_punctuation()
 }
 
 fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
