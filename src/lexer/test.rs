@@ -2,7 +2,22 @@ use crate::lexer::{Token::*, *};
 
 #[test]
 fn test_lexer_text() {
-    assert_eq!(tokenize("Hello!"), vec![Text(String::from("Hello!"))]);
+    assert_eq!(tokenize("Hello"), vec![Text(String::from("Hello"))]);
+}
+
+#[test]
+fn test_lexer_punctuation() {
+    assert_eq!(
+        tokenize(".-..-,"),
+        vec![
+            Punctuation(String::from(".")),
+            Punctuation(String::from("-")),
+            Punctuation(String::from(".")),
+            Punctuation(String::from(".")),
+            Punctuation(String::from("-")),
+            Punctuation(String::from(","))
+        ]
+    )
 }
 
 #[test]
@@ -19,7 +34,17 @@ fn test_lexer_newline() {
 fn test_lexer_italic() {
     assert_eq!(
         tokenize("*italic*"),
-        vec![Asterisk, Text(String::from("italic")), Asterisk]
+        vec![
+            EmphasisRun {
+                delimiter: '*',
+                length: 1
+            },
+            Text(String::from("italic")),
+            EmphasisRun {
+                delimiter: '*',
+                length: 1
+            }
+        ]
     );
 }
 
@@ -27,7 +52,17 @@ fn test_lexer_italic() {
 fn test_lexer_bold() {
     assert_eq!(
         tokenize("**bold**"),
-        vec![DoubleAsterisk, Text(String::from("bold")), DoubleAsterisk]
+        vec![
+            EmphasisRun {
+                delimiter: '*',
+                length: 2
+            },
+            Text(String::from("bold")),
+            EmphasisRun {
+                delimiter: '*',
+                length: 2
+            }
+        ]
     );
 }
 
@@ -36,15 +71,19 @@ fn test_lexer_mixed_asterisks() {
     assert_eq!(
         tokenize("***bold + italic***"),
         vec![
-            DoubleAsterisk,
-            Asterisk,
+            EmphasisRun {
+                delimiter: '*',
+                length: 3
+            },
             Text(String::from("bold")),
             Whitespace,
-            Text(String::from("+")),
+            Punctuation(String::from("+")),
             Whitespace,
             Text(String::from("italic")),
-            DoubleAsterisk,
-            Asterisk
+            EmphasisRun {
+                delimiter: '*',
+                length: 3
+            },
         ]
     );
 }
@@ -64,7 +103,15 @@ fn test_lexer_link() {
             Text(String::from("here")),
             CloseBracket,
             OpenParenthesis,
-            Text(String::from("https://www.example.com")),
+            Text(String::from("https")),
+            Punctuation(String::from(":")),
+            Punctuation(String::from("/")),
+            Punctuation(String::from("/")),
+            Text(String::from("www")),
+            Punctuation(String::from(".")),
+            Text(String::from("example")),
+            Punctuation(String::from(".")),
+            Text(String::from("com")),
             CloseParenthesis
         ]
     );
@@ -76,16 +123,34 @@ fn test_lexer_emphasis_in_link() {
         tokenize("[*italic **bold+italic***](https://www.example.com)"),
         vec![
             OpenBracket,
-            Asterisk,
+            EmphasisRun {
+                delimiter: '*',
+                length: 1
+            },
             Text(String::from("italic")),
             Whitespace,
-            DoubleAsterisk,
-            Text(String::from("bold+italic")),
-            DoubleAsterisk,
-            Asterisk,
+            EmphasisRun {
+                delimiter: '*',
+                length: 2
+            },
+            Text(String::from("bold")),
+            Punctuation(String::from("+")),
+            Text(String::from("italic")),
+            EmphasisRun {
+                delimiter: '*',
+                length: 3
+            },
             CloseBracket,
             OpenParenthesis,
-            Text(String::from("https://www.example.com")),
+            Text(String::from("https")),
+            Punctuation(String::from(":")),
+            Punctuation(String::from("/")),
+            Punctuation(String::from("/")),
+            Text(String::from("www")),
+            Punctuation(String::from(".")),
+            Text(String::from("example")),
+            Punctuation(String::from(".")),
+            Text(String::from("com")),
             CloseParenthesis
         ]
     );
@@ -104,13 +169,22 @@ fn test_lexer_unicode_mixed() {
     assert_eq!(
         tokenize("**これ** means \"This\"!"),
         vec![
-            DoubleAsterisk,
+            EmphasisRun {
+                delimiter: '*',
+                length: 2
+            },
             Text(String::from("これ")),
-            DoubleAsterisk,
+            EmphasisRun {
+                delimiter: '*',
+                length: 2
+            },
             Whitespace,
             Text(String::from("means")),
             Whitespace,
-            Text(String::from("\"This\"!"))
+            Punctuation(String::from("\"")),
+            Text(String::from("This")),
+            Punctuation(String::from("\"")),
+            Punctuation(String::from("!"))
         ]
     );
 }
