@@ -29,7 +29,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     let mut i = 0;
     while i < str_len {
         match chars[i] {
-            "*" => {
+            "*" | "_" => {
                 // if the current buffer isn't empty, append a Text token to the Vec<Token>
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
 
@@ -105,7 +105,8 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 }
 
 fn is_punctuation(input_str: &str) -> bool {
-    input_str.chars().count() == 1 && input_str.chars().next().unwrap().is_ascii_punctuation()
+    let ch = input_str.chars().next().unwrap_or_default();
+    input_str.chars().count() == 1 && (ch.is_punctuation() || ch.is_symbol_currency())
 }
 
 fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
