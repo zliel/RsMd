@@ -1,5 +1,6 @@
 use crate::lexer::tokenize;
-use crate::parser::{MdBlockElement::*, MdInlineElement::*, *};
+use crate::parser::parse_inline;
+use crate::types::{MdBlockElement::*, MdInlineElement::*, *};
 
 mod inline {
     use super::*;
@@ -89,7 +90,7 @@ mod inline {
     #[test]
     fn mixed_emphasis() {
         assert_eq!(
-            parse_inline(tokenize("***Bold and italic.***")),
+            parse_inline(tokenize("**_Bold and italic._**")),
             vec![Bold {
                 content: vec![Italic {
                     content: vec![Text {
@@ -103,7 +104,7 @@ mod inline {
     #[test]
     fn mixed_emphasis_separated() {
         assert_eq!(
-            parse_inline(tokenize("*Italic **and bold***")),
+            parse_inline(tokenize("_Italic **and bold**_")),
             vec![Italic {
                 content: vec![
                     Text {
@@ -139,7 +140,7 @@ mod inline {
             vec![Link {
                 text: vec![Bold {
                     content: vec![Text {
-                        content: String::from("**bold link text**")
+                        content: String::from("bold link text")
                     }]
                 }],
                 url: String::from("http://example.com")
@@ -164,24 +165,82 @@ mod inline {
     fn link_with_mixed_emphasis() {
         assert_eq!(
             parse_inline(tokenize(
-                "[*italic, **bold and italic***](http://example.com)"
+                "[_italic, **bold and italic**_](http://example.com)"
             )),
             vec![Link {
-                text: vec![
-                    Italic {
-                        content: vec![Text {
+                text: vec![Italic {
+                    content: vec![
+                        Text {
                             content: String::from("italic, ")
-                        }],
-                    },
-                    Bold {
-                        content: vec![Text {
-                            content: String::from("bold and italic")
-                        }]
-                    }
-                ],
+                        },
+                        Bold {
+                            content: vec![Text {
+                                content: String::from("bold and italic")
+                            }]
+                        }
+                    ]
+                }],
                 url: String::from("http://example.com")
             }]
         );
     }
 }
 
+// #[test]
+// fn test_heading() {
+//     assert_eq!(
+//         parse_markdown("# Heading 1"),
+//         vec![Header {
+//             level: 1,
+//             content: vec![Text {
+//                 content: String::from("Heading 1")
+//             }]
+//         }]
+//     );
+// }
+//
+// #[test]
+// fn test_multilevel_heading() {
+//     assert_eq!(
+//         parse_markdown("### Heading 3"),
+//         vec![Header {
+//             level: 3,
+//             content: vec![Text {
+//                 content: String::from("Heading 3")
+//             }]
+//         }]
+//     );
+// }
+//
+// #[test]
+// fn test_heading_with_internal_hashes() {
+//     assert_eq!(
+//         parse_markdown("## Heading 2 with #internal #hashes"),
+//         vec![Header {
+//             level: 2,
+//             content: vec![Text {
+//                 content: String::from("Heading 2 with #internal #hashes")
+//             }]
+//         }]
+//     );
+// }
+//
+// #[test]
+// fn test_heading_with_emphases() {
+//     assert_eq!(
+//         parse_markdown("## Heading 2 with **bold words**"),
+//         vec![Header {
+//             level: 2,
+//             content: vec![
+//                 Text {
+//                     content: String::from("Heading 2 with ")
+//                 },
+//                 Bold {
+//                     content: vec![Text {
+//                         content: String::from("bold words")
+//                     }]
+//                 }
+//             ]
+//         }]
+//     )
+// }

@@ -77,7 +77,7 @@ fn test_lexer_mixed_asterisks() {
             },
             Text(String::from("bold")),
             Whitespace,
-            Punctuation(String::from("+")),
+            Text(String::from("+")),
             Whitespace,
             Text(String::from("italic")),
             EmphasisRun {
@@ -133,9 +133,7 @@ fn test_lexer_emphasis_in_link() {
                 delimiter: '*',
                 length: 2
             },
-            Text(String::from("bold")),
-            Punctuation(String::from("+")),
-            Text(String::from("italic")),
+            Text(String::from("bold+italic")),
             EmphasisRun {
                 delimiter: '*',
                 length: 3
@@ -160,7 +158,10 @@ fn test_lexer_emphasis_in_link() {
 fn test_lexer_unicode() {
     assert_eq!(
         tokenize("これは正解です。"),
-        vec![Text(String::from("これは正解です。"))]
+        vec![
+            Text(String::from("これは正解です")),
+            Punctuation(String::from("。"))
+        ]
     );
 }
 
