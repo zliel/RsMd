@@ -38,6 +38,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 parsed_inline_elements.push(MdInlineElement::Placeholder);
             }
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
+            Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
             Token::Whitespace => buffer.push(' '),
             _ => push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer),
         }
