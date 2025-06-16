@@ -91,10 +91,9 @@ impl TokenCursor {
 /// - usize is the current position
 #[derive(Debug, Clone)]
 pub struct Delimiter {
-    pub token: Token,
-    pub token_position: usize,
     pub ch: char,
     pub run_length: usize,
+    pub token_position: usize,
     pub parsed_position: usize,
     pub active: bool,
     pub can_open: bool,  //Must be left-flanking
@@ -139,10 +138,7 @@ impl Delimiter {
             followed_by_whitespace || followed_by_punctuation
         };
 
-        let delimiter_char = match &self.token {
-            Token::EmphasisRun { delimiter, .. } => *delimiter,
-            _ => return,
-        };
+        let delimiter_char = self.ch;
 
         // Apply Rule of 3 (underscore restrictions)
         let is_underscore = delimiter_char == '_';

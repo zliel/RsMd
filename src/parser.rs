@@ -25,7 +25,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
 
                 delimiter_stack.push(Delimiter {
-                    token: Token::EmphasisRun { delimiter, length },
                     run_length: length,
                     ch: delimiter,
                     token_position: cursor.position(),
@@ -56,10 +55,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             push_buffer_to_elements(&mut inner_parsed_elements, &mut label);
 
                             inner_delimiter_stack.push(Delimiter {
-                                token: Token::EmphasisRun {
-                                    delimiter: *delimiter,
-                                    length: *length,
-                                },
                                 run_length: *length,
                                 ch: *delimiter,
                                 token_position: cursor.position(),
