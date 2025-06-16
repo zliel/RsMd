@@ -148,11 +148,9 @@ impl Delimiter {
         let is_underscore = delimiter_char == '_';
 
         if is_underscore {
-            self.can_open = is_left_flanking
-                && (!is_right_flanking || is_right_flanking && followed_by_punctuation);
+            self.can_open = is_left_flanking && (!is_right_flanking || followed_by_punctuation);
 
-            self.can_close = is_right_flanking
-                && (is_left_flanking && followed_by_punctuation || !is_left_flanking);
+            self.can_close = is_right_flanking && (!is_left_flanking || followed_by_punctuation);
         } else {
             self.can_open = is_left_flanking;
             self.can_close = is_right_flanking;
