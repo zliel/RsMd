@@ -11,6 +11,7 @@ pub enum Token {
     OpenParenthesis,
     CloseParenthesis,
     Whitespace,
+    CodeTick,
     Escape(String),
     Newline,
 }
@@ -46,6 +47,11 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 });
 
                 i += run_length - 1;
+            }
+            "`" => {
+                push_buffer_to_tokens(&mut tokens, &mut buffer);
+
+                tokens.push(Token::CodeTick);
             }
             "\\" => {
                 push_buffer_to_tokens(&mut tokens, &mut buffer);
