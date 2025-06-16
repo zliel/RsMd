@@ -44,10 +44,32 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 // Recursively call parse_inline on the tokens between the brackets?
                 let mut label: String = String::new();
                 let mut uri: String = String::new();
+                let mut inner_delimiter_stack: Vec<Delimiter> = Vec::new();
+                let mut inner_parsed_elements: Vec<MdInlineElement> = Vec::new();
                 while let Some(next_token) = cursor.current() {
                     match next_token {
                         Token::CloseBracket => {
+                            push_buffer_to_elements(&mut inner_parsed_elements, &mut label);
                             break;
+                        }
+                        Token::EmphasisRun { delimiter, length } => {
+                            push_buffer_to_elements(&mut inner_parsed_elements, &mut label);
+
+                            inner_delimiter_stack.push(Delimiter {
+                                token: Token::EmphasisRun {
+                                    delimiter: *delimiter,
+                                    length: *length,
+                                },
+                                run_length: *length,
+                                ch: *delimiter,
+                                token_position: cursor.position(),
+                                parsed_position: inner_parsed_elements.len(),
+                                active: true,
+                                can_open: true,
+                                can_close: true,
+                            });
+
+                            inner_parsed_elements.push(MdInlineElement::Placeholder);
                         }
                         Token::Text(string) => label.push_str(string.as_str()),
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
@@ -56,6 +78,14 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     }
 
                     cursor.advance();
+                }
+
+                // If we didn't find a closing bracket, treat it as text
+                if cursor.current() != Some(&Token::CloseBracket) {
+                    parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("[{label}]"),
+                    });
+                    continue;
                 }
 
                 // At this point we should have parentheses for the uri, otherwise treat it as a
@@ -85,8 +115,9 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         content: format!("({uri})"),
                     });
                 } else {
+                    resolve_emphasis(&mut inner_parsed_elements, &mut inner_delimiter_stack);
                     parsed_inline_elements.push(MdInlineElement::Link {
-                        text: vec![MdInlineElement::Text { content: label }],
+                        text: inner_parsed_elements,
                         url: uri,
                     });
                 }
