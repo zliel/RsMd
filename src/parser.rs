@@ -144,7 +144,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
         .iter_mut()
         .for_each(|el| el.classify_flanking(&cursor.tokens));
 
-    delimiter_stack.iter().for_each(|el| println!("{:?}", el));
     resolve_emphasis(&mut parsed_inline_elements, &mut delimiter_stack);
 
     // Remove all placeholders
@@ -153,7 +152,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 }
 
 fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [Delimiter]) {
-    println!("Starting Element Set: {:?}", elements);
     for i in 0..delimiter_stack.len() {
         if !delimiter_stack[i].active || !delimiter_stack[i].can_close {
             continue;
@@ -163,7 +161,6 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
         let closer = delimiter_stack[i].clone();
 
         for j in (0..i).rev() {
-            println!("J = {j}");
             if !delimiter_stack[j].active || !delimiter_stack[j].can_open {
                 continue;
             }
