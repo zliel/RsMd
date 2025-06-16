@@ -48,6 +48,10 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
     push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
 
+    delimiter_stack
+        .iter_mut()
+        .for_each(|el| el.classify_flanking(&cursor.tokens));
+
     parsed_inline_elements
 }
 
