@@ -11,9 +11,12 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
     let mut buffer: String = String::new();
 
-    let mut current_token: &Token;
+    let mut current_token: Token;
     while !cursor.is_at_eof() {
-        current_token = cursor.current().expect("Token should be valid markdown");
+        current_token = cursor
+            .current()
+            .expect("Token should be valid markdown")
+            .clone();
 
         match current_token {
             Token::DoubleAsterisk => {
