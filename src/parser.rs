@@ -66,7 +66,9 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                             inner_parsed_elements.push(MdInlineElement::Placeholder);
                         }
-                        Token::Text(string) => label.push_str(string.as_str()),
+                        Token::Text(string) | Token::Punctuation(string) => {
+                            label.push_str(string.as_str())
+                        }
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => label.push(' '),
                         _ => {}
@@ -96,7 +98,9 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 while let Some(next_token) = cursor.current() {
                     match next_token {
                         Token::CloseParenthesis => break,
-                        Token::Text(string) => uri.push_str(string.as_str()),
+                        Token::Text(string) | Token::Punctuation(string) => {
+                            uri.push_str(string.as_str())
+                        }
                         Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => uri.push(' '),
                         _ => {}
