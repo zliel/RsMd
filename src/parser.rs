@@ -68,7 +68,7 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
         }
 
         // At this point we have a valid closer
-        let mut closer = delimiter_stack[i].clone();
+        let closer = delimiter_stack[i].clone();
 
         for j in (0..i).rev() {
             println!("J = {j}");
