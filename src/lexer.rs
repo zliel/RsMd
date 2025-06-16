@@ -1,3 +1,4 @@
+use unicode_categories::UnicodeCategories;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, PartialEq, Clone)]
