@@ -55,20 +55,10 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     parsed_inline_elements
 }
 
-fn parse_bold(cursor: &mut TokenCursor) -> Vec<MdInlineElement> {
-    cursor.advance();
-
-    let mut inner_tokens: Vec<Token> = Vec::new();
-    while let Some(token) = cursor.current() {
-        if token == &Token::DoubleAsterisk {
-            break;
         }
 
-        inner_tokens.push(token.clone());
-        cursor.advance();
     }
 
-    parse_inline(inner_tokens)
 }
 fn push_buffer_to_elements(elements: &mut Vec<MdInlineElement>, buffer: &mut String) {
     if !&buffer.is_empty() {
