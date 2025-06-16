@@ -9,6 +9,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
         current_position: 0,
     };
 
+    let mut delimiter_stack: Vec<Delimiter> = Vec::new();
+
     let mut buffer: String = String::new();
 
     let mut current_token: Token;
@@ -19,16 +21,27 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             .clone();
 
         match current_token {
-            Token::DoubleAsterisk => {
-                parsed_inline_elements.push(MdInlineElement::Bold {
-                    content: parse_bold(&mut cursor),
+            Token::EmphasisRun { delimiter, length } => {
+                push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+
+                delimiter_stack.push(Delimiter {
+                    token: Token::EmphasisRun { delimiter, length },
+                    run_length: length,
+                    ch: delimiter,
+                    token_position: cursor.position(),
+                    parsed_position: parsed_inline_elements.len(),
+                    active: true,
+                    can_open: true,
+                    can_close: true,
                 });
+
+                parsed_inline_elements.push(MdInlineElement::Placeholder);
             }
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
-            Token::Text(string) => buffer.push_str(string),
             Token::Whitespace => buffer.push(' '),
             _ => push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer),
         }
+
         cursor.advance();
     }
 
