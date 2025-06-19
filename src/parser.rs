@@ -291,5 +291,82 @@ fn push_buffer_to_elements(elements: &mut Vec<MdInlineElement>, buffer: &mut Str
     }
 }
 
+pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<Token>> {
+    let mut blocks: Vec<Vec<Token>> = Vec::new();
+    let mut current_block: Vec<Token> = Vec::new();
+    let mut previous_block: Vec<Token>;
+    let lines = tokenized_lines.iter_mut();
+    for line in lines {
+        previous_block = blocks.last().unwrap_or(&Vec::new()).to_vec();
+        match line.first() {
+            Some(Token::Punctuation(string)) if string == "#" => {
+                // For ATX headings, it must all be on one line
+                blocks.push(line.to_owned());
+            }
+            Some(Token::Punctuation(string)) if string == "-" => {
+                // Setext heading 2
+                if let Some(previous_line_start) = previous_block.first() {
+                    if matches!(previous_line_start, Token::Text(_)) {
+                        previous_block.insert(0, Token::Punctuation(String::from("#")));
+                        previous_block.insert(1, Token::Punctuation(String::from("#")));
+                        previous_block.insert(2, Token::Whitespace);
+
+                        // Swap previous block in
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
+                }
+            }
+            Some(Token::Text(string)) if string == "=" => {
+                // Setext heading 1
+                if let Some(previous_line_start) = previous_block.first() {
+                    // If it's text, then prepend the previous line with "# "
+                    if matches!(previous_line_start, Token::Text(_)) {
+                        previous_block.insert(0, Token::Punctuation(String::from("#")));
+                        previous_block.insert(1, Token::Whitespace);
+
+                        // Swap previous block in
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
+                }
+            }
+            Some(Token::Text(_)) => {
+                if !previous_block.is_empty() {
+                    if matches!(previous_block.first(), Some(Token::Text(_))) {
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    } else if matches!(previous_block.first(), Some(Token::Punctuation(_))) {
+                        // If the previous block was a heading, then this is a new paragraph
+                        current_block.extend(line.to_owned());
+                    } else {
+                        // If the previous block was empty, then this is a new paragraph
+                        current_block.extend(line.to_owned());
+                    }
+                } else {
+                    // If the previous block was empty, then this is a new paragraph
+                    current_block.extend(line.to_owned());
+                }
+            }
+            _ => {
+                // Catch-all for everything else
+                current_block.extend(line.to_owned());
+            }
+        }
+
+        if !current_block.is_empty() {
+            blocks.push(current_block.clone());
+        }
+
+        current_block.clear();
+    }
+    blocks
+}
+
 #[cfg(test)]
 mod test;
