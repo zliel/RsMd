@@ -338,6 +338,7 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::Text(_)) => {
                 if !previous_block.is_empty() {
                     if matches!(previous_block.first(), Some(Token::Text(_))) {
+                        previous_block.push(Token::Whitespace);
                         previous_block.extend(line.to_owned());
                         blocks.pop();
                         blocks.push(previous_block.clone());
