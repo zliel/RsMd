@@ -1,7 +1,7 @@
 use crate::lexer::Token;
 use crate::types::{Delimiter, MdBlockElement, MdInlineElement, TokenCursor};
 
-pub fn parse_block(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
+pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
 
     for line in markdown_lines {
