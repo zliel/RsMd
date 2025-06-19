@@ -1,5 +1,56 @@
 use crate::lexer::Token;
-use crate::types::{Delimiter, MdInlineElement, TokenCursor};
+use crate::types::{Delimiter, MdBlockElement, MdInlineElement, TokenCursor};
+
+pub fn parse_block(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
+    let mut block_elements: Vec<MdBlockElement> = Vec::new();
+
+    for line in markdown_lines {
+        let first_token = line.first();
+
+        match first_token {
+            Some(Token::Punctuation(string)) if string == "#" => {
+                block_elements.push(parse_heading(line));
+            }
+            Some(Token::Punctuation(string)) => {}
+            Some(Token::Text(_)) => block_elements.push(MdBlockElement::Paragraph {
+                content: parse_inline(line),
+            }),
+            _ => {}
+        }
+    }
+
+    block_elements
+}
+
+fn parse_heading(line: Vec<Token>) -> MdBlockElement {
+    let mut heading_content: Vec<MdInlineElement>;
+    let mut heading_level = 0;
+    let mut i = 0;
+    while let Some(token) = line.get(i) {
+        match token {
+            Token::Punctuation(string) => {
+                if string == "#" {
+                    heading_level += 1;
+                } else {
+                    break;
+                }
+            }
+            _ => break,
+        }
+        i += 1;
+    }
+
+    if i >= line.len() || !matches!(line.get(i), Some(Token::Whitespace)) {
+        return MdBlockElement::Paragraph {
+            content: parse_inline(line)[i..].to_vec(),
+        };
+    }
+
+    MdBlockElement::Header {
+        level: heading_level,
+        content: parse_inline(line).to_vec(),
+    }
+}
 
 pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     let mut parsed_inline_elements: Vec<MdInlineElement> = Vec::new();
