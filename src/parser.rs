@@ -163,7 +163,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 if cursor.current() != Some(&Token::CloseParenthesis) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("![{label}]({uri}"),
+                        content: format!("[{label}]({uri}"),
                     });
                 } else {
                     resolve_emphasis(&mut inner_parsed_elements, &mut inner_delimiter_stack);
