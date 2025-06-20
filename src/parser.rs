@@ -24,6 +24,7 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
                 block_elements.push(parse_codeblock(line));
             }
             _ => {}
+            Some(Token::Newline) => {}
         }
     }
 
