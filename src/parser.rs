@@ -89,6 +89,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             }
             Token::OpenBracket => {
                 push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+                push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
 
                 // Search for the matching closing bracket
                 // Recursively call parse_inline on the tokens between the brackets?
