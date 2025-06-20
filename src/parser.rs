@@ -162,7 +162,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 if cursor.current() != Some(&Token::CloseParenthesis) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("({uri}"),
+                        content: format!("![{label}]({uri}"),
                     });
                 } else {
                     resolve_emphasis(&mut inner_parsed_elements, &mut inner_delimiter_stack);
@@ -207,6 +207,36 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     });
                 }
             }
+            Token::Punctuation(string) if string == "!" => {
+                if cursor.peek_ahead(1) != Some(&Token::OpenBracket) {
+                    // If the next token is not an open bracket, treat it as text
+                    buffer.push('!');
+                    continue;
+                }
+                push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+                cursor.advance(); // Advance to the open bracket
+                let mut alt_text: String = String::new();
+                let mut uri: String = String::new();
+                while let Some(next_token) = cursor.current() {
+                    match next_token {
+                        Token::CloseBracket => {
+                            break;
+                        }
+                        Token::OpenParenthesis => alt_text.push('('),
+                        Token::CloseParenthesis => alt_text.push(')'),
+                        Token::Text(string) | Token::Punctuation(string) => {
+                            alt_text.push_str(string.as_str())
+                        }
+                        Token::Escape(ch) => alt_text.push_str(format!("\\{ch}").as_str()),
+                        Token::Whitespace => alt_text.push(' '),
+                        _ => {}
+                    }
+
+                    cursor.advance();
+                }
+
+                if cursor.current() != Some(&Token::CloseBracket) {
+                    parsed_inline_elements.push(MdInlineElement::Text {
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
             Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
             Token::Whitespace => buffer.push(' '),
