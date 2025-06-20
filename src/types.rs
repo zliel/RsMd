@@ -49,6 +49,14 @@ pub enum MdInlineElement {
     Placeholder,
 }
 
+impl From<String> for MdInlineElement {
+    fn from(s: String) -> Self {
+        MdInlineElement::Text {
+            content: s.to_string(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct TokenCursor {
     pub tokens: Vec<Token>,

@@ -18,6 +18,12 @@ pub enum Token {
     Newline,
 }
 
+impl From<String> for Token {
+    fn from(s: String) -> Self {
+        Token::Text(s.to_string())
+    }
+}
+
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     if markdown_line.is_empty() {
         return vec![Token::Newline];
