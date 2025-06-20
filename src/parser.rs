@@ -193,6 +193,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Whitespace => code_content.push(' '),
                         Token::Newline => code_content.push('\n'),
+                        Token::CodeFence => {}
                     }
 
                     cursor.advance();
