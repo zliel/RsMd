@@ -23,6 +23,9 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
             Some(Token::CodeFence) => {
                 block_elements.push(parse_codeblock(line));
             }
+            Some(Token::ThematicBreak) => {
+                block_elements.push(MdBlockElement::ThematicBreak);
+            }
             Some(Token::Newline) => {}
             _ => block_elements.push(MdBlockElement::Paragraph {
                 content: parse_inline(line),

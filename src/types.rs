@@ -13,6 +13,7 @@ pub enum MdBlockElement {
         language: Option<String>,
         lines: Vec<String>,
     },
+    ThematicBreak,
     UnorderedList {
         items: Vec<MdListItem>,
     },
