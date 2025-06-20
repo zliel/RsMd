@@ -14,6 +14,7 @@ pub enum Token {
     Whitespace,
     CodeTick,
     CodeFence,
+    ThematicBreak,
     Escape(String),
     Newline,
 }
@@ -74,6 +75,16 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                     i += 1;
                 } else {
                     buffer.push_str(chars[i]);
+                }
+            }
+            "-" => {
+                push_buffer_to_collection(&mut tokens, &mut buffer);
+
+                if i + 2 < str_len && chars[i + 1] == "-" && chars[i + 2] == "-" {
+                    tokens.push(Token::ThematicBreak);
+                    i += 2;
+                } else {
+                    tokens.push(Token::Punctuation(String::from(chars[i])));
                 }
             }
             "[" => {
