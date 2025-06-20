@@ -23,7 +23,6 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
 }
 
 fn parse_heading(line: Vec<Token>) -> MdBlockElement {
-    let mut heading_content: Vec<MdInlineElement>;
     let mut heading_level = 0;
     let mut i = 0;
     while let Some(token) = line.get(i) {
