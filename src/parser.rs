@@ -548,7 +548,8 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 }
             }
             Some(Token::CodeTick) => {
-                blocks.push(line.to_owned());
+                current_block.extend(line.to_owned());
+            }
             Some(Token::CodeFence) => {
                 if !is_inside_code_block {
                     is_inside_code_block = true;
