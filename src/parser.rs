@@ -40,9 +40,9 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
         i += 1;
     }
 
-    if i >= line.len() || !matches!(line.get(i), Some(Token::Whitespace)) {
+    if i >= line.len() || line.get(i) != Some(&Token::Whitespace) {
         return MdBlockElement::Paragraph {
-            content: parse_inline(line)[i..].to_vec(),
+            content: parse_inline(line),
         };
     }
 
