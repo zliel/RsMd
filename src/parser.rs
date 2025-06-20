@@ -202,7 +202,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         content: format!("`{code_content}`"),
                     });
                 } else {
-                    parsed_inline_elements.push(MdInlineElement::CodeBlock {
+                    parsed_inline_elements.push(MdInlineElement::Code {
                         content: code_content,
                     });
                 }

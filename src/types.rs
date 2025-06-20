@@ -42,7 +42,7 @@ pub enum MdInlineElement {
         alt_text: String,
         url: String,
     },
-    CodeBlock {
+    Code {
         content: String, //TODO: Look into this
     },
     Placeholder,
