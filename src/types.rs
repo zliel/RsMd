@@ -10,6 +10,7 @@ pub enum MdBlockElement {
         content: Vec<MdInlineElement>,
     },
     CodeBlock {
+        language: Option<String>,
         lines: Vec<String>,
     },
     UnorderedList {
