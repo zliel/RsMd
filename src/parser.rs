@@ -48,7 +48,7 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
 
     MdBlockElement::Header {
         level: heading_level,
-        content: parse_inline(line).to_vec(),
+        content: parse_inline(line[i + 1..].to_vec()),
     }
 }
 
