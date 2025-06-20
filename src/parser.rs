@@ -57,6 +57,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
             }
             Some(Token::Whitespace) => line_buffer.push(' '),
             Some(Token::Newline) => line_buffer.push('\n'),
+            Some(Token::ThematicBreak) => line_buffer.push_str("---"),
             Some(Token::Escape(esc_char)) => {
                 line_buffer.push_str(format!("\\{esc_char}").as_str());
             }
@@ -76,7 +77,6 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     }
 
     push_buffer_to_collection(&mut code_content, &mut line_buffer);
-
 
     MdBlockElement::CodeBlock {
         language,
@@ -190,6 +190,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => label.push(' '),
+                        Token::ThematicBreak => label.push_str("---"),
                         _ => {}
                     }
 
@@ -222,6 +223,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => uri.push(' '),
+                        Token::ThematicBreak => label.push_str("---"),
                         _ => {}
                     }
 
@@ -260,6 +262,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Whitespace => code_content.push(' '),
                         Token::Newline => code_content.push('\n'),
+                        Token::ThematicBreak => code_content.push_str("---"),
                         Token::CodeFence => {}
                     }
 
@@ -302,6 +305,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Escape(ch) => alt_text.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => alt_text.push(' '),
+                        Token::ThematicBreak => alt_text.push_str("---"),
                         _ => {}
                     }
 
@@ -334,6 +338,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         }
                         Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => uri.push(' '),
+                        Token::ThematicBreak => uri.push_str("---"),
                         _ => {}
                     }
 
@@ -354,6 +359,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::CloseBracket => buffer.push(']'),
             Token::OpenParenthesis => buffer.push('('),
             Token::CloseParenthesis => buffer.push(')'),
+            Token::ThematicBreak => buffer.push_str("---"),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -482,6 +488,7 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
     let mut is_inside_code_block = false;
     for line in lines {
         previous_block = blocks.last().unwrap_or(&Vec::new()).to_vec();
+
         if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
             // If we are inside a code block, then we just append the line to the current block
             previous_block.extend(line.to_owned());
@@ -515,6 +522,26 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                         // Swap previous block in
                         blocks.pop();
                         blocks.push(previous_block.clone());
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
+                }
+            }
+            Some(Token::ThematicBreak) => {
+                if let Some(previous_line_start) = previous_block.first() {
+                    match previous_line_start {
+                        Token::Punctuation(string) if string == "#" => {
+                            blocks.push(line.to_owned());
+                        }
+                        Token::Newline => blocks.push(line.to_owned()),
+                        _ => {
+                            previous_block.insert(0, Token::Punctuation(String::from("#")));
+                            previous_block.insert(1, Token::Punctuation(String::from("#")));
+                            previous_block.insert(2, Token::Whitespace);
+
+                            blocks.pop();
+                            blocks.push(previous_block.clone());
+                        }
                     }
                 } else {
                     current_block.extend(line.to_owned());
