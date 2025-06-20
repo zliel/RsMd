@@ -1,5 +1,6 @@
 use crate::lexer::Token;
 use crate::types::{Delimiter, MdBlockElement, MdInlineElement, TokenCursor};
+use crate::utils::push_buffer_to_collection;
 
 pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
@@ -62,6 +63,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
         }
     }
 
+    push_buffer_to_collection(&mut code_content, &mut line_buffer);
 
 
     MdBlockElement::CodeBlock {
@@ -120,7 +122,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
         match current_token {
             Token::EmphasisRun { delimiter, length } => {
-                push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+                push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
 
                 delimiter_stack.push(Delimiter {
                     run_length: length,
@@ -135,7 +137,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 parsed_inline_elements.push(MdInlineElement::Placeholder);
             }
             Token::OpenBracket => {
-                push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
                 push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
 
                 // Search for the matching closing bracket
@@ -147,11 +148,17 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 while let Some(next_token) = cursor.current() {
                     match next_token {
                         Token::CloseBracket => {
-                            push_buffer_to_elements(&mut inner_parsed_elements, &mut label);
+                            push_buffer_to_collection(
+                                &mut inner_parsed_elements,
+                                &mut label.clone(),
+                            );
                             break;
                         }
                         Token::EmphasisRun { delimiter, length } => {
-                            push_buffer_to_elements(&mut inner_parsed_elements, &mut label);
+                            push_buffer_to_collection(
+                                &mut inner_parsed_elements,
+                                &mut label.clone(),
+                            );
 
                             inner_delimiter_stack.push(Delimiter {
                                 run_length: *length,
@@ -246,6 +253,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     cursor.advance();
                 }
 
+                push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
+
                 if cursor.current() != Some(&Token::CodeTick) {
                     parsed_inline_elements.push(MdInlineElement::Text {
                         content: format!("`{code_content}`"),
@@ -262,8 +271,10 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     buffer.push('!');
                     continue;
                 }
-                push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+
+                push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
                 cursor.advance(); // Advance to the open bracket
+
                 let mut alt_text: String = String::new();
                 let mut uri: String = String::new();
                 while let Some(next_token) = cursor.current() {
@@ -330,13 +341,13 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::CloseBracket => buffer.push(']'),
             Token::OpenParenthesis => buffer.push('('),
             Token::CloseParenthesis => buffer.push(')'),
-            _ => push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer),
+            _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
         cursor.advance();
     }
 
-    push_buffer_to_elements(&mut parsed_inline_elements, &mut buffer);
+    push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
 
     delimiter_stack
         .iter_mut()
@@ -448,15 +459,6 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
             };
         }
     });
-}
-fn push_buffer_to_elements(elements: &mut Vec<MdInlineElement>, buffer: &mut String) {
-    if !&buffer.is_empty() {
-        elements.push(MdInlineElement::Text {
-            content: buffer.to_string(),
-        });
-
-        buffer.clear();
-    }
 }
 
 pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<Token>> {

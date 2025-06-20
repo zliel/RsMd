@@ -2,6 +2,7 @@ mod io;
 mod lexer;
 mod parser;
 mod types;
+mod utils;
 
 use io::read_file;
 use std::env::args;

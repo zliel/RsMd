@@ -1,3 +1,4 @@
+use crate::utils::push_buffer_to_collection;
 use unicode_categories::UnicodeCategories;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -34,7 +35,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
         match chars[i] {
             "*" | "_" => {
                 // if the current buffer isn't empty, append a Text token to the Vec<Token>
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 let delimiter = chars[i];
                 let mut run_length = 1;
@@ -50,7 +51,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 i += run_length - 1;
             }
             "`" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 if i + 2 < str_len && chars[i + 1] == "`" && chars[i + 2] == "`" {
                     tokens.push(Token::CodeFence);
@@ -60,7 +61,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 }
             }
             "\\" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 if i + 1 < str_len {
                     tokens.push(Token::Escape(String::from(chars[i + 1])));
@@ -70,39 +71,39 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 }
             }
             "[" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::OpenBracket);
             }
             "]" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::CloseBracket);
             }
             "(" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::OpenParenthesis);
             }
             ")" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::CloseParenthesis);
             }
             " " => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::Whitespace);
             }
             "" | "\n" => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::Newline);
             }
             // Note that graphemes() returns strings because graphemes can consist of things like a
             // char + a modifier
             _ if is_punctuation(chars[i]) => {
-                push_buffer_to_tokens(&mut tokens, &mut buffer);
+                push_buffer_to_collection(&mut tokens, &mut buffer);
                 tokens.push(Token::Punctuation(String::from(chars[i])));
             }
             _ => buffer.push_str(chars[i]),
@@ -112,7 +113,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     }
 
     // If the current buffer isn't empty when the loop is over, append it to the tokens vector
-    push_buffer_to_tokens(&mut tokens, &mut buffer);
+    push_buffer_to_collection(&mut tokens, &mut buffer);
 
     tokens
 }
@@ -120,13 +121,6 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 fn is_punctuation(input_str: &str) -> bool {
     let ch = input_str.chars().next().unwrap_or_default();
     input_str.chars().count() == 1 && (ch.is_punctuation() || ch.is_symbol_currency())
-}
-
-fn push_buffer_to_tokens(tokens: &mut Vec<Token>, buffer: &mut String) {
-    if !&buffer.is_empty() {
-        tokens.push(Token::Text(buffer.to_string()));
-        buffer.clear();
-    }
 }
 
 #[cfg(test)]
