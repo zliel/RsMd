@@ -99,6 +99,7 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
         i += 1;
     }
 
+    // At this point, we should be at a non-# token or the end of the line
     if i >= line.len() || line.get(i) != Some(&Token::Whitespace) {
         return MdBlockElement::Paragraph {
             content: parse_inline(line),
