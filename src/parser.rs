@@ -417,8 +417,26 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
     let mut current_block: Vec<Token> = Vec::new();
     let mut previous_block: Vec<Token>;
     let lines = tokenized_lines.iter_mut();
+    let mut is_inside_code_block = false;
     for line in lines {
         previous_block = blocks.last().unwrap_or(&Vec::new()).to_vec();
+        if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
+            // If we are inside a code block, then we just append the line to the current block
+            previous_block.extend(line.to_owned());
+            previous_block.push(Token::Newline);
+            blocks.pop();
+            blocks.push(previous_block.clone());
+            continue;
+        } else if is_inside_code_block && line.first() == Some(&Token::CodeFence) {
+            // If we are inside a code block and the line starts with a code fence, then we end the
+            // code block
+            is_inside_code_block = false;
+            previous_block.extend(line.to_owned());
+            blocks.pop();
+            blocks.push(previous_block.clone());
+            continue;
+        }
+
         match line.first() {
             Some(Token::Punctuation(string)) if string == "#" => {
                 // For ATX headings, it must all be on one line
@@ -442,6 +460,16 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             }
             Some(Token::CodeTick) => {
                 blocks.push(line.to_owned());
+            Some(Token::CodeFence) => {
+                if !is_inside_code_block {
+                    is_inside_code_block = true;
+                    current_block.extend(line.to_owned());
+                } else {
+                    is_inside_code_block = false;
+                    current_block.extend(line.to_owned());
+                    blocks.push(current_block.clone());
+                    current_block.clear();
+                }
             }
             Some(Token::Text(string)) if string == "=" => {
                 // Setext heading 1
