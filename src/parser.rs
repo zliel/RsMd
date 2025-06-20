@@ -235,8 +235,46 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     cursor.advance();
                 }
 
+                // If we didn't find a closing bracket, treat the whole inline as text
                 if cursor.current() != Some(&Token::CloseBracket) {
                     parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("![{alt_text}"),
+                    });
+                    continue;
+                }
+
+                // At this point we should have parentheses for the uri, otherwise treat it as a
+                // text element
+                if cursor.peek_ahead(1) != Some(&Token::OpenParenthesis) {
+                    parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("![{alt_text}]"),
+                    });
+                    continue;
+                }
+
+                cursor.advance();
+                while let Some(next_token) = cursor.current() {
+                    match next_token {
+                        Token::CloseParenthesis => break,
+                        Token::Text(string) | Token::Punctuation(string) => {
+                            uri.push_str(string.as_str())
+                        }
+                        Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
+                        Token::Whitespace => uri.push(' '),
+                        _ => {}
+                    }
+
+                    cursor.advance();
+                }
+
+                if cursor.current() != Some(&Token::CloseParenthesis) {
+                    parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("![{alt_text}]({uri}"),
+                    });
+                } else {
+                    parsed_inline_elements.push(MdInlineElement::Image { alt_text, url: uri });
+                }
+            }
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
             Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
             Token::Whitespace => buffer.push(' '),
