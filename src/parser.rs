@@ -131,7 +131,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 // If we didn't find a closing bracket, treat it as text
                 if cursor.current() != Some(&Token::CloseBracket) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("[{label}]"),
+                        content: format!("[{label}"),
                     });
                     continue;
                 }
@@ -162,7 +162,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 if cursor.current() != Some(&Token::CloseParenthesis) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("({uri})"),
+                        content: format!("({uri}"),
                     });
                 } else {
                     resolve_emphasis(&mut inner_parsed_elements, &mut inner_delimiter_stack);
