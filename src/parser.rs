@@ -438,6 +438,9 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                     current_block.extend(line.to_owned());
                 }
             }
+            Some(Token::CodeTick) => {
+                blocks.push(line.to_owned());
+            }
             Some(Token::Text(string)) if string == "=" => {
                 // Setext heading 1
                 if let Some(previous_line_start) = previous_block.first() {
