@@ -23,6 +23,53 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     block_elements
 }
 
+fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
+    let mut code_content: Vec<String> = Vec::new();
+    let mut language = None;
+    let mut line_buffer: String = String::new();
+
+    if let Some(Token::Text(string)) = line.get(1) {
+        language = Some(string.clone());
+    }
+
+    for i in 2..line.len() {
+        match line.get(i) {
+            Some(Token::CodeFence) => {
+                push_buffer_to_collection(&mut code_content, &mut line_buffer);
+
+                break;
+            }
+            Some(Token::Text(string)) | Some(Token::Punctuation(string)) => {
+                line_buffer.push_str(string);
+            }
+            Some(Token::Whitespace) => line_buffer.push(' '),
+            Some(Token::Newline) => line_buffer.push('\n'),
+            Some(Token::Escape(esc_char)) => {
+                line_buffer.push_str(format!("\\{esc_char}").as_str());
+            }
+            Some(Token::CodeTick) => {
+                // If we encounter a code tick, treat it as a text element
+                line_buffer.push('`');
+            }
+            Some(Token::OpenParenthesis) => line_buffer.push('('),
+            Some(Token::CloseParenthesis) => line_buffer.push(')'),
+            Some(Token::OpenBracket) => line_buffer.push('['),
+            Some(Token::CloseBracket) => line_buffer.push(']'),
+            Some(Token::EmphasisRun { delimiter, length }) => {
+                line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+            }
+            _ => {}
+        }
+    }
+
+
+
+    MdBlockElement::CodeBlock {
+        language,
+        lines: code_content,
+    }
+}
+
 fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     let mut heading_level = 0;
     let mut i = 0;
