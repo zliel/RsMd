@@ -11,10 +11,11 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
             Some(Token::Punctuation(string)) if string == "#" => {
                 block_elements.push(parse_heading(line));
             }
-            Some(Token::Punctuation(string)) => {}
-            Some(Token::Text(_)) => block_elements.push(MdBlockElement::Paragraph {
-                content: parse_inline(line),
-            }),
+            Some(Token::Text(_)) | Some(Token::Punctuation(_)) => {
+                block_elements.push(MdBlockElement::Paragraph {
+                    content: parse_inline(line),
+                })
+            }
             _ => {}
         }
     }
