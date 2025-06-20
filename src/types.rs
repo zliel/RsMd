@@ -44,7 +44,7 @@ pub enum MdInlineElement {
         url: String,
     },
     Code {
-        content: String, //TODO: Look into this
+        content: String,
     },
     Placeholder,
 }
