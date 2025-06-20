@@ -38,6 +38,10 @@ pub enum MdInlineElement {
         text: Vec<MdInlineElement>,
         url: String,
     },
+    Image {
+        alt_text: String,
+        url: String,
+    },
     CodeBlock {
         content: String, //TODO: Look into this
     },
