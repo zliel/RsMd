@@ -38,10 +38,12 @@ pub enum MdInlineElement {
     },
     Link {
         text: Vec<MdInlineElement>,
+        title: Option<String>,
         url: String,
     },
     Image {
         alt_text: String,
+        title: Option<String>,
         url: String,
     },
     Code {
