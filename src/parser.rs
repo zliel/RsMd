@@ -156,6 +156,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 // Recursively call parse_inline on the tokens between the brackets?
                 let mut label: String = String::new();
                 let mut uri: String = String::new();
+                let mut title: String = String::new();
                 let mut inner_delimiter_stack: Vec<Delimiter> = Vec::new();
                 let mut inner_parsed_elements: Vec<MdInlineElement> = Vec::new();
                 while let Some(next_token) = cursor.current() {
@@ -215,16 +216,50 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 }
 
                 cursor.advance();
+
+                let mut is_building_title = false;
+                let mut is_valid_title = true;
+                let mut has_opening_quote = false;
                 while let Some(next_token) = cursor.current() {
-                    match next_token {
-                        Token::CloseParenthesis => break,
-                        Token::Text(string) | Token::Punctuation(string) => {
-                            uri.push_str(string.as_str())
+                    if !is_building_title {
+                        match next_token {
+                            Token::CloseParenthesis => break,
+                            Token::Text(string) | Token::Punctuation(string) => {
+                                uri.push_str(string.as_str())
+                            }
+                            Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
+                            Token::Whitespace => is_building_title = true,
+                            Token::ThematicBreak => label.push_str("---"),
+                            _ => {}
                         }
-                        Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
-                        Token::Whitespace => uri.push(' '),
-                        Token::ThematicBreak => label.push_str("---"),
-                        _ => {}
+                    } else {
+                        match next_token {
+                            Token::CloseParenthesis => break,
+                            Token::Punctuation(string) if string == "\"" => {
+                                if has_opening_quote {
+                                    is_valid_title = true;
+                                    is_building_title = false;
+                                } else {
+                                    has_opening_quote = true;
+                                    is_valid_title = false;
+                                }
+                            }
+                            Token::Text(string) | Token::Punctuation(string) => {
+                                title.push_str(string)
+                            }
+                            Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
+                            Token::EmphasisRun { delimiter, length } => {
+                                title.push_str(delimiter.to_string().repeat(*length).as_str())
+                            }
+                            Token::OpenBracket => title.push('['),
+                            Token::CloseBracket => title.push(']'),
+                            Token::OpenParenthesis => title.push('('),
+                            Token::Newline => title.push_str("\\n"),
+                            Token::Whitespace => title.push(' '),
+                            Token::CodeTick => title.push('`'),
+                            Token::CodeFence => title.push_str("```"),
+                            Token::ThematicBreak => title.push_str("---"),
+                        }
                     }
 
                     cursor.advance();
@@ -232,12 +267,17 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 if cursor.current() != Some(&Token::CloseParenthesis) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("[{label}]({uri}"),
+                        content: format!("[{label}]({uri} "),
+                    });
+                } else if !title.is_empty() && !is_valid_title {
+                    parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("[{label}]({uri} {title})"),
                     });
                 } else {
                     resolve_emphasis(&mut inner_parsed_elements, &mut inner_delimiter_stack);
                     parsed_inline_elements.push(MdInlineElement::Link {
                         text: inner_parsed_elements,
+                        title: Option::from(title),
                         url: uri,
                     });
                 }
@@ -293,6 +333,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 let mut alt_text: String = String::new();
                 let mut uri: String = String::new();
+                let mut title: String = String::new();
                 while let Some(next_token) = cursor.current() {
                     match next_token {
                         Token::CloseBracket => {
@@ -330,16 +371,49 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 }
 
                 cursor.advance();
+                let mut is_building_title = false;
+                let mut is_valid_title = true;
+                let mut has_opening_quote = false;
                 while let Some(next_token) = cursor.current() {
-                    match next_token {
-                        Token::CloseParenthesis => break,
-                        Token::Text(string) | Token::Punctuation(string) => {
-                            uri.push_str(string.as_str())
+                    if !is_building_title {
+                        match next_token {
+                            Token::CloseParenthesis => break,
+                            Token::Text(string) | Token::Punctuation(string) => {
+                                uri.push_str(string.as_str())
+                            }
+                            Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
+                            Token::Whitespace => is_building_title = true,
+                            Token::ThematicBreak => alt_text.push_str("---"),
+                            _ => {}
                         }
-                        Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
-                        Token::Whitespace => uri.push(' '),
-                        Token::ThematicBreak => uri.push_str("---"),
-                        _ => {}
+                    } else {
+                        match next_token {
+                            Token::CloseParenthesis => break,
+                            Token::Punctuation(string) if string == "\"" => {
+                                if has_opening_quote {
+                                    is_valid_title = true;
+                                    is_building_title = false;
+                                } else {
+                                    has_opening_quote = true;
+                                    is_valid_title = false;
+                                }
+                            }
+                            Token::Text(string) | Token::Punctuation(string) => {
+                                title.push_str(string)
+                            }
+                            Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
+                            Token::EmphasisRun { delimiter, length } => {
+                                title.push_str(delimiter.to_string().repeat(*length).as_str())
+                            }
+                            Token::OpenBracket => title.push('['),
+                            Token::CloseBracket => title.push(']'),
+                            Token::OpenParenthesis => title.push('('),
+                            Token::Newline => title.push_str("\\n"),
+                            Token::Whitespace => title.push(' '),
+                            Token::CodeTick => title.push('`'),
+                            Token::CodeFence => title.push_str("```"),
+                            Token::ThematicBreak => title.push_str("---"),
+                        }
                     }
 
                     cursor.advance();
@@ -347,10 +421,18 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 if cursor.current() != Some(&Token::CloseParenthesis) {
                     parsed_inline_elements.push(MdInlineElement::Text {
-                        content: format!("![{alt_text}]({uri}"),
+                        content: format!("![{alt_text}]({uri} "),
+                    });
+                } else if !title.is_empty() && !is_valid_title {
+                    parsed_inline_elements.push(MdInlineElement::Text {
+                        content: format!("[{alt_text}]({uri} {title})"),
                     });
                 } else {
-                    parsed_inline_elements.push(MdInlineElement::Image { alt_text, url: uri });
+                    parsed_inline_elements.push(MdInlineElement::Image {
+                        alt_text,
+                        title: Option::from(title),
+                        url: uri,
+                    });
                 }
             }
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
