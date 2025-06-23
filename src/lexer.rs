@@ -16,6 +16,7 @@ pub enum Token {
     CodeFence,
     ThematicBreak,
     Escape(String),
+    Tab,
     Newline,
 }
 
@@ -107,7 +108,24 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 
                 tokens.push(Token::CloseParenthesis);
             }
+            "\t" => {
+                push_buffer_to_collection(&mut tokens, &mut buffer);
+
+                tokens.push(Token::Tab);
+            }
             " " => {
+                // Will be configurable later, but for now we'll stick to 4 spaces = 1 tab
+                if i + 3 < str_len
+                    && chars[i + 1] == " "
+                    && chars[i + 2] == " "
+                    && chars[i + 3] == " "
+                {
+                    push_buffer_to_collection(&mut tokens, &mut buffer);
+                    tokens.push(Token::Tab);
+                    i += 3;
+                    continue;
+                }
+
                 push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::Whitespace);
