@@ -631,6 +631,44 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                     current_block.extend(line.to_owned());
                 }
             }
+            Some(Token::Tab) => {
+                if line.len() > 1 {
+                    let mut has_content: bool = false;
+                    for idx in 1..line.len() {
+                        match line.get(idx) {
+                            Some(Token::Tab) | Some(Token::Whitespace) => continue,
+                            None => {}
+                            _ => {
+                                has_content = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if has_content {
+                        if !previous_block.is_empty() {
+                            let previous_line_start = previous_block.first();
+                            match previous_line_start {
+                                Some(Token::Punctuation(string))
+                                    if string == "-"
+                                        && previous_block.get(1) == Some(&Token::Whitespace) =>
+                                {
+                                    // If the previous block is a list, then we append the line to it
+                                    previous_block.push(Token::Newline);
+                                    previous_block.extend(line.to_owned());
+                                    blocks.pop();
+                                    blocks.push(previous_block.clone());
+                                }
+                                _ => {
+                                    current_block.extend(line.to_owned());
+                                }
+                            }
+                        } else {
+                            current_block.extend(line.to_owned());
+                        }
+                    }
+                }
+            }
             Some(Token::ThematicBreak) => {
                 if let Some(previous_line_start) = previous_block.first() {
                     match previous_line_start {
