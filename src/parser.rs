@@ -598,16 +598,34 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 blocks.push(line.to_owned());
             }
             Some(Token::Punctuation(string)) if string == "-" => {
-                // Setext heading 2
                 if let Some(previous_line_start) = previous_block.first() {
-                    if matches!(previous_line_start, Token::Text(_)) {
-                        previous_block.insert(0, Token::Punctuation(String::from("#")));
-                        previous_block.insert(1, Token::Punctuation(String::from("#")));
-                        previous_block.insert(2, Token::Whitespace);
+                    match previous_line_start {
+                        Token::Punctuation(string)
+                            if string == "-"
+                                && previous_block.get(1) == Some(&Token::Whitespace) =>
+                        {
+                            // Then it is either the start of a list or part of a list
 
-                        // Swap previous block in
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                            previous_block.push(Token::Newline);
+                            previous_block.extend(line.to_owned());
+                            blocks.pop();
+                            blocks.push(previous_block.clone());
+                        }
+                        Token::Punctuation(string) if string == "#" => {
+                            blocks.push(line.to_owned());
+                        }
+                        _ => {
+                            if line.len() > 1 {
+                                current_block.extend(line.to_owned());
+                            } else {
+                                // Then this is a Setext heading 2
+                                previous_block.insert(0, Token::Punctuation(String::from("#")));
+                                previous_block.insert(1, Token::Punctuation(String::from("#")));
+                                previous_block.insert(2, Token::Whitespace);
+                                blocks.pop();
+                                blocks.push(previous_block.clone());
+                            }
+                        }
                     }
                 } else {
                     current_block.extend(line.to_owned());
