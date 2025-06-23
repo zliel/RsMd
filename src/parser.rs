@@ -254,6 +254,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::OpenBracket => title.push('['),
                             Token::CloseBracket => title.push(']'),
                             Token::OpenParenthesis => title.push('('),
+                            Token::Tab => title.push('\t'),
                             Token::Newline => title.push_str("\\n"),
                             Token::Whitespace => title.push(' '),
                             Token::CodeTick => title.push('`'),
@@ -301,6 +302,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             code_content.push_str(delimiter.to_string().repeat(*length).as_str())
                         }
                         Token::Whitespace => code_content.push(' '),
+                        Token::Tab => code_content.push_str("    "), // 4 spaces for a tab,
+                        // will be changed via configuration later
                         Token::Newline => code_content.push('\n'),
                         Token::ThematicBreak => code_content.push_str("---"),
                         Token::CodeFence => {}
@@ -408,6 +411,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::OpenBracket => title.push('['),
                             Token::CloseBracket => title.push(']'),
                             Token::OpenParenthesis => title.push('('),
+                            Token::Tab => title.push('\t'),
                             Token::Newline => title.push_str("\\n"),
                             Token::Whitespace => title.push(' '),
                             Token::CodeTick => title.push('`'),
