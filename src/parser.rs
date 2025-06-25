@@ -1,5 +1,5 @@
 use crate::lexer::Token;
-use crate::types::{Delimiter, MdBlockElement, MdInlineElement, TokenCursor};
+use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, TokenCursor};
 use crate::utils::push_buffer_to_collection;
 
 pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
@@ -38,11 +38,50 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
+    let list_split_by_newline = list.split(|token| *token == Token::Newline).clone();
+    let mut list_items: Vec<MdListItem> = Vec::new();
+
+    println!("Parsing unordered list: {:?}", list);
+
+    for list in list_split_by_newline {
+        let next_token = list.first();
+        let second_token = list.get(1); // To check for valid list items
+        match next_token {
+            Some(Token::Punctuation(string))
+                if string == "-" && second_token == Some(&Token::Whitespace) =>
+            {
+                let list_item = MdListItem {
+                    content: parse_block(list[2..].to_vec()),
+                };
+
+                list_items.push(list_item);
             }
+            Some(Token::Tab) if list.len() > 1 => {
+                // Check to see how many tabs there are
+                // This helps to ensure we parse the nested lists correctly
+                let mut tab_count = 1;
+                while list.get(tab_count) == Some(&Token::Tab) {
+                    tab_count += 1;
+                }
+
+                let list_item = MdListItem {
+                    content: parse_block(list[tab_count..].to_vec()),
+                };
+
+                list_items.push(list_item);
             }
+            _ => {}
         }
     }
 
+    if list_items.is_empty() {
+        // If there are no list items, return an empty unordered list
+        MdBlockElement::UnorderedList { items: Vec::new() }
+    } else {
+        // Otherwise, it is a list
+        MdBlockElement::UnorderedList { items: list_items }
+    }
 }
 
 fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
