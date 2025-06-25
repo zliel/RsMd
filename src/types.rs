@@ -17,6 +17,9 @@ pub enum MdBlockElement {
     UnorderedList {
         items: Vec<MdListItem>,
     },
+    OrderedList {
+        items: Vec<MdListItem>,
+    },
 }
 
 #[derive(Debug, PartialEq)]

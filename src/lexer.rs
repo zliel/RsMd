@@ -11,6 +11,7 @@ pub enum Token {
     CloseBracket,
     OpenParenthesis,
     CloseParenthesis,
+    OrderedListMarker(String),
     Whitespace,
     CodeTick,
     CodeFence,
@@ -107,6 +108,23 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 tokens.push(Token::CloseParenthesis);
+            }
+            "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => {
+                // Check for valid ordered list marker
+                if i + 2 < str_len && chars[i + 1] == "." && chars[i + 2] == " " {
+                    // Check if the line STARTS with a number followed by a dot and space
+                    if i == 0 || tokens.last() == Some(&Token::Tab) {
+                        push_buffer_to_collection(&mut tokens, &mut buffer);
+                        tokens.push(Token::OrderedListMarker(chars[i].to_owned() + chars[i + 1]));
+                        // tokens.push(Token::Whitespace);
+                        i += 2;
+                        continue;
+                    } else {
+                        // If the line does not start with a number followed by a dot and space,
+                        // treat it as a regular text token
+                        buffer.push_str(chars[i]);
+                    }
+                }
             }
             "\t" => {
                 push_buffer_to_collection(&mut tokens, &mut buffer);

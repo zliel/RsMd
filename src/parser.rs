@@ -27,6 +27,7 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
                 parse_unordered_list(line)
             }
         }
+        Some(Token::OrderedListMarker(_)) => parse_ordered_list(line),
         Some(Token::CodeFence) => parse_codeblock(line),
         Some(Token::ThematicBreak) => MdBlockElement::ThematicBreak,
         Some(Token::Newline) => MdBlockElement::Paragraph {
@@ -38,11 +39,50 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
-fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
+fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
     let list_split_by_newline = list.split(|token| *token == Token::Newline).clone();
     let mut list_items: Vec<MdListItem> = Vec::new();
 
     println!("Parsing unordered list: {:?}", list);
+    for list in list_split_by_newline {
+        let next_token = list.first();
+        let second_token = list.get(1); // To check for valid list items
+        match next_token {
+            Some(Token::OrderedListMarker(_)) if second_token == Some(&Token::Whitespace) => {
+                let list_item = MdListItem {
+                    content: parse_block(list[2..].to_vec()),
+                };
+
+                list_items.push(list_item);
+            }
+            Some(Token::Tab) if list.len() > 1 => {
+                // Check to see how many tabs there are
+                // This helps to ensure we parse the nested lists correctly
+                let mut tab_count = 1;
+                while list.get(tab_count) == Some(&Token::Tab) {
+                    tab_count += 1;
+                }
+
+                let list_item = MdListItem {
+                    content: parse_block(list[tab_count..].to_vec()),
+                };
+
+                list_items.push(list_item);
+            }
+            _ => {}
+        }
+    }
+
+    if list_items.is_empty() {
+        MdBlockElement::OrderedList { items: Vec::new() }
+    } else {
+        MdBlockElement::OrderedList { items: list_items }
+    }
+}
+
+fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
+    let list_split_by_newline = list.split(|token| *token == Token::Newline).clone();
+    let mut list_items: Vec<MdListItem> = Vec::new();
 
     for list in list_split_by_newline {
         let next_token = list.first();
@@ -103,6 +143,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
             Some(Token::Text(string)) | Some(Token::Punctuation(string)) => {
                 line_buffer.push_str(string);
             }
+            Some(Token::OrderedListMarker(string)) => line_buffer.push_str(string),
             Some(Token::Whitespace) => line_buffer.push(' '),
             Some(Token::Newline) => line_buffer.push('\n'),
             Some(Token::ThematicBreak) => line_buffer.push_str("---"),
@@ -237,6 +278,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         Token::Text(string) | Token::Punctuation(string) => {
                             label.push_str(string.as_str())
                         }
+                        Token::OrderedListMarker(string) => label.push_str(string.as_str()),
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => label.push(' '),
                         Token::ThematicBreak => label.push_str("---"),
@@ -275,6 +317,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::Text(string) | Token::Punctuation(string) => {
                                 uri.push_str(string.as_str())
                             }
+                            Token::OrderedListMarker(string) => uri.push_str(string),
                             Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                             Token::Whitespace => is_building_title = true,
                             Token::ThematicBreak => label.push_str("---"),
@@ -295,6 +338,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::Text(string) | Token::Punctuation(string) => {
                                 title.push_str(string)
                             }
+                            Token::OrderedListMarker(string) => title.push_str(string),
                             Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
                             Token::EmphasisRun { delimiter, length } => {
                                 title.push_str(delimiter.to_string().repeat(*length).as_str())
@@ -341,6 +385,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         Token::Text(string) | Token::Punctuation(string) => {
                             code_content.push_str(string)
                         }
+                        Token::OrderedListMarker(string) => code_content.push_str(string),
                         Token::Escape(ch) => code_content.push_str(format!("\\{ch}").as_str()),
                         Token::OpenParenthesis => code_content.push('('),
                         Token::CloseParenthesis => code_content.push(')'),
@@ -396,6 +441,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         Token::Text(string) | Token::Punctuation(string) => {
                             alt_text.push_str(string.as_str())
                         }
+                        Token::OrderedListMarker(string) => alt_text.push_str(string),
                         Token::Escape(ch) => alt_text.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => alt_text.push(' '),
                         Token::ThematicBreak => alt_text.push_str("---"),
@@ -433,6 +479,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::Text(string) | Token::Punctuation(string) => {
                                 uri.push_str(string.as_str())
                             }
+                            Token::OrderedListMarker(string) => uri.push_str(string),
                             Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                             Token::Whitespace => is_building_title = true,
                             Token::ThematicBreak => alt_text.push_str("---"),
@@ -453,6 +500,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             Token::Text(string) | Token::Punctuation(string) => {
                                 title.push_str(string)
                             }
+                            Token::OrderedListMarker(string) => title.push_str(string),
                             Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
                             Token::EmphasisRun { delimiter, length } => {
                                 title.push_str(delimiter.to_string().repeat(*length).as_str())
@@ -490,6 +538,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             }
             Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
             Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
+            Token::OrderedListMarker(string) => buffer.push_str(string.as_str()),
             Token::Whitespace => buffer.push(' '),
             Token::CloseBracket => buffer.push(']'),
             Token::OpenParenthesis => buffer.push('('),
@@ -718,14 +767,48 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                                     blocks.pop();
                                     blocks.push(previous_block.clone());
                                 }
+                                Some(Token::OrderedListMarker(_))
+                                    if previous_block.get(1) == Some(&Token::Whitespace) =>
+                                {
+                                    // If the previous block is an ordered list, then we append the
+                                    // line to it
+                                    previous_block.push(Token::Newline);
+                                    previous_block.extend(line.to_owned());
+                                    blocks.pop();
+                                    blocks.push(previous_block.clone());
+                                }
                                 _ => {
+                                    // If the previous block is not a list, then we just add the
+                                    // line to the current block
                                     current_block.extend(line.to_owned());
                                 }
                             }
                         } else {
+                            // If the previous block is empty, then we just add the line to the
+                            // current block
                             current_block.extend(line.to_owned());
                         }
                     }
+                }
+            }
+            Some(Token::OrderedListMarker(_)) => {
+                if let Some(previous_line_start) = previous_block.first() {
+                    match previous_line_start {
+                        Token::OrderedListMarker(_)
+                            if previous_block.get(1) == Some(&Token::Whitespace) =>
+                        {
+                            // If the previous block is a list, then we append the line to it
+                            previous_block.push(Token::Newline);
+                            previous_block.extend(line.to_owned());
+                            blocks.pop();
+                            blocks.push(previous_block.clone());
+                        }
+                        _ => {
+                            current_block.extend(line.to_owned());
+                        }
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
                 }
             }
             Some(Token::ThematicBreak) => {
