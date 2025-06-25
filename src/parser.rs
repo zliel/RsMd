@@ -26,16 +26,6 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
             } else {
                 parse_unordered_list(line)
             }
-            Some(Token::Text(_)) | Some(Token::Punctuation(_)) => {
-                block_elements.push(MdBlockElement::Paragraph {
-                    content: parse_inline(line),
-                })
-            }
-            Some(Token::OpenBracket) => block_elements.push(MdBlockElement::Paragraph {
-                content: parse_inline(line),
-            }),
-            Some(Token::CodeFence) => {
-                block_elements.push(parse_codeblock(line));
         }
         Some(Token::CodeFence) => parse_codeblock(line),
         Some(Token::ThematicBreak) => MdBlockElement::ThematicBreak,
