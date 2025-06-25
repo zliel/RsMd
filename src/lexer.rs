@@ -80,6 +80,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 }
             }
             "-" => {
+                // Check for thematic break
                 push_buffer_to_collection(&mut tokens, &mut buffer);
 
                 if i + 2 < str_len && chars[i + 1] == "-" && chars[i + 2] == "-" {
