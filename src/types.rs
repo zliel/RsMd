@@ -77,7 +77,7 @@ impl TokenCursor {
         self.tokens.get(self.current_position + n)
     }
 
-    pub fn peek_behind(&self, n: usize) -> Option<&Token> {
+    pub fn _peek_behind(&self, n: usize) -> Option<&Token> {
         self.tokens.get(self.current_position - n)
     }
 
@@ -87,7 +87,7 @@ impl TokenCursor {
         }
     }
 
-    pub fn set_position(&mut self, pos: usize) {
+    pub fn _set_position(&mut self, pos: usize) {
         if pos < self.tokens.len() {
             self.current_position = pos;
         } else {
