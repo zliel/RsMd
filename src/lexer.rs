@@ -122,7 +122,7 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                 {
                     push_buffer_to_collection(&mut tokens, &mut buffer);
                     tokens.push(Token::Tab);
-                    i += 3;
+                    i += 4;
                     continue;
                 }
 
