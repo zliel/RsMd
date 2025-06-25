@@ -21,7 +21,7 @@ pub enum MdBlockElement {
 
 #[derive(Debug, PartialEq)]
 pub struct MdListItem {
-    content: Vec<MdBlockElement>,
+    pub content: MdBlockElement,
 }
 
 #[derive(Debug, PartialEq, Clone)]
