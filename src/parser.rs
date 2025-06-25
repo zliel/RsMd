@@ -6,11 +6,25 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
 
     for line in markdown_lines {
-        let first_token = line.first();
+        block_elements.push(parse_block(line));
+    }
 
-        match first_token {
-            Some(Token::Punctuation(string)) if string == "#" => {
-                block_elements.push(parse_heading(line));
+    block_elements
+}
+
+fn parse_block(line: Vec<Token>) -> MdBlockElement {
+    let first_token = line.first();
+
+    match first_token {
+        Some(Token::Punctuation(string)) if string == "#" => parse_heading(line),
+        Some(Token::Punctuation(string)) if string == "-" => {
+            // Note that setext headings have already been handled in the group_lines_to_blocks
+            // function by this point
+            if line.len() == 1 {
+                // If the line only contains a dash, then it is a thematic break
+                MdBlockElement::ThematicBreak
+            } else {
+                parse_unordered_list(line)
             }
             Some(Token::Text(_)) | Some(Token::Punctuation(_)) => {
                 block_elements.push(MdBlockElement::Paragraph {
@@ -22,18 +36,23 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
             }),
             Some(Token::CodeFence) => {
                 block_elements.push(parse_codeblock(line));
+        }
+        Some(Token::CodeFence) => parse_codeblock(line),
+        Some(Token::ThematicBreak) => MdBlockElement::ThematicBreak,
+        Some(Token::Newline) => MdBlockElement::Paragraph {
+            content: Vec::new(),
+        },
+        _ => MdBlockElement::Paragraph {
+            content: parse_inline(line),
+        },
+    }
+}
+
             }
-            Some(Token::ThematicBreak) => {
-                block_elements.push(MdBlockElement::ThematicBreak);
             }
-            Some(Token::Newline) => {}
-            _ => block_elements.push(MdBlockElement::Paragraph {
-                content: parse_inline(line),
-            }),
         }
     }
 
-    block_elements
 }
 
 fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
