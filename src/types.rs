@@ -158,7 +158,7 @@ impl Delimiter {
 
         let delimiter_char = self.ch;
 
-        // Apply Rule of 3 (underscore restrictions)
+        // Apply Rule of 3 and underscore restrictions
         let is_underscore = delimiter_char == '_';
 
         if is_underscore {

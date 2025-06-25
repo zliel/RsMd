@@ -43,7 +43,6 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
     let list_split_by_newline = list.split(|token| *token == Token::Newline).clone();
     let mut list_items: Vec<MdListItem> = Vec::new();
 
-    println!("Parsing unordered list: {:?}", list);
     for list in list_split_by_newline {
         let next_token = list.first();
         let second_token = list.get(1); // To check for valid list items
@@ -683,6 +682,7 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
     for line in lines {
         previous_block = blocks.last().unwrap_or(&Vec::new()).to_vec();
 
+        // Appending all tokens between two code fences to one block
         if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
             // If we are inside a code block, then we just append the line to the current block
             previous_block.extend(line.to_owned());
@@ -754,6 +754,8 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                     }
 
                     if has_content {
+                        // If there is content after the tab, then we append it to the previous
+                        // block
                         if !previous_block.is_empty() {
                             let previous_line_start = previous_block.first();
                             match previous_line_start {
@@ -812,6 +814,8 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 }
             }
             Some(Token::ThematicBreak) => {
+                // Check if the previous line starts with anything other than a heading
+                // If so, then this is actually a setext heading 2
                 if let Some(previous_line_start) = previous_block.first() {
                     match previous_line_start {
                         Token::Punctuation(string) if string == "#" => {
@@ -822,7 +826,6 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                             previous_block.insert(0, Token::Punctuation(String::from("#")));
                             previous_block.insert(1, Token::Punctuation(String::from("#")));
                             previous_block.insert(2, Token::Whitespace);
-
                             blocks.pop();
                             blocks.push(previous_block.clone());
                         }
