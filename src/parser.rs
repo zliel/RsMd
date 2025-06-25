@@ -376,6 +376,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                 if cursor.peek_ahead(1) != Some(&Token::OpenBracket) {
                     // If the next token is not an open bracket, treat it as text
                     buffer.push('!');
+                    cursor.advance();
                     continue;
                 }
 
