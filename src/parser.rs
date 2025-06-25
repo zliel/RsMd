@@ -515,6 +515,16 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 }
 
 fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [Delimiter]) {
+    if delimiter_stack.len() == 1 {
+        // If there is only one delimiter, it cannot be resolved to emphasis
+        if delimiter_stack[0].active {
+            elements[delimiter_stack[0].parsed_position] = MdInlineElement::Text {
+                content: delimiter_stack[0].ch.to_string(),
+            };
+        }
+        return;
+    }
+
     for i in 0..delimiter_stack.len() {
         if !delimiter_stack[i].active || !delimiter_stack[i].can_close {
             continue;
