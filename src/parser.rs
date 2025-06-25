@@ -274,10 +274,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                             inner_parsed_elements.push(MdInlineElement::Placeholder);
                         }
-                        Token::Text(string) | Token::Punctuation(string) => {
-                            label.push_str(string.as_str())
-                        }
-                        Token::OrderedListMarker(string) => label.push_str(string.as_str()),
+                        Token::Text(string) | Token::Punctuation(string) => label.push_str(string),
+                        Token::OrderedListMarker(string) => label.push_str(string),
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => label.push(' '),
                         Token::ThematicBreak => label.push_str("---"),
@@ -314,7 +312,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         match next_token {
                             Token::CloseParenthesis => break,
                             Token::Text(string) | Token::Punctuation(string) => {
-                                uri.push_str(string.as_str())
+                                uri.push_str(string)
                             }
                             Token::OrderedListMarker(string) => uri.push_str(string),
                             Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
@@ -438,7 +436,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         Token::OpenParenthesis => alt_text.push('('),
                         Token::CloseParenthesis => alt_text.push(')'),
                         Token::Text(string) | Token::Punctuation(string) => {
-                            alt_text.push_str(string.as_str())
+                            alt_text.push_str(string)
                         }
                         Token::OrderedListMarker(string) => alt_text.push_str(string),
                         Token::Escape(ch) => alt_text.push_str(format!("\\{ch}").as_str()),
@@ -476,7 +474,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         match next_token {
                             Token::CloseParenthesis => break,
                             Token::Text(string) | Token::Punctuation(string) => {
-                                uri.push_str(string.as_str())
+                                uri.push_str(string)
                             }
                             Token::OrderedListMarker(string) => uri.push_str(string),
                             Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
