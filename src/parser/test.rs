@@ -191,6 +191,8 @@ mod inline {
 }
 
 mod block {
+    use crate::parser::{group_lines_to_blocks, parse_blocks};
+
     use super::*;
 
     #[test]
@@ -250,6 +252,243 @@ mod block {
                     }
                 ]
             }
+        )
+    }
+
+    #[test]
+    fn test_paragraph() {
+        assert_eq!(
+            parse_block(tokenize("This is a paragraph.")),
+            Paragraph {
+                content: vec![Text {
+                    content: String::from("This is a paragraph.")
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_multiple_paragraphs() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("First paragraph."),
+                tokenize("Second paragraph.")
+            ])),
+            vec![Paragraph {
+                content: vec![Text {
+                    content: String::from("First paragraph. Second paragraph.")
+                }]
+            }]
+        );
+    }
+
+    #[test]
+    fn test_multiline_paragraphs() {
+        assert_eq!(
+            parse_block(tokenize("First line.\nSecond line.")),
+            Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from("First line.")
+                    },
+                    Text {
+                        content: String::from("Second line.")
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_paragraph_with_emphasis() {
+        assert_eq!(
+            parse_block(tokenize("This is a paragraph with **bold text**.")),
+            Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from("This is a paragraph with ")
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("bold text")
+                        }]
+                    },
+                    Text {
+                        content: String::from(".")
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_paragraph_with_mixed_emphasis() {
+        assert_eq!(
+            parse_block(tokenize(
+                "This is a paragraph with **bold text** and *italic text*."
+            )),
+            Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from("This is a paragraph with ")
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("bold text")
+                        }]
+                    },
+                    Text {
+                        content: String::from(" and ")
+                    },
+                    Italic {
+                        content: vec![Text {
+                            content: String::from("italic text")
+                        }]
+                    },
+                    Text {
+                        content: String::from(".")
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_paragraph_with_link() {
+        assert_eq!(
+            parse_block(tokenize(
+                "This is a paragraph with [a link](http://example.com)."
+            )),
+            Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from("This is a paragraph with ")
+                    },
+                    Link {
+                        text: vec![Text {
+                            content: String::from("a link")
+                        }],
+                        title: Some(String::from("")),
+                        url: String::from("http://example.com")
+                    },
+                    Text {
+                        content: String::from(".")
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_paragraph_with_image_and_emphasis() {
+        assert_eq!(
+            parse_block(tokenize(
+                "This is a paragraph with ![an image](http://example.com/image.png) and **bold text**."
+            )),
+            Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from("This is a paragraph with ")
+                    },
+                    Image {
+                        alt_text: String::from("an image"),
+                        title: Some(String::from("")),
+                        url: String::from("http://example.com/image.png")
+                    },
+                    Text {
+                        content: String::from(" and ")
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("bold text")
+                        }]
+                    },
+                    Text {
+                        content: String::from(".")
+                    }
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_complex_paragraph() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize(
+                    "This is a paragraph with **bold text**, *italic text*, and [a link](http://example.com)."
+                ),
+                tokenize(
+                    "It also contains ![an image](http://example.com/image.png) and some `inline code`."
+                ),
+                tokenize("It also contains a `code span`, and the following code block:"),
+                tokenize("```rust"),
+                tokenize("fn main() {"),
+                tokenize("    println!(\"Hello, world!\");"),
+                tokenize("}"),
+                tokenize("```")
+            ])),
+            vec![
+                Paragraph {
+                    content: vec![
+                        Text {
+                            content: String::from("This is a paragraph with ")
+                        },
+                        Bold {
+                            content: vec![Text {
+                                content: String::from("bold text")
+                            }]
+                        },
+                        Text {
+                            content: String::from(", ")
+                        },
+                        Italic {
+                            content: vec![Text {
+                                content: String::from("italic text")
+                            }]
+                        },
+                        Text {
+                            content: String::from(", and ")
+                        },
+                        Link {
+                            text: vec![Text {
+                                content: String::from("a link")
+                            }],
+                            title: Some(String::from("")),
+                            url: String::from("http://example.com")
+                        },
+                        Text {
+                            content: String::from(". It also contains ")
+                        },
+                        Image {
+                            alt_text: String::from("an image"),
+                            title: Some(String::from("")),
+                            url: String::from("http://example.com/image.png")
+                        },
+                        Text {
+                            content: String::from(" and some ")
+                        },
+                        Code {
+                            content: String::from("inline code")
+                        },
+                        Text {
+                            content: String::from(". It also contains a ")
+                        },
+                        Code {
+                            content: String::from("code span")
+                        },
+                        Text {
+                            content: String::from(", and the following code block:")
+                        }
+                    ]
+                },
+                CodeBlock {
+                    language: Some(String::from("rust")),
+                    lines: vec![String::from(
+                        "fn main() {\nprintln!(\"Hello, world!\");\n}\n"
+                    )]
+                }
+            ]
         )
     }
 }
