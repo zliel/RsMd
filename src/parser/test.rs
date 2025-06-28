@@ -1,5 +1,5 @@
 use crate::lexer::tokenize;
-use crate::parser::parse_inline;
+use crate::parser::{parse_block, parse_inline};
 use crate::types::{MdBlockElement::*, MdInlineElement::*, *};
 
 mod inline {
@@ -190,61 +190,66 @@ mod inline {
     }
 }
 
-// #[test]
-// fn test_heading() {
-//     assert_eq!(
-//         parse_markdown("# Heading 1"),
-//         vec![Header {
-//             level: 1,
-//             content: vec![Text {
-//                 content: String::from("Heading 1")
-//             }]
-//         }]
-//     );
-// }
-//
-// #[test]
-// fn test_multilevel_heading() {
-//     assert_eq!(
-//         parse_markdown("### Heading 3"),
-//         vec![Header {
-//             level: 3,
-//             content: vec![Text {
-//                 content: String::from("Heading 3")
-//             }]
-//         }]
-//     );
-// }
-//
-// #[test]
-// fn test_heading_with_internal_hashes() {
-//     assert_eq!(
-//         parse_markdown("## Heading 2 with #internal #hashes"),
-//         vec![Header {
-//             level: 2,
-//             content: vec![Text {
-//                 content: String::from("Heading 2 with #internal #hashes")
-//             }]
-//         }]
-//     );
-// }
-//
-// #[test]
-// fn test_heading_with_emphases() {
-//     assert_eq!(
-//         parse_markdown("## Heading 2 with **bold words**"),
-//         vec![Header {
-//             level: 2,
-//             content: vec![
-//                 Text {
-//                     content: String::from("Heading 2 with ")
-//                 },
-//                 Bold {
-//                     content: vec![Text {
-//                         content: String::from("bold words")
-//                     }]
-//                 }
-//             ]
-//         }]
-//     )
-// }
+mod block {
+    use super::*;
+
+    #[test]
+    fn test_heading() {
+        println!("{:?}", tokenize("# Heading 1"));
+        assert_eq!(
+            parse_block(tokenize("# Heading 1")),
+            Header {
+                level: 1,
+                content: vec![Text {
+                    content: String::from("Heading 1")
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_multilevel_heading() {
+        assert_eq!(
+            parse_block(tokenize("### Heading 3")),
+            Header {
+                level: 3,
+                content: vec![Text {
+                    content: String::from("Heading 3")
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_heading_with_internal_hashes() {
+        assert_eq!(
+            parse_block(tokenize("## Heading 2 with #internal #hashes")),
+            Header {
+                level: 2,
+                content: vec![Text {
+                    content: String::from("Heading 2 with #internal #hashes")
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_heading_with_emphases() {
+        assert_eq!(
+            parse_block(tokenize("## Heading 2 with **bold words**")),
+            Header {
+                level: 2,
+                content: vec![
+                    Text {
+                        content: String::from("Heading 2 with ")
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("bold words")
+                        }]
+                    }
+                ]
+            }
+        )
+    }
+}
