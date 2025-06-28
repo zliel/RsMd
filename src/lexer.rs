@@ -125,6 +125,8 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                         // treat it as a regular text token
                         buffer.push_str(chars[i]);
                     }
+                } else {
+                    buffer.push_str(chars[i]);
                 }
             }
             "\t" => {
