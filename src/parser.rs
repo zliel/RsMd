@@ -257,10 +257,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                             break;
                         }
                         Token::EmphasisRun { delimiter, length } => {
-                            push_buffer_to_collection(
-                                &mut inner_parsed_elements,
-                                &mut label.clone(),
-                            );
+                            push_buffer_to_collection(&mut inner_parsed_elements, &mut label);
 
                             inner_delimiter_stack.push(Delimiter {
                                 run_length: *length,
@@ -279,6 +276,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                         Token::Escape(ch) => label.push_str(format!("\\{ch}").as_str()),
                         Token::Whitespace => label.push(' '),
                         Token::ThematicBreak => label.push_str("---"),
+                        Token::OpenParenthesis => label.push('('),
+                        Token::CloseParenthesis => label.push(')'),
                         _ => {}
                     }
 
@@ -299,6 +298,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
                     parsed_inline_elements.push(MdInlineElement::Text {
                         content: format!("[{label}]"),
                     });
+                    cursor.advance();
                     continue;
                 }
 
@@ -621,7 +621,7 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
             } else {
                 closer.parsed_position + 1
             };
-            //
+
             // Map the delimiters used to bold/italic respectively
             let element_to_insert = match delimiters_used {
                 2 => MdInlineElement::Bold {
