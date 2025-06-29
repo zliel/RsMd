@@ -196,7 +196,7 @@ mod block {
     use super::*;
 
     #[test]
-    fn test_heading() {
+    fn heading() {
         println!("{:?}", tokenize("# Heading 1"));
         assert_eq!(
             parse_block(tokenize("# Heading 1")),
@@ -210,7 +210,7 @@ mod block {
     }
 
     #[test]
-    fn test_multilevel_heading() {
+    fn multilevel_heading() {
         assert_eq!(
             parse_block(tokenize("### Heading 3")),
             Header {
@@ -223,7 +223,7 @@ mod block {
     }
 
     #[test]
-    fn test_heading_with_internal_hashes() {
+    fn heading_with_internal_hashes() {
         assert_eq!(
             parse_block(tokenize("## Heading 2 with #internal #hashes")),
             Header {
@@ -236,7 +236,7 @@ mod block {
     }
 
     #[test]
-    fn test_heading_with_emphases() {
+    fn heading_with_emphases() {
         assert_eq!(
             parse_block(tokenize("## Heading 2 with **bold words**")),
             Header {
@@ -256,7 +256,7 @@ mod block {
     }
 
     #[test]
-    fn test_paragraph() {
+    fn paragraph() {
         assert_eq!(
             parse_block(tokenize("This is a paragraph.")),
             Paragraph {
@@ -268,7 +268,7 @@ mod block {
     }
 
     #[test]
-    fn test_multiple_paragraphs() {
+    fn multiple_paragraphs() {
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("First paragraph."),
@@ -283,7 +283,7 @@ mod block {
     }
 
     #[test]
-    fn test_multiline_paragraphs() {
+    fn multiline_paragraphs() {
         assert_eq!(
             parse_block(tokenize("First line.\nSecond line.")),
             Paragraph {
@@ -300,7 +300,7 @@ mod block {
     }
 
     #[test]
-    fn test_paragraph_with_emphasis() {
+    fn paragraph_with_emphasis() {
         assert_eq!(
             parse_block(tokenize("This is a paragraph with **bold text**.")),
             Paragraph {
@@ -322,7 +322,7 @@ mod block {
     }
 
     #[test]
-    fn test_paragraph_with_mixed_emphasis() {
+    fn paragraph_with_mixed_emphasis() {
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with **bold text** and *italic text*."
@@ -354,7 +354,7 @@ mod block {
     }
 
     #[test]
-    fn test_paragraph_with_link() {
+    fn paragraph_with_link() {
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with [a link](http://example.com)."
@@ -380,7 +380,7 @@ mod block {
     }
 
     #[test]
-    fn test_paragraph_with_image_and_emphasis() {
+    fn paragraph_with_image_and_emphasis() {
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with ![an image](http://example.com/image.png) and **bold text**."
@@ -412,7 +412,7 @@ mod block {
     }
 
     #[test]
-    fn test_complex_paragraph() {
+    fn complex_paragraph() {
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize(
