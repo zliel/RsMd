@@ -166,6 +166,80 @@ fn unicode() {
 }
 
 #[test]
+fn thematic_break() {
+    assert_eq!(tokenize("---"), vec![ThematicBreak]);
+}
+
+#[test]
+fn code_tick() {
+    assert_eq!(
+        tokenize("`code`"),
+        vec![CodeTick, Text(String::from("code")), CodeTick]
+    );
+}
+
+#[test]
+fn code_fence() {
+    assert_eq!(
+        tokenize("```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"),
+        vec![
+            CodeFence,
+            Text(String::from("rust")),
+            Newline,
+            Text(String::from("fn")),
+            Whitespace,
+            Text(String::from("main")),
+            OpenParenthesis,
+            CloseParenthesis,
+            Whitespace,
+            Punctuation(String::from("{")),
+            Newline,
+            Tab,
+            Text(String::from("println")),
+            Punctuation(String::from("!")),
+            OpenParenthesis,
+            Punctuation(String::from("\"")),
+            Text(String::from("Hello")),
+            Punctuation(String::from(",")),
+            Whitespace,
+            Text(String::from("world")),
+            Punctuation(String::from("!")),
+            Punctuation(String::from("\"")),
+            CloseParenthesis,
+            Punctuation(String::from(";")),
+            Newline,
+            Punctuation(String::from("}")),
+            Newline,
+            CodeFence
+        ]
+    )
+}
+
+#[test]
+fn escape_sequence() {
+    assert_eq!(
+        tokenize("\\*escaped asterisk\\*"),
+        vec![
+            Escape(String::from("*")),
+            Text(String::from("escaped")),
+            Whitespace,
+            Text(String::from("asterisk")),
+            Escape(String::from("*"))
+        ]
+    );
+}
+
+#[test]
+fn tab() {
+    assert_eq!(tokenize("\t"), vec![Tab]);
+}
+
+#[test]
+fn tab_via_spaces() {
+    assert_eq!(tokenize("    "), vec![Tab]);
+}
+
+#[test]
 fn unicode_mixed() {
     assert_eq!(
         tokenize("**これ** means \"This\"!"),
