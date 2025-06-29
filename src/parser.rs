@@ -75,15 +75,18 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
                         break;
                     }
                 }
+
                 if !nested_lines.is_empty() {
                     // Flatten nested lines into a single Vec<Token> separated by Newline
                     let mut nested_tokens: Vec<Token> = Vec::new();
+
                     for (k, l) in nested_lines.into_iter().enumerate() {
                         if k > 0 {
                             nested_tokens.push(Token::Newline);
                         }
                         nested_tokens.extend(l);
                     }
+
                     let nested_block =
                         if let Some(Token::OrderedListMarker(_)) = nested_tokens.first() {
                             parse_ordered_list(nested_tokens)
@@ -94,6 +97,7 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
                     list_items.push(MdListItem {
                         content: nested_block,
                     });
+
                     i = j - 1; // Skip processed nested lines
                 }
             }
@@ -126,6 +130,7 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
 
                 // Check for consecutive tab-indented lines (nested list)
                 let mut nested_lines: Vec<Vec<Token>> = Vec::new();
+
                 let mut j = i + 1;
                 while j < lists_split_by_newline.len() {
                     let nested_line = lists_split_by_newline[j];
@@ -140,15 +145,18 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
                         break;
                     }
                 }
+
                 if !nested_lines.is_empty() {
                     // Flatten nested lines into a single Vec<Token> separated by Newline
                     let mut nested_tokens: Vec<Token> = Vec::new();
+
                     for (k, l) in nested_lines.into_iter().enumerate() {
                         if k > 0 {
                             nested_tokens.push(Token::Newline);
                         }
                         nested_tokens.extend(l);
                     }
+
                     let nested_block =
                         if let Some(Token::OrderedListMarker(_)) = nested_tokens.first() {
                             parse_ordered_list(nested_tokens)
