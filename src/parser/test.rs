@@ -755,4 +755,26 @@ mod block {
             }]
         )
     }
+
+    #[test]
+    fn code_block() {
+        assert_eq!(
+            parse_block(tokenize("```\ncode block\n```")),
+            CodeBlock {
+                language: None,
+                lines: vec![String::from("code block\n")]
+            }
+        );
+    }
+
+    #[test]
+    fn fenced_code_block_with_language() {
+        assert_eq!(
+            parse_block(tokenize("```rust\nfn main() {}\n```")),
+            CodeBlock {
+                language: Some(String::from("rust")),
+                lines: vec![String::from("\nfn main() {}\n")]
+            }
+        );
+    }
 }
