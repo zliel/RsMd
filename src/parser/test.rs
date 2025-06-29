@@ -1,6 +1,6 @@
 use crate::lexer::tokenize;
 use crate::parser::{parse_block, parse_inline};
-use crate::types::{MdBlockElement::*, MdInlineElement::*, *};
+use crate::types::{MdBlockElement::*, MdInlineElement::*, MdListItem};
 
 mod inline {
     use super::*;
@@ -489,6 +489,270 @@ mod block {
                     )]
                 }
             ]
+        )
+    }
+
+    #[test]
+    fn unordered_list() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("- Item 1"),
+                tokenize("- Item 2")
+            ])),
+            vec![UnorderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 1")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 2")
+                            }]
+                        }
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
+    fn unordered_list_with_nested_items() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("- Item 1"),
+                tokenize("    - Nested Item 1.1"),
+                tokenize("    - Nested Item 1.2"),
+                tokenize("- Item 2")
+            ])),
+            vec![UnorderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 1")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: UnorderedList {
+                            items: vec![
+                                MdListItem {
+                                    content: Paragraph {
+                                        content: vec![Text {
+                                            content: String::from("Nested Item 1.1")
+                                        }]
+                                    }
+                                },
+                                MdListItem {
+                                    content: Paragraph {
+                                        content: vec![Text {
+                                            content: String::from("Nested Item 1.2")
+                                        }]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 2")
+                            }]
+                        }
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
+    fn unordered_list_with_inlines() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. **Bold Item 1**"),
+                tokenize("2. *Italic Item 2*"),
+                tokenize("3. [Link Item 3](http://example.com)"),
+                tokenize("4. ![Image Item 4](http://example.com/image.png)"),
+            ])),
+            vec![OrderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Bold {
+                                content: vec![Text {
+                                    content: String::from("Bold Item 1")
+                                }]
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Italic {
+                                content: vec![Text {
+                                    content: String::from("Italic Item 2")
+                                }]
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Link {
+                                text: vec![Text {
+                                    content: String::from("Link Item 3")
+                                }],
+                                title: Some(String::from("")),
+                                url: String::from("http://example.com")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Image {
+                                alt_text: String::from("Image Item 4"),
+                                title: Some(String::from("")),
+                                url: String::from("http://example.com/image.png")
+                            }]
+                        }
+                    }
+                ]
+            }]
+        )
+    }
+
+    #[test]
+    fn ordered_list() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. First"),
+                tokenize("2. Second")
+            ])),
+            vec![OrderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("First")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Second")
+                            }]
+                        }
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
+    fn ordered_list_with_nested_items() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. Item 1"),
+                tokenize("    1. Nested Item 1.1"),
+                tokenize("    2. Nested Item 1.2"),
+                tokenize("2. Item 2")
+            ])),
+            vec![OrderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 1")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: OrderedList {
+                            items: vec![
+                                MdListItem {
+                                    content: Paragraph {
+                                        content: vec![Text {
+                                            content: String::from("Nested Item 1.1")
+                                        }]
+                                    }
+                                },
+                                MdListItem {
+                                    content: Paragraph {
+                                        content: vec![Text {
+                                            content: String::from("Nested Item 1.2")
+                                        }]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Text {
+                                content: String::from("Item 2")
+                            }]
+                        }
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
+    fn ordered_list_with_inlines() {
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. **Bold Item 1**"),
+                tokenize("2. *Italic Item 2*"),
+                tokenize("3. [Link Item 3](http://example.com)"),
+                tokenize("4. ![Image Item 4](http://example.com/image.png)"),
+            ])),
+            vec![OrderedList {
+                items: vec![
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Bold {
+                                content: vec![Text {
+                                    content: String::from("Bold Item 1")
+                                }]
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Italic {
+                                content: vec![Text {
+                                    content: String::from("Italic Item 2")
+                                }]
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Link {
+                                text: vec![Text {
+                                    content: String::from("Link Item 3")
+                                }],
+                                title: Some(String::from("")),
+                                url: String::from("http://example.com")
+                            }]
+                        }
+                    },
+                    MdListItem {
+                        content: Paragraph {
+                            content: vec![Image {
+                                alt_text: String::from("Image Item 4"),
+                                title: Some(String::from("")),
+                                url: String::from("http://example.com/image.png")
+                            }]
+                        }
+                    }
+                ]
+            }]
         )
     }
 }
