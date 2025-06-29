@@ -1,12 +1,12 @@
 use crate::lexer::{Token::*, *};
 
 #[test]
-fn test_lexer_text() {
+fn text() {
     assert_eq!(tokenize("Hello"), vec![Text(String::from("Hello"))]);
 }
 
 #[test]
-fn test_lexer_punctuation() {
+fn punctuation() {
     assert_eq!(
         tokenize(".-..-,"),
         vec![
@@ -21,17 +21,17 @@ fn test_lexer_punctuation() {
 }
 
 #[test]
-fn test_lexer_whitespace() {
+fn whitespace() {
     assert_eq!(tokenize(" "), vec![Whitespace]);
 }
 
 #[test]
-fn test_lexer_newline() {
+fn newline() {
     assert_eq!(tokenize("\n"), vec![Newline]);
 }
 
 #[test]
-fn test_lexer_italic() {
+fn italic() {
     assert_eq!(
         tokenize("*italic*"),
         vec![
@@ -49,7 +49,7 @@ fn test_lexer_italic() {
 }
 
 #[test]
-fn test_lexer_bold() {
+fn bold() {
     assert_eq!(
         tokenize("**bold**"),
         vec![
@@ -67,7 +67,7 @@ fn test_lexer_bold() {
 }
 
 #[test]
-fn test_lexer_mixed_asterisks() {
+fn mixed_asterisks() {
     assert_eq!(
         tokenize("***bold + italic***"),
         vec![
@@ -89,7 +89,7 @@ fn test_lexer_mixed_asterisks() {
 }
 
 #[test]
-fn test_lexer_link() {
+fn link() {
     assert_eq!(
         tokenize("More information available [here](https://www.example.com)"),
         vec![
@@ -118,7 +118,7 @@ fn test_lexer_link() {
 }
 
 #[test]
-fn test_lexer_emphasis_in_link() {
+fn emphasis_in_link() {
     assert_eq!(
         tokenize("[*italic **bold+italic***](https://www.example.com)"),
         vec![
@@ -155,7 +155,7 @@ fn test_lexer_emphasis_in_link() {
 }
 
 #[test]
-fn test_lexer_unicode() {
+fn unicode() {
     assert_eq!(
         tokenize("これは正解です。"),
         vec![
@@ -166,7 +166,7 @@ fn test_lexer_unicode() {
 }
 
 #[test]
-fn test_lexer_unicode_mixed() {
+fn unicode_mixed() {
     assert_eq!(
         tokenize("**これ** means \"This\"!"),
         vec![
