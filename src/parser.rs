@@ -90,6 +90,7 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
                         } else {
                             parse_unordered_list(nested_tokens)
                         };
+
                     list_items.push(MdListItem {
                         content: nested_block,
                     });
