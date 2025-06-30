@@ -31,7 +31,7 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
 ///
 /// # Returns
 ///
-/// A parsed block-level Markdown element.
+/// An Option<MdBlockElement>, returning `None` for empty lines
 fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     let first_token = line.first();
 
