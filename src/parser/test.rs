@@ -200,12 +200,12 @@ mod block {
         println!("{:?}", tokenize("# Heading 1"));
         assert_eq!(
             parse_block(tokenize("# Heading 1")),
-            Header {
+            Some(Header {
                 level: 1,
                 content: vec![Text {
                     content: String::from("Heading 1")
                 }]
-            }
+            })
         );
     }
 
@@ -213,12 +213,12 @@ mod block {
     fn multilevel_heading() {
         assert_eq!(
             parse_block(tokenize("### Heading 3")),
-            Header {
+            Some(Header {
                 level: 3,
                 content: vec![Text {
                     content: String::from("Heading 3")
                 }]
-            }
+            })
         );
     }
 
@@ -226,12 +226,12 @@ mod block {
     fn heading_with_internal_hashes() {
         assert_eq!(
             parse_block(tokenize("## Heading 2 with #internal #hashes")),
-            Header {
+            Some(Header {
                 level: 2,
                 content: vec![Text {
                     content: String::from("Heading 2 with #internal #hashes")
                 }]
-            }
+            })
         );
     }
 
@@ -239,7 +239,7 @@ mod block {
     fn heading_with_emphases() {
         assert_eq!(
             parse_block(tokenize("## Heading 2 with **bold words**")),
-            Header {
+            Some(Header {
                 level: 2,
                 content: vec![
                     Text {
@@ -251,7 +251,7 @@ mod block {
                         }]
                     }
                 ]
-            }
+            })
         )
     }
 
@@ -259,11 +259,11 @@ mod block {
     fn paragraph() {
         assert_eq!(
             parse_block(tokenize("This is a paragraph.")),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![Text {
                     content: String::from("This is a paragraph.")
                 }]
-            }
+            })
         );
     }
 
@@ -286,7 +286,7 @@ mod block {
     fn multiline_paragraphs() {
         assert_eq!(
             parse_block(tokenize("First line.\nSecond line.")),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![
                     Text {
                         content: String::from("First line.")
@@ -295,7 +295,7 @@ mod block {
                         content: String::from("Second line.")
                     }
                 ]
-            }
+            })
         );
     }
 
@@ -303,7 +303,7 @@ mod block {
     fn paragraph_with_emphasis() {
         assert_eq!(
             parse_block(tokenize("This is a paragraph with **bold text**.")),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![
                     Text {
                         content: String::from("This is a paragraph with ")
@@ -317,7 +317,7 @@ mod block {
                         content: String::from(".")
                     }
                 ]
-            }
+            })
         );
     }
 
@@ -327,7 +327,7 @@ mod block {
             parse_block(tokenize(
                 "This is a paragraph with **bold text** and *italic text*."
             )),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![
                     Text {
                         content: String::from("This is a paragraph with ")
@@ -349,7 +349,7 @@ mod block {
                         content: String::from(".")
                     }
                 ]
-            }
+            })
         );
     }
 
@@ -359,7 +359,7 @@ mod block {
             parse_block(tokenize(
                 "This is a paragraph with [a link](http://example.com)."
             )),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![
                     Text {
                         content: String::from("This is a paragraph with ")
@@ -375,7 +375,7 @@ mod block {
                         content: String::from(".")
                     }
                 ]
-            }
+            })
         );
     }
 
@@ -385,7 +385,7 @@ mod block {
             parse_block(tokenize(
                 "This is a paragraph with ![an image](http://example.com/image.png) and **bold text**."
             )),
-            Paragraph {
+            Some(Paragraph {
                 content: vec![
                     Text {
                         content: String::from("This is a paragraph with ")
@@ -407,7 +407,7 @@ mod block {
                         content: String::from(".")
                     }
                 ]
-            }
+            })
         );
     }
 
@@ -760,10 +760,10 @@ mod block {
     fn code_block() {
         assert_eq!(
             parse_block(tokenize("```\ncode block\n```")),
-            CodeBlock {
+            Some(CodeBlock {
                 language: None,
                 lines: vec![String::from("code block\n")]
-            }
+            })
         );
     }
 
@@ -771,10 +771,10 @@ mod block {
     fn fenced_code_block_with_language() {
         assert_eq!(
             parse_block(tokenize("```rust\nfn main() {}\n```")),
-            CodeBlock {
+            Some(CodeBlock {
                 language: Some(String::from("rust")),
                 lines: vec![String::from("\nfn main() {}\n")]
-            }
+            })
         );
     }
 }
