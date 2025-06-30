@@ -2,6 +2,15 @@ use crate::lexer::Token;
 use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, TokenCursor};
 use crate::utils::push_buffer_to_collection;
 
+/// Parses a vector of tokenized markdown lines into a vector of block-level Markdown elements.
+///
+/// # Arguments
+///
+/// * `markdown_lines` - A vector of vectors, where each inner vector contains tokens representing a line of markdown.
+///
+/// # Returns
+///
+/// A vector of parsed block-level Markdown elements.
 pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
 
@@ -12,6 +21,15 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     block_elements
 }
 
+/// Parses a single line of tokens into a block-level Markdown element.
+///
+/// # Arguments
+///
+/// * `line` - A vector of tokens representing a single line of markdown.
+///
+/// # Returns
+///
+/// A parsed block-level Markdown element.
 fn parse_block(line: Vec<Token>) -> MdBlockElement {
     let first_token = line.first();
 
@@ -39,6 +57,17 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Parses a vector of tokens representing an ordered list into an `MdBlockElement::OrderedList`.
+///
+/// Handles nested lists and list items split by newlines.
+///
+/// # Arguments
+///
+/// * `list` - A vector of tokens representing an ordered list.
+///
+/// # Returns
+///
+/// An `MdBlockElement` representing the ordered list.
 fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
     let lists_split_by_newline = list
         .split(|token| *token == Token::Newline)
@@ -109,6 +138,17 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
     MdBlockElement::OrderedList { items: list_items }
 }
 
+/// Parses a vector of tokens representing an unordered list into an `MdBlockElement::UnorderedList`.
+///
+/// Handles nested lists and list items split by newlines.
+///
+/// # Arguments
+///
+/// * `list` - A vector of tokens representing an unordered list.
+///
+/// # Returns
+///
+/// An `MdBlockElement` representing the unordered list.
 fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
     let lists_split_by_newline = list
         .split(|token| *token == Token::Newline)
@@ -182,6 +222,17 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
     MdBlockElement::UnorderedList { items: list_items }
 }
 
+/// Parses a vector of tokens representing a code block into an `MdBlockElement::CodeBlock`.
+///
+/// Extracts the language (if specified) and the code content.
+///
+/// # Arguments
+///
+/// * `line` - A vector of tokens representing a code block.
+///
+/// # Returns
+///
+/// An `MdBlockElement` representing the code block.
 fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
     let mut language = None;
@@ -231,6 +282,17 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Parses a vector of tokens representing a heading into an `MdBlockElement::Header`.
+///
+/// Determines the heading level and parses the heading content.
+///
+/// # Arguments
+///
+/// * `line` - A vector of tokens representing a heading line.
+///
+/// # Returns
+///
+/// An `MdBlockElement` representing the heading, or a paragraph if the heading is invalid.
 fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     let mut heading_level = 0;
     let mut i = 0;
@@ -261,6 +323,17 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Parses a vector of tokens into a vector of inline Markdown elements.
+///
+/// Handles emphasis, links, images, and code spans
+///
+/// # Arguments
+///
+/// * `markdown_tokens` - A vector of tokens representing inline markdown content.
+///
+/// # Returns
+///
+/// A vector of parsed inline Markdown elements.
 pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     let mut parsed_inline_elements: Vec<MdInlineElement> = Vec::new();
 
@@ -619,6 +692,14 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     parsed_inline_elements
 }
 
+/// Parses (resolves) emphasis in a vector of inline Markdown elements.
+///
+/// Modifies the elements in place to convert delimiter runs into bold or italic elements as appropriate.
+///
+/// # Arguments
+///
+/// * `elements` - A mutable reference to a vector of inline Markdown elements.
+/// * `delimiter_stack` - A mutable reference to a slice of delimiters.
 fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [Delimiter]) {
     if delimiter_stack.len() == 1 {
         // If there is only one delimiter, it cannot be resolved to emphasis
@@ -730,6 +811,15 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
     });
 }
 
+/// Groups adjacent tokenized lines into groups (blocks) for further parsing.
+///
+/// # Arguments
+///
+/// * `tokenized_lines` - A vector of vectors, where each inner vector contains tokens representing a line of markdown.
+///
+/// # Returns
+///
+/// A vector of vectors, where each inner vector represents a grouped block of tokens.
 pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<Token>> {
     let mut blocks: Vec<Vec<Token>> = Vec::new();
     let mut current_block: Vec<Token> = Vec::new();
