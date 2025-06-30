@@ -59,7 +59,7 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
 
 /// Parses a vector of tokens representing an ordered list into an `MdBlockElement::OrderedList`.
 ///
-/// Handles nested lists and list items split by newlines.
+/// Calls the more generic `parse_list` function, which parses nested list items
 ///
 /// # Arguments
 ///
@@ -69,78 +69,21 @@ fn parse_block(line: Vec<Token>) -> MdBlockElement {
 ///
 /// An `MdBlockElement` representing the ordered list.
 fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
-    let lists_split_by_newline = list
-        .split(|token| *token == Token::Newline)
-        .collect::<Vec<_>>();
-    let mut list_items: Vec<MdListItem> = Vec::new();
-
-    let mut i = 0;
-    while i < lists_split_by_newline.len() {
-        let line = lists_split_by_newline[i];
-        let next_token = line.first();
-        let second_token = line.get(1);
-
-        if let Some(Token::OrderedListMarker(_)) = next_token {
-            if second_token == Some(&Token::Whitespace) {
-                // Top-level ordered list item
-                let content_tokens = line[2..].to_vec();
-                let content = parse_block(content_tokens);
-                list_items.push(MdListItem { content });
-
-                // Check for consecutive tab-indented lines (nested list)
-                let mut nested_lines: Vec<Vec<Token>> = Vec::new();
-                let mut j = i + 1;
-
-                while j < lists_split_by_newline.len() {
-                    let nested_line = lists_split_by_newline[j];
-                    if nested_line.first() == Some(&Token::Tab) {
-                        let mut nested = nested_line.to_vec();
-                        while !nested.is_empty() && nested[0] == Token::Tab {
-                            nested.remove(0);
-                        }
-                        nested_lines.push(nested);
-                        j += 1;
-                    } else {
-                        break;
-                    }
-                }
-
-                if !nested_lines.is_empty() {
-                    // Flatten nested lines into a single Vec<Token> separated by Newline
-                    let mut nested_tokens: Vec<Token> = Vec::new();
-
-                    for (k, l) in nested_lines.into_iter().enumerate() {
-                        if k > 0 {
-                            nested_tokens.push(Token::Newline);
-                        }
-                        nested_tokens.extend(l);
-                    }
-
-                    let nested_block =
-                        if let Some(Token::OrderedListMarker(_)) = nested_tokens.first() {
-                            parse_ordered_list(nested_tokens)
-                        } else {
-                            parse_unordered_list(nested_tokens)
-                        };
-
-                    list_items.push(MdListItem {
-                        content: nested_block,
-                    });
-
-                    i = j - 1; // Skip processed nested lines
-                }
-            }
-        }
-
-        i += 1;
-    }
-
-    MdBlockElement::OrderedList { items: list_items }
+    parse_list(
+        list,
+        |tokens| {
+            matches!(
+                tokens.first(),
+                Some(Token::OrderedListMarker(_)) if tokens.get(1) == Some(&Token::Whitespace)
+            )
+        },
+        |items| MdBlockElement::OrderedList { items },
+    )
 }
 
 /// Parses a vector of tokens representing an unordered list into an `MdBlockElement::UnorderedList`.
 ///
-/// Handles nested lists and list items split by newlines.
+/// Calls the more generic `parse_list` function, which parses nested list items
 ///
 /// # Arguments
 ///
@@ -150,6 +93,35 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
 ///
 /// An `MdBlockElement` representing the unordered list.
 fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
+    parse_list(
+        list,
+        |tokens| {
+            matches!(tokens.first(), Some(Token::Punctuation(string)) if string == "-" && tokens.get(1) == Some(&Token::Whitespace)
+            )
+        },
+        |items| MdBlockElement::UnorderedList { items },
+    )
+}
+
+/// Generic list parser used to reduce code duplication between ordered and unordered lists.
+///
+/// Handles splitting lines, identifying list items, and parsing nested lists. The behavior is
+/// determined by a predicate for identifying list items and a constructor for the resulting block.
+///
+/// # Arguments
+///
+/// * `list` - The tokens to parse.
+/// * `is_list_item` - Predicate to identify a top-level list item.
+/// * `make_block` - Constructor for the resulting `MdBlockElement`.
+///
+/// # Returns
+///
+/// An `MdBlockElement` representing either an ordered or unordered list, depending on the passed in constructor.
+fn parse_list<F, G>(list: Vec<Token>, is_list_item: F, make_block: G) -> MdBlockElement
+where
+    F: Fn(&[Token]) -> bool,
+    G: Fn(Vec<MdListItem>) -> MdBlockElement,
+{
     let lists_split_by_newline = list
         .split(|token| *token == Token::Newline)
         .collect::<Vec<_>>();
@@ -158,68 +130,58 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
     let mut i = 0;
     while i < lists_split_by_newline.len() {
         let line = lists_split_by_newline[i];
-        let next_token = line.first();
-        let second_token = line.get(1);
+        if is_list_item(line) {
+            let content_tokens = line[2..].to_vec();
+            let content = parse_block(content_tokens);
+            list_items.push(MdListItem { content });
 
-        if let Some(Token::Punctuation(string)) = next_token {
-            if string == "-" && second_token == Some(&Token::Whitespace) {
-                // Top-level unordered list item
-                let content_tokens = line[2..].to_vec();
-                let content = parse_block(content_tokens);
-                list_items.push(MdListItem { content });
-
-                // Check for consecutive tab-indented lines (nested list)
-                let mut nested_lines: Vec<Vec<Token>> = Vec::new();
-
-                let mut j = i + 1;
-                while j < lists_split_by_newline.len() {
-                    let nested_line = lists_split_by_newline[j];
-                    if nested_line.first() == Some(&Token::Tab) {
-                        let mut nested = nested_line.to_vec();
-                        while !nested.is_empty() && nested[0] == Token::Tab {
-                            nested.remove(0);
-                        }
-                        nested_lines.push(nested);
-                        j += 1;
-                    } else {
-                        break;
+            // Check for consecutive tab-indented lines (nested list)
+            let mut nested_lines: Vec<Vec<Token>> = Vec::new();
+            let mut j = i + 1;
+            while j < lists_split_by_newline.len() {
+                let nested_line = lists_split_by_newline[j];
+                if nested_line.first() == Some(&Token::Tab) {
+                    let mut nested = nested_line.to_vec();
+                    while !nested.is_empty() && nested[0] == Token::Tab {
+                        nested.remove(0);
                     }
-                }
-
-                if !nested_lines.is_empty() {
-                    // Flatten nested lines into a single Vec<Token> separated by Newline
-                    let mut nested_tokens: Vec<Token> = Vec::new();
-
-                    for (k, l) in nested_lines.into_iter().enumerate() {
-                        if k > 0 {
-                            nested_tokens.push(Token::Newline);
-                        }
-                        nested_tokens.extend(l);
-                    }
-
-                    let nested_block =
-                        if let Some(Token::OrderedListMarker(_)) = nested_tokens.first() {
-                            parse_ordered_list(nested_tokens)
-                        } else {
-                            parse_unordered_list(nested_tokens)
-                        };
-
-                    list_items.push(MdListItem {
-                        content: nested_block,
-                    });
-
-                    i = j - 1; // Skip processed nested lines
+                    nested_lines.push(nested);
+                    j += 1;
+                } else {
+                    break;
                 }
             }
-        } else if let Some(Token::Tab) = next_token {
-            // This case shouldn't occur as long as it's grouped correctly, but as a fallback,
-            // we'll skip it
-        }
 
+            if !nested_lines.is_empty() {
+                // Flatten nested lines into a single Vec<Token> separated by Newline
+                let mut nested_tokens: Vec<Token> = Vec::new();
+                for (k, l) in nested_lines.into_iter().enumerate() {
+                    if k > 0 {
+                        nested_tokens.push(Token::Newline);
+                    }
+                    nested_tokens.extend(l);
+                }
+
+                // Recursively parse nested list, try ordered first, fallback to unordered
+                let nested_block = if let Some(Token::OrderedListMarker(_)) = nested_tokens.first()
+                {
+                    parse_ordered_list(nested_tokens)
+                } else {
+                    parse_unordered_list(nested_tokens)
+                };
+
+                list_items.push(MdListItem {
+                    content: nested_block,
+                });
+
+                i = j - 1; // Skip processed nested lines
+            }
+        }
         i += 1;
     }
 
-    MdBlockElement::UnorderedList { items: list_items }
+    // Use the passed in constructor to create the List element
+    make_block(list_items)
 }
 
 /// Parses a vector of tokens representing a code block into an `MdBlockElement::CodeBlock`.
