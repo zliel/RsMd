@@ -15,7 +15,9 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
 
     for line in markdown_lines {
-        block_elements.push(parse_block(line));
+        if let Some(element) = parse_block(line) {
+            block_elements.push(element)
+        }
     }
 
     block_elements
@@ -30,30 +32,28 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
 /// # Returns
 ///
 /// A parsed block-level Markdown element.
-fn parse_block(line: Vec<Token>) -> MdBlockElement {
+fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     let first_token = line.first();
 
     match first_token {
-        Some(Token::Punctuation(string)) if string == "#" => parse_heading(line),
+        Some(Token::Punctuation(string)) if string == "#" => Some(parse_heading(line)),
         Some(Token::Punctuation(string)) if string == "-" => {
             // Note that setext headings have already been handled in the group_lines_to_blocks
             // function by this point
             if line.len() == 1 {
                 // If the line only contains a dash, then it is a thematic break
-                MdBlockElement::ThematicBreak
+                Some(MdBlockElement::ThematicBreak)
             } else {
-                parse_unordered_list(line)
+                Some(parse_unordered_list(line))
             }
         }
-        Some(Token::OrderedListMarker(_)) => parse_ordered_list(line),
-        Some(Token::CodeFence) => parse_codeblock(line),
-        Some(Token::ThematicBreak) => MdBlockElement::ThematicBreak,
-        Some(Token::Newline) => MdBlockElement::Paragraph {
-            content: Vec::new(),
-        },
-        _ => MdBlockElement::Paragraph {
+        Some(Token::OrderedListMarker(_)) => Some(parse_ordered_list(line)),
+        Some(Token::CodeFence) => Some(parse_codeblock(line)),
+        Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
+        Some(Token::Newline) => None,
+        _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
-        },
+        }),
     }
 }
 
@@ -132,8 +132,9 @@ where
         let line = lists_split_by_newline[i];
         if is_list_item(line) {
             let content_tokens = line[2..].to_vec();
-            let content = parse_block(content_tokens);
-            list_items.push(MdListItem { content });
+            if let Some(content) = parse_block(content_tokens) {
+                list_items.push(MdListItem { content })
+            }
 
             // Check for consecutive tab-indented lines (nested list)
             let mut nested_lines: Vec<Vec<Token>> = Vec::new();
