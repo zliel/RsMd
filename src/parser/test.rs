@@ -220,6 +220,72 @@ mod inline {
             }]
         );
     }
+
+    #[test]
+    fn image() {
+        assert_eq!(
+            parse_inline(tokenize("![alt text](http://example.com/image.png)")),
+            vec![Image {
+                alt_text: String::from("alt text"),
+                title: None,
+                url: String::from("http://example.com/image.png")
+            }]
+        );
+    }
+
+    #[test]
+    fn image_with_title() {
+        assert_eq!(
+            parse_inline(tokenize(
+                "![alt text](http://example.com/image.png \"Title\")"
+            )),
+            vec![Image {
+                alt_text: String::from("alt text"),
+                title: Some(String::from("Title")),
+                url: String::from("http://example.com/image.png")
+            }]
+        );
+    }
+
+    #[test]
+    fn image_with_empty_alt_text() {
+        assert_eq!(
+            parse_inline(tokenize("![](http://example.com/image.png)")),
+            vec![Image {
+                alt_text: String::from(""),
+                title: None,
+                url: String::from("http://example.com/image.png")
+            }]
+        )
+    }
+
+    #[test]
+    fn image_with_emphasized_alt_text() {
+        assert_eq!(
+            parse_inline(tokenize(
+                "![**bold alt text**](http://example.com/image.png)"
+            )),
+            vec![Image {
+                alt_text: String::from("**bold alt text**"),
+                title: None,
+                url: String::from("http://example.com/image.png")
+            }]
+        );
+    }
+
+    #[test]
+    fn image_with_emphasized_title() {
+        assert_eq!(
+            parse_inline(tokenize(
+                "![alt text](http://example.com/image.png \"**bold title**\")"
+            )),
+            vec![Image {
+                alt_text: String::from("alt text"),
+                title: Some(String::from("**bold title**")),
+                url: String::from("http://example.com/image.png")
+            }]
+        );
+    }
 }
 
 mod block {
