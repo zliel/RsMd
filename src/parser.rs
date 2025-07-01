@@ -1,3 +1,9 @@
+//! This module contains the parser for converting tokenized Markdown lines into structured
+//! Markdown elements.
+//!
+//! It provides functions to parse block-level elements like headings, lists, and code blocks,
+//! as well as inline elements like links, images, and emphasis.
+
 use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, Token, TokenCursor};
 use crate::utils::push_buffer_to_collection;
 
