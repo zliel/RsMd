@@ -490,7 +490,7 @@ mod block {
                     },
                     Image {
                         alt_text: String::from("an image"),
-                        title: Some(String::from("")),
+                        title: None,
                         url: String::from("http://example.com/image.png")
                     },
                     Text {
@@ -560,7 +560,7 @@ mod block {
                         },
                         Image {
                             alt_text: String::from("an image"),
-                            title: Some(String::from("")),
+                            title: None,
                             url: String::from("http://example.com/image.png")
                         },
                         Text {
@@ -712,7 +712,7 @@ mod block {
                         content: Paragraph {
                             content: vec![Image {
                                 alt_text: String::from("Image Item 4"),
-                                title: Some(String::from("")),
+                                title: None,
                                 url: String::from("http://example.com/image.png")
                             }]
                         }
@@ -807,7 +807,7 @@ mod block {
                 tokenize("1. **Bold Item 1**"),
                 tokenize("2. *Italic Item 2*"),
                 tokenize("3. [Link Item 3](http://example.com)"),
-                tokenize("4. ![Image Item 4](http://example.com/image.png)"),
+                tokenize("4. ![Image Item 4](http://example.com/image.png \"Some title\")"),
             ])),
             vec![OrderedList {
                 items: vec![
@@ -835,7 +835,7 @@ mod block {
                                 text: vec![Text {
                                     content: String::from("Link Item 3")
                                 }],
-                                title: Some(String::from("")),
+                                title: Some(String::from("Some title")),
                                 url: String::from("http://example.com")
                             }]
                         }
