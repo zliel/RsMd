@@ -660,6 +660,30 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     parsed_inline_elements
 }
 
+/// Flattens a vector of inline Markdown elements into a single string.
+///
+/// # Arguments
+///
+/// * `elements` - A vector of inline Markdown elements to flatten.
+///
+/// # Returns
+///
+/// A string containing the concatenated content of all inline elements
+fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
+    let mut result = String::new();
+    for element in elements {
+        match element {
+            MdInlineElement::Text { content } => result.push_str(&content),
+            MdInlineElement::Bold { content } => result.push_str(&flatten_inline(content)),
+            MdInlineElement::Italic { content } => result.push_str(&flatten_inline(content)),
+            MdInlineElement::Code { content } => result.push_str(&content),
+            MdInlineElement::Link { text, .. } => result.push_str(&flatten_inline(text)),
+            MdInlineElement::Image { alt_text, .. } => result.push_str(&alt_text),
+            _ => {}
+        }
+    }
+    result
+}
 /// Parses (resolves) emphasis in a vector of inline Markdown elements.
 ///
 /// Modifies the elements in place to convert delimiter runs into bold or italic elements as appropriate.
