@@ -128,7 +128,7 @@ mod inline {
                 text: vec![Text {
                     content: String::from("link text")
                 }],
-                title: Some(String::from("")),
+                title: None,
                 url: String::from("http://example.com")
             }]
         );
@@ -144,7 +144,7 @@ mod inline {
                         content: String::from("bold link text")
                     }]
                 }],
-                title: Some(String::from("")),
+                title: None,
                 url: String::from("http://example.com")
             }]
         );
@@ -158,7 +158,7 @@ mod inline {
                 text: vec![Text {
                     content: String::from("link text with #hash")
                 }],
-                title: Some(String::from("")),
+                title: None,
                 url: String::from("http://example.com")
             }]
         );
@@ -183,7 +183,12 @@ mod inline {
                         }
                     ]
                 }],
-                title: Some(String::from("")),
+                title: None,
+                url: String::from("http://example.com")
+            }]
+        );
+    }
+
     #[test]
     fn link_with_title() {
         assert_eq!(
