@@ -184,6 +184,33 @@ mod inline {
                     ]
                 }],
                 title: Some(String::from("")),
+    #[test]
+    fn link_with_title() {
+        assert_eq!(
+            parse_inline(tokenize("[link text](http://example.com \"Title\")")),
+            vec![Link {
+                text: vec![Text {
+                    content: String::from("link text")
+                }],
+                title: Some(String::from("Title")),
+                url: String::from("http://example.com")
+            }]
+        );
+    }
+
+    #[test]
+    fn link_with_emphasized_title() {
+        assert_eq!(
+            parse_inline(tokenize(
+                "[**bold link text**](http://example.com \"Title with **bold**\")"
+            )),
+            vec![Link {
+                text: vec![Bold {
+                    content: vec![Text {
+                        content: String::from("bold link text")
+                    }]
+                }],
+                title: Some(String::from("Title with **bold**")),
                 url: String::from("http://example.com")
             }]
         );
