@@ -1,3 +1,6 @@
+//! This module provides functionality to tokenize a line of markdown text into a vector of `Token`
+//! enums.
+
 use crate::types::Token;
 use crate::utils::push_buffer_to_collection;
 use unicode_categories::UnicodeCategories;
