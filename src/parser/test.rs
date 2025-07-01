@@ -266,7 +266,7 @@ mod inline {
                 "![**bold alt text**](http://example.com/image.png)"
             )),
             vec![Image {
-                alt_text: String::from("**bold alt text**"),
+                alt_text: String::from("bold alt text"), //Only plain string content is added
                 title: None,
                 url: String::from("http://example.com/image.png")
             }]
@@ -466,7 +466,7 @@ mod block {
                         text: vec![Text {
                             content: String::from("a link")
                         }],
-                        title: Some(String::from("")),
+                        title: None,
                         url: String::from("http://example.com")
                     },
                     Text {
@@ -552,7 +552,7 @@ mod block {
                             text: vec![Text {
                                 content: String::from("a link")
                             }],
-                            title: Some(String::from("")),
+                            title: None,
                             url: String::from("http://example.com")
                         },
                         Text {
@@ -703,7 +703,7 @@ mod block {
                                 text: vec![Text {
                                     content: String::from("Link Item 3")
                                 }],
-                                title: Some(String::from("")),
+                                title: None,
                                 url: String::from("http://example.com")
                             }]
                         }
@@ -835,7 +835,7 @@ mod block {
                                 text: vec![Text {
                                     content: String::from("Link Item 3")
                                 }],
-                                title: Some(String::from("Some title")),
+                                title: None,
                                 url: String::from("http://example.com")
                             }]
                         }
@@ -844,7 +844,7 @@ mod block {
                         content: Paragraph {
                             content: vec![Image {
                                 alt_text: String::from("Image Item 4"),
-                                title: Some(String::from("")),
+                                title: Some(String::from("Some title")),
                                 url: String::from("http://example.com/image.png")
                             }]
                         }
