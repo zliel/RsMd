@@ -3,6 +3,24 @@ use crate::utils::push_buffer_to_collection;
 use unicode_categories::UnicodeCategories;
 use unicode_segmentation::UnicodeSegmentation;
 
+/// Tokenizes a line of markdown text into a vector of `Token` enums.
+///
+/// # Arguments
+///
+/// * `markdown_line` - A string slice representing a line of markdown text.
+///
+/// # Returns
+///
+/// A vector of `Token` enums representing the tokenized line.
+///
+/// # Example
+/// ```
+/// use lexer::tokenize;
+/// use types::Token;
+/// let tokens = tokenize("This is *italic* and **bold** text.");
+/// assert_eq!(tokens.len(), 9);
+/// assert_eq!(tokens[4], Token::EmphasisRun { delimiter: '*', length: 1 });
+/// ```
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     if markdown_line.is_empty() {
         return vec![Token::Newline];
@@ -150,6 +168,25 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     tokens
 }
 
+/// Helper function to determine if a string is a single punctuation character.
+///
+/// # Arguments
+///
+/// * `input_str` - A string slice to check.
+///
+/// # Returns
+///
+/// Returns `true` if the string is a single punctuation character or symbol currency, otherwise
+/// `false`.
+///
+/// # Example
+///
+/// ```
+/// use lexer::is_punctuation;
+/// assert!(is_punctuation("!"));
+/// assert!(!is_punctuation("Hello"));
+/// assert!(is_punctuation("$"));
+/// ```
 fn is_punctuation(input_str: &str) -> bool {
     let ch = input_str.chars().next().unwrap_or_default();
     input_str.chars().count() == 1 && (ch.is_punctuation() || ch.is_symbol_currency())
