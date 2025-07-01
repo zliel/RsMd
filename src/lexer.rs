@@ -1,31 +1,7 @@
+use crate::types::Token;
 use crate::utils::push_buffer_to_collection;
 use unicode_categories::UnicodeCategories;
 use unicode_segmentation::UnicodeSegmentation;
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Token {
-    Text(String),
-    EmphasisRun { delimiter: char, length: usize },
-    Punctuation(String),
-    OpenBracket,
-    CloseBracket,
-    OpenParenthesis,
-    CloseParenthesis,
-    OrderedListMarker(String),
-    Whitespace,
-    CodeTick,
-    CodeFence,
-    ThematicBreak,
-    Escape(String),
-    Tab,
-    Newline,
-}
-
-impl From<String> for Token {
-    fn from(s: String) -> Self {
-        Token::Text(s.to_string())
-    }
-}
 
 pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     if markdown_line.is_empty() {

@@ -1,5 +1,4 @@
-use crate::lexer::Token;
-use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, TokenCursor};
+use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, Token, TokenCursor};
 use crate::utils::push_buffer_to_collection;
 
 /// Parses a vector of tokenized markdown lines into a vector of block-level Markdown elements.

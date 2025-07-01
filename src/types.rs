@@ -1,4 +1,28 @@
-use crate::lexer::Token;
+/// Represents the different types of tokens that can be found in a markdown line.
+#[derive(Debug, PartialEq, Clone)]
+pub enum Token {
+    Text(String),
+    EmphasisRun { delimiter: char, length: usize },
+    Punctuation(String),
+    OpenBracket,
+    CloseBracket,
+    OpenParenthesis,
+    CloseParenthesis,
+    OrderedListMarker(String),
+    Whitespace,
+    CodeTick,
+    CodeFence,
+    ThematicBreak,
+    Escape(String),
+    Tab,
+    Newline,
+}
+
+impl From<String> for Token {
+    fn from(s: String) -> Self {
+        Token::Text(s.to_string())
+    }
+}
 
 /// Represents block-level markdown elements.
 #[derive(Debug, PartialEq)]

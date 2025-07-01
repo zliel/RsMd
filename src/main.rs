@@ -7,8 +7,9 @@ mod utils;
 use io::read_file;
 use std::{env::args, process};
 
-use crate::lexer::{Token, tokenize};
+use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
+use crate::types::Token;
 
 fn main() {
     let args: Vec<String> = args().collect();
