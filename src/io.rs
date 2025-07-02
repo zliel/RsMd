@@ -5,11 +5,9 @@ use std::{fs::File, io::Read};
 /// Reads the contents of a file into a String.
 ///
 /// # Arguments
-///
 /// * `file_path` - The path of the file to read.
 ///
 /// # Returns
-///
 /// Returns the contents of the file as a String instance.
 pub fn read_file(file_path: &str) -> String {
     let mut md_file: File =

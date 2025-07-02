@@ -53,7 +53,6 @@ pub enum MdBlockElement {
 /// Represents a list item in markdown, which can contain block elements.
 ///
 /// # Fields
-///
 /// * `content` - The content of the list item, which can be any block-level markdown element.
 #[derive(Debug, PartialEq)]
 pub struct MdListItem {
@@ -102,7 +101,6 @@ impl From<String> for MdInlineElement {
 /// cursor position.
 ///
 /// # Fields
-///
 /// * `tokens` - A vector of tokens to navigate through.
 /// * `current_position` - The current position of the cursor within the token vector.
 #[derive(Debug)]
@@ -120,11 +118,9 @@ impl TokenCursor {
     /// Returns the nth next token, if any.
     ///
     /// # Arguments
-    ///
     /// * `n` - The number of tokens to look ahead.
     ///
     /// # Returns
-    ///
     /// An `Option` containing a reference to the token if it exists, or `None` if it is out of
     /// bounds.
     pub fn peek_ahead(&self, n: usize) -> Option<&Token> {
@@ -134,11 +130,9 @@ impl TokenCursor {
     /// Returns the nth previous token, if any.
     ///
     /// # Arguments
-    ///
     /// * `n` - The number of tokens to look behind.
     ///
     /// # Returns
-    ///
     /// An `Option` containing a reference to the token if it exists, or `None` if it is out of
     pub fn _peek_behind(&self, n: usize) -> Option<&Token> {
         self.tokens.get(self.current_position - n)
@@ -154,11 +148,9 @@ impl TokenCursor {
     /// Sets the cursor's position to the specified position.
     ///
     /// # Arguments
-    ///
     /// * `pos` - The position to set the cursor to.
     ///
     /// # Panics
-    ///
     /// Panics if the position is out of bounds for the token list.
     pub fn _set_position(&mut self, pos: usize) {
         if pos < self.tokens.len() {
@@ -184,7 +176,6 @@ impl TokenCursor {
 /// bold/italic writing.
 ///
 /// # Fields
-///
 /// * `ch` - The character that represents the delimiter (e.g., `*`, `_`, `~`).
 /// * `run_length` - The number of times the delimiter character appears in a row.
 /// * `token_position` - The position of the first token in this delimiter run.
@@ -209,14 +200,13 @@ impl Delimiter {
     /// Determines whether a delimiter is "Left", "Right", or "Both" flanking
     /// For exmample, it is left flanking if it's not followed by non-whitespace, and either:
     /// 1. Not followed by punctuation
-    /// 2. Followed by punctuation and
+    /// 2. Followed by punctuation and preceded by whitespace or punctuation
     ///
     /// Modifies the `can_open` and `can_close` fields in-place based on the classification.
     ///
     /// See https://spec.commonmark.org/0.31.2/#left-flanking-delimiter-run for more information.
     ///
     /// # Arguments
-    ///
     /// * `tokens` - A slice of tokens to classify the delimiter against.
     pub fn classify_flanking(&mut self, tokens: &[Token]) {
         let before = if self.token_position > 0 {
@@ -224,11 +214,8 @@ impl Delimiter {
         } else {
             None
         };
-        // println!("Before token: {:?}", before);
 
         let after = tokens.get(self.token_position + 1);
-        // println!("After token: {:?}", after);
-
         let followed_by_whitespace = after.is_none_or(is_whitespace);
         let followed_by_punctuation = after.is_some_and(is_punctuation);
 
@@ -270,7 +257,6 @@ impl Delimiter {
 /// Helper function to determine if a token is whitespace or newline.
 ///
 /// # Arguments
-///
 /// * `token` - The token to check.
 fn is_whitespace(token: &Token) -> bool {
     matches!(token, Token::Newline | Token::Whitespace)
@@ -279,7 +265,6 @@ fn is_whitespace(token: &Token) -> bool {
 /// Helper function to determine if a token is punctuation.
 ///
 /// # Arguments
-///
 /// * `token` - The token to check.
 fn is_punctuation(token: &Token) -> bool {
     matches!(

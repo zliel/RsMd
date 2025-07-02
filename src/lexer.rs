@@ -9,11 +9,9 @@ use unicode_segmentation::UnicodeSegmentation;
 /// Tokenizes a line of markdown text into a vector of `Token` enums.
 ///
 /// # Arguments
-///
 /// * `markdown_line` - A string slice representing a line of markdown text.
 ///
 /// # Returns
-///
 /// A vector of `Token` enums representing the tokenized line.
 ///
 /// # Example
@@ -174,16 +172,13 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 /// Helper function to determine if a string is a single punctuation character.
 ///
 /// # Arguments
-///
 /// * `input_str` - A string slice to check.
 ///
 /// # Returns
-///
 /// Returns `true` if the string is a single punctuation character or symbol currency, otherwise
 /// `false`.
 ///
 /// # Example
-///
 /// ```
 /// use lexer::is_punctuation;
 /// assert!(is_punctuation("!"));
