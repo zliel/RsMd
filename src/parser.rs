@@ -770,112 +770,13 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 blocks.push(line.to_owned());
             }
             Some(Token::Punctuation(string)) if string == "-" => {
-                if let Some(previous_line_start) = previous_block.first() {
-                    match previous_line_start {
-                        Token::Punctuation(string)
-                            if string == "-"
-                                && previous_block.get(1) == Some(&Token::Whitespace) =>
-                        {
-                            // Then it is either the start of a list or part of a list
-
-                            previous_block.push(Token::Newline);
-                            previous_block.extend(line.to_owned());
-                            blocks.pop();
-                            blocks.push(previous_block.clone());
-                        }
-                        Token::Punctuation(string) if string == "#" => {
-                            blocks.push(line.to_owned());
-                        }
-                        _ => {
-                            if line.len() > 1 {
-                                current_block.extend(line.to_owned());
-                            } else {
-                                // Then this is a Setext heading 2
-                                previous_block.insert(0, Token::Punctuation(String::from("#")));
-                                previous_block.insert(1, Token::Punctuation(String::from("#")));
-                                previous_block.insert(2, Token::Whitespace);
-                                blocks.pop();
-                                blocks.push(previous_block.clone());
-                            }
-                        }
-                    }
-                } else {
-                    current_block.extend(line.to_owned());
-                }
+                group_dashed_lines(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             Some(Token::Tab) => {
-                if line.len() > 1 {
-                    let mut has_content: bool = false;
-                    for idx in 1..line.len() {
-                        match line.get(idx) {
-                            Some(Token::Tab) | Some(Token::Whitespace) => continue,
-                            None => {}
-                            _ => {
-                                has_content = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if has_content {
-                        // If there is content after the tab, then we append it to the previous
-                        // block
-                        if !previous_block.is_empty() {
-                            let previous_line_start = previous_block.first();
-                            match previous_line_start {
-                                Some(Token::Punctuation(string))
-                                    if string == "-"
-                                        && previous_block.get(1) == Some(&Token::Whitespace) =>
-                                {
-                                    // If the previous block is a list, then we append the line to it
-                                    previous_block.push(Token::Newline);
-                                    previous_block.extend(line.to_owned());
-                                    blocks.pop();
-                                    blocks.push(previous_block.clone());
-                                }
-                                Some(Token::OrderedListMarker(_))
-                                    if previous_block.get(1) == Some(&Token::Whitespace) =>
-                                {
-                                    // If the previous block is an ordered list, then we append the
-                                    // line to it
-                                    previous_block.push(Token::Newline);
-                                    previous_block.extend(line.to_owned());
-                                    blocks.pop();
-                                    blocks.push(previous_block.clone());
-                                }
-                                _ => {
-                                    // If the previous block is not a list, then we just add the
-                                    // line to the current block
-                                    current_block.extend(line.to_owned());
-                                }
-                            }
-                        } else {
-                            // If the previous block is empty, then we just add the line to the
-                            // current block
-                            current_block.extend(line.to_owned());
-                        }
-                    }
-                }
+                group_tabbed_lines(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             Some(Token::OrderedListMarker(_)) => {
-                if let Some(previous_line_start) = previous_block.first() {
-                    match previous_line_start {
-                        Token::OrderedListMarker(_)
-                            if previous_block.get(1) == Some(&Token::Whitespace) =>
-                        {
-                            // If the previous block is a list, then we append the line to it
-                            previous_block.push(Token::Newline);
-                            previous_block.extend(line.to_owned());
-                            blocks.pop();
-                            blocks.push(previous_block.clone());
-                        }
-                        _ => {
-                            current_block.extend(line.to_owned());
-                        }
-                    }
-                } else {
-                    current_block.extend(line.to_owned());
-                }
+                group_ordered_list(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             Some(Token::ThematicBreak) => {
                 // Check if the previous line starts with anything other than a heading
@@ -917,35 +818,14 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 if let Some(previous_line_start) = previous_block.first() {
                     // If it's text, then prepend the previous line with "# "
                     if matches!(previous_line_start, Token::Text(_)) {
-                        previous_block.insert(0, Token::Punctuation(String::from("#")));
-                        previous_block.insert(1, Token::Whitespace);
-
-                        // Swap previous block in
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                        group_setext_heading_one(&mut blocks, &mut previous_block);
                     }
                 } else {
                     current_block.extend(line.to_owned());
                 }
             }
             Some(Token::Text(_)) => {
-                if !previous_block.is_empty() {
-                    if matches!(previous_block.first(), Some(Token::Text(_))) {
-                        previous_block.push(Token::Whitespace);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    } else if matches!(previous_block.first(), Some(Token::Punctuation(_))) {
-                        // If the previous block was a heading, then this is a new paragraph
-                        current_block.extend(line.to_owned());
-                    } else {
-                        // If the previous block was empty, then this is a new paragraph
-                        current_block.extend(line.to_owned());
-                    }
-                } else {
-                    // If the previous block was empty, then this is a new paragraph
-                    current_block.extend(line.to_owned());
-                }
+                group_text_lines(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             _ => {
                 // Catch-all for everything else
@@ -960,6 +840,206 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
         current_block.clear();
     }
     blocks
+}
+
+/// Groups text lines into blocks based on the previous block's content.
+///
+/// # Arguments
+///
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
+fn group_text_lines(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if !previous_block.is_empty() {
+        if matches!(previous_block.first(), Some(Token::Text(_))) {
+            previous_block.push(Token::Whitespace);
+            previous_block.extend(line.to_owned());
+            blocks.pop();
+            blocks.push(previous_block.clone());
+        } else if matches!(previous_block.first(), Some(Token::Punctuation(_))) {
+            // If the previous block was a heading, then this is a new paragraph
+            current_block.extend(line.to_owned());
+        } else {
+            // If the previous block was empty, then this is a new paragraph
+            current_block.extend(line.to_owned());
+        }
+    } else {
+        // If the previous block was empty, then this is a new paragraph
+        current_block.extend(line.to_owned());
+    }
+}
+
+/// Groups Setext heading 1 lines into a block by prepending the previous block with "# ".
+///
+/// # Arguments
+///
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `previous_block` - A mutable reference to the previous block, which is modified to become a
+///   Setext heading 1.
+fn group_setext_heading_one(blocks: &mut Vec<Vec<Token>>, previous_block: &mut Vec<Token>) {
+    previous_block.insert(0, Token::Punctuation(String::from("#")));
+    previous_block.insert(1, Token::Whitespace);
+
+    // Swap previous block in
+    blocks.pop();
+    blocks.push(previous_block.clone());
+}
+
+/// Groups ordered list lines into a block by appending the line to the previous block if it is
+/// part of the same list.
+///
+/// # Arguments
+///
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
+fn group_ordered_list(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if let Some(previous_line_start) = previous_block.first() {
+        match previous_line_start {
+            Token::OrderedListMarker(_) if previous_block.get(1) == Some(&Token::Whitespace) => {
+                // If the previous block is a list, then we append the line to it
+                previous_block.push(Token::Newline);
+                previous_block.extend(line.to_owned());
+                blocks.pop();
+                blocks.push(previous_block.clone());
+            }
+            _ => {
+                current_block.extend(line.to_owned());
+            }
+        }
+    } else {
+        current_block.extend(line.to_owned());
+    }
+}
+
+/// Groups tabbed lines into blocks based on the previous block's content.
+///
+/// # Arguments
+///
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
+fn group_tabbed_lines(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if line.len() > 1 {
+        let mut has_content: bool = false;
+        for idx in 1..line.len() {
+            match line.get(idx) {
+                Some(Token::Tab) | Some(Token::Whitespace) => continue,
+                None => {}
+                _ => {
+                    has_content = true;
+                    break;
+                }
+            }
+        }
+
+        if has_content {
+            // If there is content after the tab, then we append it to the previous
+            // block
+            if !previous_block.is_empty() {
+                let previous_line_start = previous_block.first();
+                match previous_line_start {
+                    Some(Token::Punctuation(string))
+                        if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
+                    {
+                        // If the previous block is a list, then we append the line to it
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
+                    Some(Token::OrderedListMarker(_))
+                        if previous_block.get(1) == Some(&Token::Whitespace) =>
+                    {
+                        // If the previous block is an ordered list, then we append the
+                        // line to it
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
+                    _ => {
+                        // If the previous block is not a list, then we just add the
+                        // line to the current block
+                        current_block.extend(line.to_owned());
+                    }
+                }
+            } else {
+                // If the previous block is empty, then we just add the line to the
+                // current block
+                current_block.extend(line.to_owned());
+            }
+        }
+    }
+}
+
+/// Groups dashed lines into blocks based on the previous block's content.
+///
+/// # Arguments
+///
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
+fn group_dashed_lines(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if let Some(previous_line_start) = previous_block.first() {
+        match previous_line_start {
+            Token::Punctuation(string)
+                if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
+            {
+                // Then it is either the start of a list or part of a list
+
+                previous_block.push(Token::Newline);
+                previous_block.extend(line.to_owned());
+                blocks.pop();
+                blocks.push(previous_block.clone());
+            }
+            Token::Punctuation(string) if string == "#" => {
+                blocks.push(line.to_owned());
+            }
+            _ => {
+                if line.len() > 1 {
+                    current_block.extend(line.to_owned());
+                } else {
+                    // Then this is a Setext heading 2
+                    previous_block.insert(0, Token::Punctuation(String::from("#")));
+                    previous_block.insert(1, Token::Punctuation(String::from("#")));
+                    previous_block.insert(2, Token::Whitespace);
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+            }
+        }
+    } else {
+        current_block.extend(line.to_owned());
+    }
 }
 
 #[cfg(test)]
