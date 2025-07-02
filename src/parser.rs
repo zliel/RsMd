@@ -351,34 +351,9 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::CodeTick => {
                 // Search for a matching code tick, everything else is text
                 cursor.advance();
-                let mut code_content: String = String::new();
-                while let Some(next_token) = cursor.current() {
-                    match next_token {
-                        Token::CodeTick => break,
-                        Token::Text(string) | Token::Punctuation(string) => {
-                            code_content.push_str(string)
-                        }
-                        Token::OrderedListMarker(string) => code_content.push_str(string),
-                        Token::Escape(ch) => code_content.push_str(format!("\\{ch}").as_str()),
-                        Token::OpenParenthesis => code_content.push('('),
-                        Token::CloseParenthesis => code_content.push(')'),
-                        Token::OpenBracket => code_content.push('['),
-                        Token::CloseBracket => code_content.push(']'),
-                        Token::EmphasisRun { delimiter, length } => {
-                            code_content.push_str(delimiter.to_string().repeat(*length).as_str())
-                        }
-                        Token::Whitespace => code_content.push(' '),
-                        Token::Tab => code_content.push_str("    "), // 4 spaces for a tab,
-                        // will be changed via configuration later
-                        Token::Newline => code_content.push('\n'),
-                        Token::ThematicBreak => code_content.push_str("---"),
-                        Token::CodeFence => {}
-                    }
-
-                    cursor.advance();
-                }
-
                 push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer);
+
+                let code_content = parse_code_span(&mut cursor);
 
                 if cursor.current() != Some(&Token::CodeTick) {
                     parsed_inline_elements.push(MdInlineElement::Text {
@@ -435,6 +410,34 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     // Remove all placeholders
 
     parsed_inline_elements
+}
+
+fn parse_code_span(cursor: &mut TokenCursor) -> String {
+    let mut code_content: String = String::new();
+    while let Some(next_token) = cursor.current() {
+        match next_token {
+            Token::CodeTick => break,
+            Token::Text(string) | Token::Punctuation(string) => code_content.push_str(string),
+            Token::OrderedListMarker(string) => code_content.push_str(string),
+            Token::Escape(ch) => code_content.push_str(format!("\\{ch}").as_str()),
+            Token::OpenParenthesis => code_content.push('('),
+            Token::CloseParenthesis => code_content.push(')'),
+            Token::OpenBracket => code_content.push('['),
+            Token::CloseBracket => code_content.push(']'),
+            Token::EmphasisRun { delimiter, length } => {
+                code_content.push_str(delimiter.to_string().repeat(*length).as_str())
+            }
+            Token::Whitespace => code_content.push(' '),
+            Token::Tab => code_content.push_str("    "), // 4 spaces for a tab,
+            // will be changed via configuration later
+            Token::Newline => code_content.push('\n'),
+            Token::ThematicBreak => code_content.push_str("---"),
+            Token::CodeFence => {}
+        }
+
+        cursor.advance();
+    }
+    code_content
 }
 
 /// Parses a link type (either a link or an image) from the current position of the cursor.
