@@ -412,6 +412,15 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     parsed_inline_elements
 }
 
+/// Parses a code span starting from the current position of the cursor.
+///
+/// # Arguments
+///
+/// * `cursor` - A mutable reference to a `TokenCursor` that tracks the current position in the
+///
+/// # Returns
+///
+/// A string containing the content of the code span, excluding the opening and closing code ticks.
 fn parse_code_span(cursor: &mut TokenCursor) -> String {
     let mut code_content: String = String::new();
     while let Some(next_token) = cursor.current() {
@@ -437,6 +446,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
 
         cursor.advance();
     }
+
     code_content
 }
 
