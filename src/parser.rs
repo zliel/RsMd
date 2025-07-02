@@ -10,11 +10,9 @@ use crate::utils::push_buffer_to_collection;
 /// Parses a vector of tokenized markdown lines into a vector of block-level Markdown elements.
 ///
 /// # Arguments
-///
 /// * `markdown_lines` - A vector of vectors, where each inner vector contains tokens representing a line of markdown.
 ///
 /// # Returns
-///
 /// A vector of parsed block-level Markdown elements.
 pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
@@ -31,11 +29,9 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
 /// Parses a single line of tokens into a block-level Markdown element.
 ///
 /// # Arguments
-///
 /// * `line` - A vector of tokens representing a single line of markdown.
 ///
 /// # Returns
-///
 /// An Option<MdBlockElement>, returning `None` for empty lines
 fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     let first_token = line.first();
@@ -67,11 +63,9 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
 /// Calls the more generic `parse_list` function, which parses nested list items
 ///
 /// # Arguments
-///
 /// * `list` - A vector of tokens representing an ordered list.
 ///
 /// # Returns
-///
 /// An `MdBlockElement` representing the ordered list.
 fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
     parse_list(
@@ -91,11 +85,9 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
 /// Calls the more generic `parse_list` function, which parses nested list items
 ///
 /// # Arguments
-///
 /// * `list` - A vector of tokens representing an unordered list.
 ///
 /// # Returns
-///
 /// An `MdBlockElement` representing the unordered list.
 fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
     parse_list(
@@ -114,13 +106,11 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
 /// determined by a predicate for identifying list items and a constructor for the resulting block.
 ///
 /// # Arguments
-///
 /// * `list` - The tokens to parse.
 /// * `is_list_item` - Predicate to identify a top-level list item.
 /// * `make_block` - Constructor for the resulting `MdBlockElement`.
 ///
 /// # Returns
-///
 /// An `MdBlockElement` representing either an ordered or unordered list, depending on the passed in constructor.
 fn parse_list<F, G>(list: Vec<Token>, is_list_item: F, make_block: G) -> MdBlockElement
 where
@@ -195,11 +185,9 @@ where
 /// Extracts the language (if specified) and the code content.
 ///
 /// # Arguments
-///
 /// * `line` - A vector of tokens representing a code block.
 ///
 /// # Returns
-///
 /// An `MdBlockElement` representing the code block.
 fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
@@ -255,11 +243,9 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
 /// Determines the heading level and parses the heading content.
 ///
 /// # Arguments
-///
 /// * `line` - A vector of tokens representing a heading line.
 ///
 /// # Returns
-///
 /// An `MdBlockElement` representing the heading, or a paragraph if the heading is invalid.
 fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     let mut heading_level = 0;
@@ -291,16 +277,13 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
-/// Parses a vector of tokens into a vector of inline Markdown elements.
-///
-/// Handles emphasis, links, images, and code spans
+/// Parses a vector of tokens into a vector of inline Markdown elements (i.e. links, images,
+/// bold/italics, etc.).
 ///
 /// # Arguments
-///
 /// * `markdown_tokens` - A vector of tokens representing inline markdown content.
 ///
 /// # Returns
-///
 /// A vector of parsed inline Markdown elements.
 pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
     let mut parsed_inline_elements: Vec<MdInlineElement> = Vec::new();
@@ -415,11 +398,9 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 /// Parses a code span starting from the current position of the cursor.
 ///
 /// # Arguments
-///
 /// * `cursor` - A mutable reference to a `TokenCursor` that tracks the current position in the
 ///
 /// # Returns
-///
 /// A string containing the content of the code span, excluding the opening and closing code ticks.
 fn parse_code_span(cursor: &mut TokenCursor) -> String {
     let mut code_content: String = String::new();
@@ -452,17 +433,13 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
 
 /// Parses a link type (either a link or an image) from the current position of the cursor.
 ///
-/// This function handles the parsing of the link label, URI, and optional title.
-///
 /// # Arguments
-///
 /// * `cursor` - A mutable reference to a `TokenCursor` that tracks the current position in the
 ///   token stream.
 /// * `make_element` - A closure that takes the parsed label elements, optional title, and URI,
 ///   and returns an `MdInlineElement` representing the link or image.
 ///
 /// # Returns
-///
 /// An `MdInlineElement` representing the parsed link or image.
 fn parse_link_type<F>(cursor: &mut TokenCursor, make_element: F) -> MdInlineElement
 where
@@ -588,11 +565,9 @@ where
 /// Flattens a vector of inline Markdown elements into a single string.
 ///
 /// # Arguments
-///
 /// * `elements` - A vector of inline Markdown elements to flatten.
 ///
 /// # Returns
-///
 /// A string containing the concatenated content of all inline elements
 fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
     let mut result = String::new();
@@ -614,7 +589,6 @@ fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
 /// Modifies the elements in place to convert delimiter runs into bold or italic elements as appropriate.
 ///
 /// # Arguments
-///
 /// * `elements` - A mutable reference to a vector of inline Markdown elements.
 /// * `delimiter_stack` - A mutable reference to a slice of delimiters.
 fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [Delimiter]) {
@@ -731,11 +705,9 @@ fn resolve_emphasis(elements: &mut Vec<MdInlineElement>, delimiter_stack: &mut [
 /// Groups adjacent tokenized lines into groups (blocks) for further parsing.
 ///
 /// # Arguments
-///
 /// * `tokenized_lines` - A vector of vectors, where each inner vector contains tokens representing a line of markdown.
 ///
 /// # Returns
-///
 /// A vector of vectors, where each inner vector represents a grouped block of tokens.
 pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<Token>> {
     let mut blocks: Vec<Vec<Token>> = Vec::new();
@@ -845,7 +817,6 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
 /// Groups text lines into blocks based on the previous block's content.
 ///
 /// # Arguments
-///
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `current_block` - A mutable reference to the current block being processed.
 /// * `previous_block` - A mutable reference to the previous block, used for context.
@@ -879,7 +850,6 @@ fn group_text_lines(
 /// Groups Setext heading 1 lines into a block by prepending the previous block with "# ".
 ///
 /// # Arguments
-///
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `previous_block` - A mutable reference to the previous block, which is modified to become a
 ///   Setext heading 1.
@@ -896,7 +866,6 @@ fn group_setext_heading_one(blocks: &mut Vec<Vec<Token>>, previous_block: &mut V
 /// part of the same list.
 ///
 /// # Arguments
-///
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `current_block` - A mutable reference to the current block being processed.
 /// * `previous_block` - A mutable reference to the previous block, used for context.
@@ -929,7 +898,6 @@ fn group_ordered_list(
 /// Groups tabbed lines into blocks based on the previous block's content.
 ///
 /// # Arguments
-///
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `current_block` - A mutable reference to the current block being processed.
 /// * `previous_block` - A mutable reference to the previous block, used for context.
@@ -997,7 +965,6 @@ fn group_tabbed_lines(
 /// Groups dashed lines into blocks based on the previous block's content.
 ///
 /// # Arguments
-///
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `current_block` - A mutable reference to the current block being processed.
 /// * `previous_block` - A mutable reference to the previous block, used for context.
