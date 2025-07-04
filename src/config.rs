@@ -4,6 +4,11 @@ use toml::Table;
 /// Represents the global configuration for the application.
 #[derive(Debug)]
 pub struct Config {
+    pub lexer: LexerConfig,
+}
+
+#[derive(Debug)]
+pub struct LexerConfig {
     pub tab_size: usize,
 }
 
@@ -22,12 +27,19 @@ impl Config {
         let config: Table =
             toml::from_str(&contents).map_err(|e| format!("Failed to parse config file: {}", e))?;
 
-        let tab_size: usize = config
+        let lexer_table = config
+            .get("lexer")
+            .and_then(|val| val.as_table())
+            .ok_or("Missing `[lexer]` section heading in config")?;
+
+        let tab_size: usize = lexer_table
             .get("tab_size")
             .and_then(|val| val.as_integer())
             .map(|val| val as usize)
             .ok_or("Missing or invalid 'tab_size' in config")?;
 
-        Ok(Config { tab_size })
+        Ok(Config {
+            lexer: LexerConfig { tab_size },
+        })
     }
 }
