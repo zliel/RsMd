@@ -132,21 +132,13 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
             }
             " " => {
                 // Will be configurable later, but for now we'll stick to 4 spaces = 1 tab
-                if i + CONFIG.tab_size <= str_len {
-                    let mut is_tab = true;
-                    for j in 1..CONFIG.tab_size {
-                        if chars[i + j] != " " {
-                            is_tab = false;
-                            break;
-                        }
-                    }
-
-                    if is_tab {
-                        push_buffer_to_collection(&mut tokens, &mut buffer);
-                        tokens.push(Token::Tab);
-                        i += CONFIG.tab_size; // i won't increment after continue, so we do it here
-                        continue;
-                    }
+                if i + CONFIG.tab_size <= str_len
+                    && chars[i + 1..i + CONFIG.tab_size].iter().all(|&c| c == " ")
+                {
+                    push_buffer_to_collection(&mut tokens, &mut buffer);
+                    tokens.push(Token::Tab);
+                    i += CONFIG.tab_size; // i won't increment after continue, so we do it here
+                    continue;
                 }
 
                 push_buffer_to_collection(&mut tokens, &mut buffer);
