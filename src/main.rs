@@ -6,6 +6,7 @@ mod types;
 mod utils;
 
 use io::read_file;
+use std::error::Error;
 use std::sync::LazyLock;
 use std::{env::args, process};
 
@@ -21,7 +22,7 @@ static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     })
 });
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = args().collect();
     if args.len() < 2 {
         eprintln!("Error: Missing file path argument.");
@@ -45,4 +46,6 @@ fn main() {
     parsed_elements
         .iter()
         .for_each(|block| println!("{:?}", block));
+
+    Ok(())
 }
