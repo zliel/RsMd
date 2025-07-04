@@ -1,6 +1,7 @@
 //! This module provides functionality to tokenize a line of markdown text into a vector of `Token`
 //! enums.
 
+use crate::CONFIG;
 use crate::types::Token;
 use crate::utils::push_buffer_to_collection;
 use unicode_categories::UnicodeCategories;
@@ -131,15 +132,21 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
             }
             " " => {
                 // Will be configurable later, but for now we'll stick to 4 spaces = 1 tab
-                if i + 3 < str_len
-                    && chars[i + 1] == " "
-                    && chars[i + 2] == " "
-                    && chars[i + 3] == " "
-                {
-                    push_buffer_to_collection(&mut tokens, &mut buffer);
-                    tokens.push(Token::Tab);
-                    i += 4;
-                    continue;
+                if i + CONFIG.tab_size < str_len {
+                    let mut is_tab = true;
+                    for j in 1..CONFIG.tab_size {
+                        if chars[i + j] != " " {
+                            is_tab = false;
+                            break;
+                        }
+                    }
+
+                    if is_tab {
+                        push_buffer_to_collection(&mut tokens, &mut buffer);
+                        tokens.push(Token::Tab);
+                        i += CONFIG.tab_size - 1; // Skip the next 3 spaces
+                        continue;
+                    }
                 }
 
                 push_buffer_to_collection(&mut tokens, &mut buffer);
