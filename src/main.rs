@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let file_path = &args[1];
-    let file_contents = read_file(file_path);
+    let file_contents = read_file(file_path)?;
 
     // Tokenizing
     let mut tokenized_lines: Vec<Vec<Token>> = Vec::new();
