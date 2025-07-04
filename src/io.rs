@@ -8,7 +8,8 @@ use std::{fs::File, io::Read};
 /// * `file_path` - The path of the file to read.
 ///
 /// # Returns
-/// Returns Ok(String) if successful, or an Err(String) with an error message if it fails.
+/// Returns a `Result` containing the file contents as a string on success,
+/// or an error message on failure.
 pub fn read_file(file_path: &str) -> Result<String, String> {
     let mut md_file: File =
         File::open(file_path).map_err(|e| format!("Failed to open file '{}': {}", file_path, e))?;
