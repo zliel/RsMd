@@ -1,3 +1,4 @@
+mod config;
 mod io;
 mod lexer;
 mod parser;
