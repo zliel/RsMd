@@ -52,6 +52,7 @@ dependencies = [
 name = "rust_mark"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "toml",
  "unicode-segmentation",
  "unicode_categories",
