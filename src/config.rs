@@ -7,14 +7,14 @@ pub struct Config {
     pub lexer: LexerConfig,
 }
 
-/// Managers all configuration for tokenization
+/// Manages all configuration for tokenization
 #[derive(Debug, Deserialize)]
 pub struct LexerConfig {
     pub tab_size: usize,
 }
 
 impl Config {
-    /// Creates a new `Config` instance with the specified tab size.
+    /// Creates a new `Config` instance from the specified file path
     ///
     /// # Arguments
     /// * `file_path` - The path to the configuration file.
