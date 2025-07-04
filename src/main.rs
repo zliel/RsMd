@@ -6,11 +6,20 @@ mod types;
 mod utils;
 
 use io::read_file;
+use std::sync::LazyLock;
 use std::{env::args, process};
 
+use crate::config::Config;
 use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
 use crate::types::Token;
+
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
+    Config::from_file("config.toml").unwrap_or_else(|err| {
+        eprintln!("Error loading config: {}", err);
+        process::exit(1);
+    })
+});
 
 fn main() {
     let args: Vec<String> = args().collect();
