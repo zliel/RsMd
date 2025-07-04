@@ -1,3 +1,4 @@
+//! This module handles the configuration I/O for the application.
 use toml::Table;
 
 /// Represents the global configuration for the application.
