@@ -34,6 +34,14 @@ impl Config {
     }
 }
 
+/// Initializes the global configuration from the specified file path
+///
+/// # Arguments
+/// * `config_path` - The path to the configuration file.
+///
+/// # Returns
+/// Returns a `Result` indicating success or failure. If successful, a global `CONFIG` has been
+/// initialized.
 pub fn init_config(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     CONFIG.get_or_init(|| {
         Config::from_file(config_path).unwrap_or_else(|err| {
