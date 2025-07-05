@@ -1,12 +1,23 @@
+use crate::config::init_config;
 use crate::lexer::tokenize;
 use crate::parser::{parse_block, parse_inline};
 use crate::types::{MdBlockElement::*, MdInlineElement::*, MdListItem};
+
+use std::sync::Once;
+static INIT: Once = Once::new();
+
+fn init_test_config() {
+    INIT.call_once(|| {
+        init_config("config.toml").expect("Failed to initialize test config");
+    });
+}
 
 mod inline {
     use super::*;
 
     #[test]
     fn text() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("Plain text.")),
             vec![Text {
@@ -17,6 +28,7 @@ mod inline {
 
     #[test]
     fn escape_char() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("\\*escaped char\\*")),
             vec![Text {
@@ -27,6 +39,7 @@ mod inline {
 
     #[test]
     fn bold() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("**Bold** text")),
             vec![
@@ -44,6 +57,7 @@ mod inline {
 
     #[test]
     fn italic() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("*Italic* text")),
             vec![
@@ -61,6 +75,7 @@ mod inline {
 
     #[test]
     fn multiple_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("This is **bold** and *italic* text.")),
             vec![
@@ -89,6 +104,7 @@ mod inline {
 
     #[test]
     fn mixed_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("**_Bold and italic._**")),
             vec![Bold {
@@ -103,6 +119,7 @@ mod inline {
 
     #[test]
     fn mixed_emphasis_separated() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("_Italic **and bold**_")),
             vec![Italic {
@@ -122,6 +139,7 @@ mod inline {
 
     #[test]
     fn link() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("[link text](http://example.com)")),
             vec![Link {
@@ -136,6 +154,7 @@ mod inline {
 
     #[test]
     fn link_with_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("[**bold link text**](http://example.com)")),
             vec![Link {
@@ -152,6 +171,7 @@ mod inline {
 
     #[test]
     fn link_with_internal_hashes() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("[link text with #hash](http://example.com)")),
             vec![Link {
@@ -166,6 +186,7 @@ mod inline {
 
     #[test]
     fn link_with_mixed_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize(
                 "[_italic, **bold and italic**_](http://example.com)"
@@ -191,6 +212,7 @@ mod inline {
 
     #[test]
     fn link_with_title() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("[link text](http://example.com \"Title\")")),
             vec![Link {
@@ -205,6 +227,7 @@ mod inline {
 
     #[test]
     fn link_with_emphasized_title() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize(
                 "[**bold link text**](http://example.com \"Title with **bold**\")"
@@ -223,6 +246,7 @@ mod inline {
 
     #[test]
     fn image() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("![alt text](http://example.com/image.png)")),
             vec![Image {
@@ -235,6 +259,7 @@ mod inline {
 
     #[test]
     fn image_with_title() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize(
                 "![alt text](http://example.com/image.png \"Title\")"
@@ -249,6 +274,7 @@ mod inline {
 
     #[test]
     fn image_with_empty_alt_text() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize("![](http://example.com/image.png)")),
             vec![Image {
@@ -261,6 +287,7 @@ mod inline {
 
     #[test]
     fn image_with_emphasized_alt_text() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize(
                 "![**bold alt text**](http://example.com/image.png)"
@@ -275,6 +302,7 @@ mod inline {
 
     #[test]
     fn image_with_emphasized_title() {
+        init_test_config();
         assert_eq!(
             parse_inline(tokenize(
                 "![alt text](http://example.com/image.png \"**bold title**\")"
@@ -295,6 +323,7 @@ mod block {
 
     #[test]
     fn heading() {
+        init_test_config();
         println!("{:?}", tokenize("# Heading 1"));
         assert_eq!(
             parse_block(tokenize("# Heading 1")),
@@ -309,6 +338,7 @@ mod block {
 
     #[test]
     fn multilevel_heading() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("### Heading 3")),
             Some(Header {
@@ -322,6 +352,7 @@ mod block {
 
     #[test]
     fn heading_with_internal_hashes() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("## Heading 2 with #internal #hashes")),
             Some(Header {
@@ -335,6 +366,7 @@ mod block {
 
     #[test]
     fn heading_with_emphases() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("## Heading 2 with **bold words**")),
             Some(Header {
@@ -355,6 +387,7 @@ mod block {
 
     #[test]
     fn paragraph() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("This is a paragraph.")),
             Some(Paragraph {
@@ -367,6 +400,7 @@ mod block {
 
     #[test]
     fn multiple_paragraphs() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("First paragraph."),
@@ -382,6 +416,7 @@ mod block {
 
     #[test]
     fn multiline_paragraphs() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("First line.\nSecond line.")),
             Some(Paragraph {
@@ -399,6 +434,7 @@ mod block {
 
     #[test]
     fn paragraph_with_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("This is a paragraph with **bold text**.")),
             Some(Paragraph {
@@ -421,6 +457,7 @@ mod block {
 
     #[test]
     fn paragraph_with_mixed_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with **bold text** and *italic text*."
@@ -453,6 +490,7 @@ mod block {
 
     #[test]
     fn paragraph_with_link() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with [a link](http://example.com)."
@@ -479,6 +517,7 @@ mod block {
 
     #[test]
     fn paragraph_with_image_and_emphasis() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize(
                 "This is a paragraph with ![an image](http://example.com/image.png) and **bold text**."
@@ -511,6 +550,7 @@ mod block {
 
     #[test]
     fn complex_paragraph() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize(
@@ -592,6 +632,7 @@ mod block {
 
     #[test]
     fn unordered_list() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("- Item 1"),
@@ -620,6 +661,7 @@ mod block {
 
     #[test]
     fn unordered_list_with_nested_items() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("- Item 1"),
@@ -670,6 +712,7 @@ mod block {
 
     #[test]
     fn unordered_list_with_inlines() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("1. **Bold Item 1**"),
@@ -724,6 +767,7 @@ mod block {
 
     #[test]
     fn ordered_list() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("1. First"),
@@ -752,6 +796,7 @@ mod block {
 
     #[test]
     fn ordered_list_with_nested_items() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("1. Item 1"),
@@ -802,6 +847,7 @@ mod block {
 
     #[test]
     fn ordered_list_with_inlines() {
+        init_test_config();
         assert_eq!(
             parse_blocks(group_lines_to_blocks(vec![
                 tokenize("1. **Bold Item 1**"),
@@ -856,6 +902,7 @@ mod block {
 
     #[test]
     fn code_block() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("```\ncode block\n```")),
             Some(CodeBlock {
@@ -867,6 +914,7 @@ mod block {
 
     #[test]
     fn fenced_code_block_with_language() {
+        init_test_config();
         assert_eq!(
             parse_block(tokenize("```rust\nfn main() {}\n```")),
             Some(CodeBlock {
