@@ -5,27 +5,39 @@ mod parser;
 mod types;
 mod utils;
 
+use clap::{Parser, command};
 use io::read_file;
 use std::error::Error;
 use std::sync::OnceLock;
-use std::{env::args, process};
 
-use crate::config::Config;
+use crate::config::{Config, init_config};
 use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
 use crate::types::Token;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<String> = args().collect();
-    if args.len() < 2 {
-        eprintln!("Error: Missing file path argument.");
-        eprintln!("Usage: cargo run <file_path>");
-        process::exit(1);
-    }
+#[derive(Parser, Debug)]
+#[command(
+    author = "Zackary Liel",
+    version = "0.1.0",
+    about = "A Commonmark compliant markdown parser and static site generator.",
+    override_usage = "rust_mark [OPTIONS] <FILE_PATH>"
+)]
+struct Cli {
+    #[arg(value_name = "FILE_PATH")]
+    file_path: String,
+    #[arg(short, long, default_value = "config.toml")]
+    config: Option<String>,
+}
 
-    let file_path = &args[1];
+fn main() -> Result<(), Box<dyn Error>> {
+    let cli = Cli::parse();
+    let file_path = &cli.file_path;
+    let config_path = cli.config.unwrap_or_else(|| "config.toml".to_string());
+
+    // Setup
+    init_config(&config_path)?;
     let file_contents = read_file(file_path)?;
 
     // Tokenizing
