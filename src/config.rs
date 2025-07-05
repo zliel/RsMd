@@ -1,6 +1,8 @@
 //! This module handles the configuration I/O for the application.
 use serde::Deserialize;
 
+use crate::CONFIG;
+
 /// Represents the global configuration for the application.
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -30,4 +32,14 @@ impl Config {
 
         Ok(config)
     }
+}
+
+pub fn init_config(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    CONFIG.get_or_init(|| {
+        Config::from_file(config_path).unwrap_or_else(|err| {
+            eprintln!("Error loading config: {}", err);
+            std::process::exit(1);
+        })
+    });
+    Ok(())
 }
