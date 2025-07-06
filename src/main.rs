@@ -29,6 +29,8 @@ struct Cli {
     file_path: String,
     #[arg(short, long, default_value = "config.toml")]
     config: Option<String>,
+    #[arg(short, long, default_value = "./output")]
+    output_dir: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
