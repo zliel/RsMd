@@ -64,3 +64,56 @@ pub fn write_html_to_file(
     println!("HTML written to: {}", output_file_path);
     Ok(())
 }
+pub fn generate_default_css() -> String {
+    r#"
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+    }
+    h1, h2, h3 {
+        color: #333;
+    }
+    p {
+        margin: 0 0 10px;
+    }
+    a {
+        color: #007bff;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    pre {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    code {
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+    blockquote {
+        border-left: 4px solid #ccc;
+        padding-left: 10px;
+        color: #666;
+        margin: 0 0 10px;
+    }
+    ul, ol {
+        margin: 0 0 10px 20px;
+    }
+    li {
+        margin: 0 0 5px;
+    }
+    hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 20px 0;
+    }
+    "#
+    .to_string()
+}
