@@ -4,4 +4,4 @@ tab_size = 4
 
 # HTML Generation
 [html]
-css_file = "./styles.css"
+css_file = "default" # "default" for the default styles
