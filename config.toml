@@ -1,0 +1,6 @@
+# Tokenization
+[lexer]
+tab_size = 4
+
+# HTML Generation
+[html]

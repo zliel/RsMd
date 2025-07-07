@@ -1,12 +1,25 @@
+use std::sync::Once;
+
+use crate::config::init_config;
 use crate::lexer::{Token::*, *};
+
+static INIT: Once = Once::new();
+
+fn init_test_config() {
+    INIT.call_once(|| {
+        init_config("config.toml").expect("Failed to initialize test config");
+    });
+}
 
 #[test]
 fn text() {
+    init_test_config();
     assert_eq!(tokenize("Hello"), vec![Text(String::from("Hello"))]);
 }
 
 #[test]
 fn punctuation() {
+    init_test_config();
     assert_eq!(
         tokenize(".-..-,"),
         vec![
@@ -22,16 +35,19 @@ fn punctuation() {
 
 #[test]
 fn whitespace() {
+    init_test_config();
     assert_eq!(tokenize(" "), vec![Whitespace]);
 }
 
 #[test]
 fn newline() {
+    init_test_config();
     assert_eq!(tokenize("\n"), vec![Newline]);
 }
 
 #[test]
 fn italic() {
+    init_test_config();
     assert_eq!(
         tokenize("*italic*"),
         vec![
@@ -50,6 +66,7 @@ fn italic() {
 
 #[test]
 fn bold() {
+    init_test_config();
     assert_eq!(
         tokenize("**bold**"),
         vec![
@@ -68,6 +85,7 @@ fn bold() {
 
 #[test]
 fn mixed_asterisks() {
+    init_test_config();
     assert_eq!(
         tokenize("***bold + italic***"),
         vec![
@@ -90,6 +108,7 @@ fn mixed_asterisks() {
 
 #[test]
 fn link() {
+    init_test_config();
     assert_eq!(
         tokenize("More information available [here](https://www.example.com)"),
         vec![
@@ -119,6 +138,7 @@ fn link() {
 
 #[test]
 fn emphasis_in_link() {
+    init_test_config();
     assert_eq!(
         tokenize("[*italic **bold+italic***](https://www.example.com)"),
         vec![
@@ -156,6 +176,7 @@ fn emphasis_in_link() {
 
 #[test]
 fn unicode() {
+    init_test_config();
     assert_eq!(
         tokenize("これは正解です。"),
         vec![
@@ -167,11 +188,13 @@ fn unicode() {
 
 #[test]
 fn thematic_break() {
+    init_test_config();
     assert_eq!(tokenize("---"), vec![ThematicBreak]);
 }
 
 #[test]
 fn code_tick() {
+    init_test_config();
     assert_eq!(
         tokenize("`code`"),
         vec![CodeTick, Text(String::from("code")), CodeTick]
@@ -180,6 +203,7 @@ fn code_tick() {
 
 #[test]
 fn code_fence() {
+    init_test_config();
     assert_eq!(
         tokenize("```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"),
         vec![
@@ -217,6 +241,7 @@ fn code_fence() {
 
 #[test]
 fn escape_sequence() {
+    init_test_config();
     assert_eq!(
         tokenize("\\*escaped asterisk\\*"),
         vec![
@@ -231,16 +256,19 @@ fn escape_sequence() {
 
 #[test]
 fn tab() {
+    init_test_config();
     assert_eq!(tokenize("\t"), vec![Tab]);
 }
 
 #[test]
 fn tab_via_spaces() {
+    init_test_config();
     assert_eq!(tokenize("    "), vec![Tab]);
 }
 
 #[test]
 fn unicode_mixed() {
+    init_test_config();
     assert_eq!(
         tokenize("**これ** means \"This\"!"),
         vec![
