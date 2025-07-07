@@ -13,7 +13,7 @@ use std::sync::OnceLock;
 
 use crate::config::{Config, init_config};
 use crate::html_generator::generate_html;
-use crate::io::write_html_to_file;
+use crate::io::{copy_css_to_output_dir, write_default_css_file, write_html_to_file};
 use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
 use crate::types::Token;
