@@ -26,6 +26,15 @@ pub fn read_file(file_path: &str) -> Result<String, Box<dyn Error>> {
     Ok(contents)
 }
 
+/// Writes the provided HTML string to a file in the specified output directory.
+///
+/// # Arguments
+/// * `html` - The HTML content to write to the file.
+/// * `output_dir` - The directory where the HTML file should be saved.
+/// * `input_filename` - The name of the input markdown file (used to derive the output filename).
+///
+/// # Returns
+/// Returns a `Result` indicating success or failure.
 pub fn write_html_to_file(
     html: &str,
     output_dir: &str,
