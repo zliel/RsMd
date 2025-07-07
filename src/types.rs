@@ -99,6 +99,39 @@ impl From<String> for MdInlineElement {
     }
 }
 
+impl ToHtml for MdInlineElement {
+    fn to_html(&self) -> String {
+        match self {
+            MdInlineElement::Text { content } => content.clone(),
+            MdInlineElement::Bold { content } => {
+                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                format!("<b>{}</b>", inner_html)
+            }
+            MdInlineElement::Italic { content } => {
+                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                format!("<i>{}</i>", inner_html)
+            }
+            MdInlineElement::Link { text, title, url } => {
+                let label_html = text.iter().map(|el| el.to_html()).collect::<String>();
+                match title {
+                    Some(text) => format!("<a href={url} title={text}>{label_html}</a>"),
+                    None => format!("<a href={url}>{label_html}</a>"),
+                }
+            }
+            MdInlineElement::Image {
+                alt_text,
+                title,
+                url,
+            } => match title {
+                Some(text) => format!("<img src={url} title={text} alt_text={alt_text}/>"),
+                None => format!("<img src={url} alt_text={alt_text}/>"),
+            },
+            MdInlineElement::Code { content } => format!("<code>{content}</code>"),
+            MdInlineElement::Placeholder => unreachable!(),
+        }
+    }
+}
+
 /// Cursor for navigating through a vector of tokens
 ///
 /// This struct provides methods to access the current token, peek ahead or behind, and advance the
