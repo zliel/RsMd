@@ -1,7 +1,7 @@
 use crate::config::init_config;
 use crate::lexer::tokenize;
 use crate::parser::{parse_block, parse_inline};
-use crate::types::{MdBlockElement::*, MdInlineElement::*, MdListItem};
+use crate::types::{MdBlockElement::*, MdInlineElement::*, MdListItem, ToHtml};
 
 use std::sync::Once;
 static INIT: Once = Once::new();
@@ -924,3 +924,105 @@ mod block {
         );
     }
 }
+
+mod html_generation {
+    use crate::parser::{group_lines_to_blocks, parse_blocks};
+
+    use super::*;
+
+    #[test]
+    fn text() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("Plain text."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "Plain text."
+        );
+    }
+
+    #[test]
+    fn escape_char() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("\\*escaped chars work\\*"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "\\*escaped chars work\\*"
+        );
+    }
+
+    #[test]
+    fn bold() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("**Bold** text"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<b>Bold</b> text"
+        );
+    }
+
+    #[test]
+    fn italic() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("*Italic* text"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<i>Italic</i> text"
+        );
+    }
+
+    #[test]
+    fn mixed_emphasis() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("This is **bold** and *italic* text."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "This is <b>bold</b> and <i>italic</i> text."
+        );
+    }
+
+    #[test]
+    fn link() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("[link text](http://example.com)"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<a href=\"http://example.com\">link text</a>"
+        );
+    }
+
+    #[test]
+    fn image() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("![alt text](http://example.com/image.png)"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<img src=\"http://example.com/image.png\" alt=\"alt text\">"
+        );
+    }
+
+    #[test]
+    fn code_span() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("This is `inline code`."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "This is <code>inline code</code>."
+        );
+    }
+
