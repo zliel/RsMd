@@ -13,7 +13,7 @@ use std::sync::OnceLock;
 use crate::config::{Config, init_config};
 use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
-use crate::types::Token;
+use crate::types::{ToHtml, Token};
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -52,9 +52,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let blocks = group_lines_to_blocks(tokenized_lines);
 
     let parsed_elements = parse_blocks(blocks);
-    parsed_elements
+    // HTML Generation
+    let generated_html = parsed_elements
         .iter()
-        .for_each(|block| println!("{:?}", block));
+        .map(|el| format!("{}\n", el.to_html()))
+        .collect::<String>();
 
     Ok(())
 }
