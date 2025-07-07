@@ -1,6 +1,14 @@
+//! This module provides functionality to generate HTML from markdown block elements.
 use crate::CONFIG;
 use crate::types::{MdBlockElement, ToHtml};
 
+/// Generates an HTML string from a vector of MdBlockElements
+///
+/// # Arguments
+/// * `md_elements` - A vector of `MdBlockElement` instances representing the markdown content.
+///
+/// # Returns
+/// Returns a `String` containing the generated HTML.
 pub fn generate_html(md_elements: Vec<MdBlockElement>) -> String {
     let mut html_output = String::new();
 
