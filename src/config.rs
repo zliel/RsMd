@@ -7,12 +7,18 @@ use crate::CONFIG;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub lexer: LexerConfig,
+    pub html: HtmlConfig,
 }
 
 /// Manages all configuration for tokenization
 #[derive(Debug, Deserialize)]
 pub struct LexerConfig {
     pub tab_size: usize,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct HtmlConfig {
+    pub css_file: String,
 }
 
 impl Config {
