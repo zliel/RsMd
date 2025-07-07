@@ -18,7 +18,12 @@ pub struct LexerConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct HtmlConfig {
+    #[serde(default = "default_css")]
     pub css_file: String,
+}
+
+fn default_css() -> String {
+    "default".to_string()
 }
 
 impl Config {
