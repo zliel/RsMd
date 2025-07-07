@@ -16,12 +16,14 @@ pub struct LexerConfig {
     pub tab_size: usize,
 }
 
+/// Manages all configuration for HTML generation
 #[derive(Debug, Deserialize)]
 pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
 }
 
+/// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
 fn default_css() -> String {
     "default".to_string()
 }
