@@ -155,8 +155,8 @@ impl ToHtml for MdInlineElement {
             MdInlineElement::Link { text, title, url } => {
                 let label_html = text.iter().map(|el| el.to_html()).collect::<String>();
                 match title {
-                    Some(text) => format!("<a href={url} title={text}>{label_html}</a>"),
-                    None => format!("<a href={url}>{label_html}</a>"),
+                    Some(text) => format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>"),
+                    None => format!("<a href=\"{url}\">{label_html}</a>"),
                 }
             }
             MdInlineElement::Image {
@@ -164,8 +164,10 @@ impl ToHtml for MdInlineElement {
                 title,
                 url,
             } => match title {
-                Some(text) => format!("<img src={url} title={text} alt_text={alt_text}/>"),
-                None => format!("<img src={url} alt_text={alt_text}/>"),
+                Some(text) => {
+                    format!("<img src=\"{url}\" alt=\"{alt_text}\" title=\"{text}\"/>")
+                }
+                None => format!("<img src=\"{url}\" alt=\"{alt_text}\"/>"),
             },
             MdInlineElement::Code { content } => format!("<code>{content}</code>"),
             MdInlineElement::Placeholder => unreachable!(),
