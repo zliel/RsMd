@@ -28,7 +28,7 @@ struct Cli {
     #[arg(value_name = "FILE_PATH")]
     file_path: String,
     #[arg(short, long, default_value = "config.toml")]
-    config: Option<String>,
+    config: String,
     #[arg(short, long, default_value = "./output")]
     output_dir: String,
 }
@@ -36,7 +36,7 @@ struct Cli {
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     let file_path = &cli.file_path;
-    let config_path = cli.config.unwrap_or_else(|| "config.toml".to_string());
+    let config_path = cli.config;
 
     // Setup
     init_config(&config_path)?;
