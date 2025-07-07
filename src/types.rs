@@ -54,6 +54,41 @@ pub enum MdBlockElement {
     },
 }
 
+impl ToHtml for MdBlockElement {
+    fn to_html(&self) -> String {
+        match self {
+            MdBlockElement::Header { level, content } => {
+                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                format!("<h{level}>{inner_html}</h{level}>")
+            }
+            MdBlockElement::Paragraph { content } => {
+                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                format!("<p>{inner_html}</p>")
+            }
+            MdBlockElement::CodeBlock { language, lines } => {
+                let code = lines.join("\n");
+                match language {
+                    Some(language) => {
+                        format!("<pre><code class=\"language-{language}\">{code}</code></pre>")
+                    }
+                    None => {
+                        format!("<pre><code>{code}</code></pre>")
+                    }
+                }
+            }
+            MdBlockElement::ThematicBreak => "<hr>".to_string(),
+            MdBlockElement::UnorderedList { items } => {
+                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                format!("<ul>{inner_items}</ul>")
+            }
+            MdBlockElement::OrderedList { items } => {
+                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                format!("<ol>{inner_items}</ol>")
+            }
+        }
+    }
+}
+
 /// Represents a list item in markdown, which can contain block elements.
 ///
 /// # Fields
