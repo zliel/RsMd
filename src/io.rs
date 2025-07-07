@@ -64,6 +64,19 @@ pub fn write_html_to_file(
     println!("HTML written to: {}", output_file_path);
     Ok(())
 }
+pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
+    let css_content = generate_default_css();
+    let css_file_path = format!("{}/styles.css", output_dir);
+
+    let mut file =
+        File::create(&css_file_path).map_err(|e| format!("Failed to create CSS file: {}", e))?;
+
+    file.write_all(css_content.as_bytes())
+        .map_err(|e| format!("Failed to write to CSS file: {}", e))?;
+
+    Ok(())
+}
+
 pub fn generate_default_css() -> String {
     r#"
     body {
