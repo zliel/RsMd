@@ -13,6 +13,7 @@ use std::sync::OnceLock;
 
 use crate::config::{Config, init_config};
 use crate::html_generator::generate_html;
+use crate::io::write_html_to_file;
 use crate::lexer::tokenize;
 use crate::parser::{group_lines_to_blocks, parse_blocks};
 use crate::types::Token;
@@ -56,6 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // HTML Generation
     let generated_html = generate_html(parsed_elements);
+    write_html_to_file(&generated_html, &cli.output_dir, file_path)?;
 
     Ok(())
 }
