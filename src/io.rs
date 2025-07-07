@@ -66,6 +66,15 @@ pub fn write_html_to_file(
     Ok(())
 }
 
+/// Copies a CSS file to the specified output directory.
+///
+/// # Arguments
+/// * `input_file_path` - The path of the CSS file to copy, taken from the config
+/// * `output_dir` - The directory where the CSS file should be copied, taken from the CLI
+///
+/// # Returns
+/// Returns a `Result` indicating success or failure. If successful, the CSS file has been copied to the
+/// output directory.
 pub fn copy_css_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
     let file_name = input_file_path
         .rsplit('/')
@@ -79,6 +88,7 @@ pub fn copy_css_to_output_dir(input_file_path: &str, output_dir: &str) -> Result
     Ok(())
 }
 
+/// Writes a default CSS file to the specified output directory.
 pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
     let css_content = generate_default_css();
     let css_file_path = format!("{}/styles.css", output_dir);
@@ -92,6 +102,7 @@ pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Generates a default CSS stylesheet as a string.
 pub fn generate_default_css() -> String {
     r#"
     body {
