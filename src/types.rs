@@ -63,6 +63,12 @@ pub struct MdListItem {
     pub content: MdBlockElement,
 }
 
+impl ToHtml for MdListItem {
+    fn to_html(&self) -> String {
+        format!("<li>{}</li>", self.content.to_html())
+    }
+}
+
 /// Represents inline markdown elements (text, bold/italic, link, etc.)
 #[derive(Debug, PartialEq, Clone)]
 pub enum MdInlineElement {
