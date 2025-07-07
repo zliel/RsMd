@@ -1,5 +1,6 @@
 //! This module provides functionality to related to reading/writing files.
 
+use std::fs;
 use std::{
     error::Error,
     fs::{File, create_dir_all},
@@ -64,6 +65,20 @@ pub fn write_html_to_file(
     println!("HTML written to: {}", output_file_path);
     Ok(())
 }
+
+pub fn copy_css_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
+    let file_name = input_file_path
+        .rsplit('/')
+        .next()
+        .ok_or("Failed to extract filename from input path")?;
+
+    let output_file_path = format!("{}/{}", output_dir, file_name);
+    fs::copy(input_file_path, &output_file_path)
+        .map_err(|e| format!("Failed to copy file: {}", e))?;
+
+    Ok(())
+}
+
 pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
     let css_content = generate_default_css();
     let css_file_path = format!("{}/styles.css", output_dir);
