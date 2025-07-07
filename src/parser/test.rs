@@ -1026,3 +1026,238 @@ mod html_generation {
         );
     }
 
+    #[test]
+    fn plain_text_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("Plain text."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p>Plain text.</p>"
+        );
+    }
+
+    #[test]
+    fn bold_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("**Bold** text"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p><b>Bold</b> text</p>"
+        );
+    }
+
+    #[test]
+    fn italic_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("*Italic* text"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p><i>Italic</i> text</p>"
+        );
+    }
+
+    #[test]
+    fn mixed_emphasis_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("This is **bold** and *italic* text."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p>This is <b>bold</b> and <i>italic</i> text.</p>"
+        );
+    }
+
+    #[test]
+    fn link_in_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("[link text](http://example.com)"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p><a href=\"http://example.com\">link text</a></p>"
+        );
+    }
+
+    #[test]
+    fn image_in_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("![alt text](http://example.com/image.png)"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p><img src=\"http://example.com/image.png\" alt=\"alt text\"></p>"
+        );
+    }
+
+    #[test]
+    fn code_span_in_paragraph() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("This is `inline code`."))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<p>This is <code>inline code</code>.</p>"
+        );
+    }
+
+    #[test]
+    fn heading() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("# Heading 1"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<h1>Heading 1</h1>"
+        );
+    }
+
+    #[test]
+    fn multilevel_heading() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("### Heading 3"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<h3>Heading 3</h3>"
+        );
+    }
+
+    #[test]
+    fn heading_with_emphasis() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("## Heading 2 with **bold words**"))
+                .iter()
+                .map(|el| el.to_html())
+                .collect::<String>(),
+            "<h2>Heading 2 with <b>bold words</b></h2>"
+        );
+    }
+
+    #[test]
+    fn code_block() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(
+                ["```\n", "code block", "second line", "```"]
+                    .iter()
+                    .map(|tokens| tokenize(tokens))
+                    .collect::<Vec<_>>()
+            ))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<pre><code>code block\nsecond line\n</code></pre>"
+        );
+    }
+
+    #[test]
+    fn code_block_with_language() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(
+                ["```rust", "fn main() {}", "```"]
+                    .iter()
+                    .map(|tokens| tokenize(tokens))
+                    .collect::<Vec<_>>()
+            ))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<pre><code class=\"language-rust\">fn main() {}\n</code></pre>"
+        );
+    }
+
+    #[test]
+    fn unordered_list() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("- Item 1"),
+                tokenize("- Item 2")
+            ]))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<ul><li><p>Item 1</p></li><li><p>Item 2</p></li></ul>" // Note that list items contain block-level elements, so text becomes paragraphs
+        );
+    }
+
+    #[test]
+    fn unordered_list_with_nested_items() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("- Item 1"),
+                tokenize("    - Nested Item 1.1"),
+                tokenize("    - Nested Item 1.2"),
+                tokenize("- Item 2")
+            ]))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<ul><li><p>Item 1</p></li><li><ul><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ul></li><li><p>Item 2</p></li></ul>"
+        );
+    }
+
+    #[test]
+    fn ordered_list() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. First"),
+                tokenize("2. Second")
+            ]))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<ol><li><p>First</p></li><li><p>Second</p></li></ol>"
+        );
+    }
+
+    #[test]
+    fn ordered_list_with_nested_items() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. Item 1"),
+                tokenize("    1. Nested Item 1.1"),
+                tokenize("    2. Nested Item 1.2"),
+                tokenize("2. Item 2")
+            ]))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<ol><li><p>Item 1</p></li><li><ol><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ol></li><li><p>Item 2</p></li></ol>"
+        );
+    }
+
+    #[test]
+    fn ordered_list_with_inlines() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("1. **Bold Item 1**"),
+                tokenize("2. *Italic Item 2*"),
+                tokenize("3. [Link Item 3](http://example.com)"),
+                tokenize("4. ![Image Item 4](http://example.com/image.png \"Some title\")"),
+            ]))
+            .iter()
+            .map(|el| el.to_html())
+            .collect::<String>(),
+            "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\">Link Item 3</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"></p></li></ol>"
+        );
+    }
+}
