@@ -1,6 +1,10 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
+pub trait ToHtml {
+    fn to_html(&self) -> String;
+}
+
 /// Represents the different types of tokens that can be found in a markdown line.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
