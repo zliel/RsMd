@@ -1,4 +1,5 @@
 mod config;
+mod html_generator;
 mod io;
 mod lexer;
 mod parser;
