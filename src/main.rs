@@ -7,7 +7,6 @@ mod types;
 mod utils;
 
 use clap::{Parser, command};
-use io::read_file;
 use std::error::Error;
 use std::sync::OnceLock;
 
