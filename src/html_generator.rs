@@ -55,6 +55,13 @@ pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> Strin
     html_output
 }
 
+/// Formats the file name to create a title for the HTML document
+///
+/// # Arguments
+/// * `file_name` - The name of the file, typically ending with `.md`.
+///
+/// # Returns
+/// The formatted title (i.e. "my_test_page.md" -> "My Test Page")
 fn format_title(file_name: &str) -> String {
     let title = file_name.trim_end_matches(".md").replace('_', " ");
 
