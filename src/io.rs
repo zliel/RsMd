@@ -7,6 +7,14 @@ use std::{
     io::{Read, Write},
 };
 
+/// Reads all markdown files from the specified input directory and returns their contents.
+///
+/// # Arguments
+/// * `input_dir` - The directory containing markdown files.
+///
+/// # Returns
+/// Returns a `Result` containing a vector of tuples, where each tuple contains the file name
+/// and its contents as a string.
 pub fn read_input_dir(input_dir: &str) -> Result<Vec<(String, String)>, Box<dyn Error>> {
     let entries: ReadDir = read_dir(input_dir)
         .map_err(|e| format!("Failed to read input directory '{}': {}", input_dir, e))?;
