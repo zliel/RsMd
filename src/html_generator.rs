@@ -9,7 +9,7 @@ use crate::types::{MdBlockElement, ToHtml};
 ///
 /// # Returns
 /// Returns a `String` containing the generated HTML.
-pub fn generate_html(md_elements: Vec<MdBlockElement>) -> String {
+pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> String {
     let mut html_output = String::new();
 
     // Build the HTML head
@@ -18,10 +18,13 @@ pub fn generate_html(md_elements: Vec<MdBlockElement>) -> String {
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Markdown Document</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     "#,
     );
+
+    // Remove the file extension from the file name and make it title case
+    let title = format_title(file_name);
+    head.push_str(&format!("<title>{}</title>\n", title));
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file == "default" {
@@ -50,4 +53,20 @@ pub fn generate_html(md_elements: Vec<MdBlockElement>) -> String {
     html_output.push_str("</html>\n");
 
     html_output
+}
+
+fn format_title(file_name: &str) -> String {
+    let title = file_name.trim_end_matches(".md").replace('_', " ");
+
+    title
+        .split_whitespace()
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
 }
