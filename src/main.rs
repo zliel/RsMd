@@ -25,11 +25,11 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
     author = "Zackary Liel",
     version = "0.1.0",
     about = "A Commonmark compliant markdown parser and static site generator.",
-    override_usage = "rust_mark [OPTIONS] <FILE_PATH>"
+    override_usage = "rust_mark [OPTIONS] <INPUT_DIR>"
 )]
 struct Cli {
-    #[arg(value_name = "FILE_PATH")]
-    file_path: String,
+    #[arg(value_name = "INPUT_DIR")]
+    input_dir: String,
     #[arg(short, long, default_value = "config.toml")]
     config: String,
     #[arg(short, long, default_value = "./output")]
@@ -38,8 +38,8 @@ struct Cli {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
-    let file_path = &cli.file_path;
     let config_path = cli.config;
+    let input_dir = &cli.input_dir;
 
     // Setup
     init_config(&config_path)?;
