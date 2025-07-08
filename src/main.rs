@@ -42,8 +42,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let config_path = &cli.config;
 
     // Setup
-    let file_contents = read_file(file_path)?;
     init_config(config_path)?;
+    let file_contents = read_input_dir(input_dir)?;
+
+    for (file_name, file_content) in file_contents {
+        generate_static_site(&cli, &file_name, file_content)?;
+    }
+
+    Ok(())
+}
 
 fn generate_static_site(
     cli: &Cli,
