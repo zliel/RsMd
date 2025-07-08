@@ -45,6 +45,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_contents = read_file(file_path)?;
     init_config(config_path)?;
 
+fn generate_static_site(
+    cli: &Cli,
+    file_name: &str,
+    file_contents: String,
+) -> Result<(), Box<dyn Error>> {
     // Tokenizing
     let mut tokenized_lines: Vec<Vec<Token>> = Vec::new();
     for line in file_contents.split('\n') {
@@ -57,7 +62,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // HTML Generation
     let generated_html = generate_html(parsed_elements);
-    write_html_to_file(&generated_html, &cli.output_dir, file_path)?;
+    write_html_to_file(&generated_html, &cli.output_dir, file_name)?;
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
         println!("Using custom CSS file: {}", css_file);
