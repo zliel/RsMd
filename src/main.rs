@@ -38,12 +38,12 @@ struct Cli {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
-    let config_path = cli.config;
     let input_dir = &cli.input_dir;
+    let config_path = &cli.config;
 
     // Setup
-    init_config(&config_path)?;
     let file_contents = read_file(file_path)?;
+    init_config(config_path)?;
 
     // Tokenizing
     let mut tokenized_lines: Vec<Vec<Token>> = Vec::new();
