@@ -69,7 +69,7 @@ fn generate_static_site(
     let parsed_elements = parse_blocks(blocks);
 
     // HTML Generation
-    let generated_html = generate_html(parsed_elements);
+    let generated_html = generate_html(file_name, parsed_elements);
     write_html_to_file(&generated_html, &cli.output_dir, file_name)?;
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
