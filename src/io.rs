@@ -3,9 +3,40 @@
 use std::fs;
 use std::{
     error::Error,
-    fs::{File, create_dir_all},
+    fs::{File, ReadDir, create_dir_all, read_dir},
     io::{Read, Write},
 };
+
+pub fn read_input_dir(input_dir: &str) -> Result<Vec<(String, String)>, Box<dyn Error>> {
+    let entries: ReadDir = read_dir(input_dir)
+        .map_err(|e| format!("Failed to read input directory '{}': {}", input_dir, e))?;
+
+    // Collect the contents of all markdown files in the directory
+    let mut file_contents: Vec<(String, String)> = Vec::new();
+    for entry in entries {
+        let entry = entry
+            .map_err(|e| format!("Failed to read entry in directory '{}': {}", input_dir, e))?;
+        let file_path = entry.path();
+        let file_name = file_path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or_else(|| {
+                format!(
+                    "Failed to get file name from path '{}'",
+                    file_path.display()
+                )
+            })?
+            .to_string();
+
+        if file_path.extension().and_then(|s| s.to_str()) == Some("md") {
+            let contents = read_file(file_path.to_str().unwrap())
+                .map_err(|e| format!("Failed to read file '{}': {}", file_path.display(), e))?;
+            file_contents.push((file_name, contents));
+        }
+    }
+
+    Ok(file_contents)
+}
 
 /// Reads the contents of a file into a String.
 ///
