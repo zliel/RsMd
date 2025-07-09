@@ -26,6 +26,16 @@ pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> Strin
     let title = format_title(file_name);
     head.push_str(&format!("<title>{}</title>\n", title));
 
+    let favicon_file = CONFIG.get().unwrap().html.favicon_file.clone();
+    if !favicon_file.is_empty() {
+        let favicon_file = favicon_file.rsplit("/").next().unwrap_or(&favicon_file);
+
+        head.push_str(&format!(
+            "<link rel=\"icon\" href=\"media/{}\">\n",
+            favicon_file
+        ));
+    }
+
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file == "default" {
         head.push_str("<link rel=\"stylesheet\" href=\"styles.css\">\n");
