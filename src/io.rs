@@ -106,6 +106,15 @@ pub fn write_html_to_file(
     Ok(())
 }
 
+/// Copies a favicon file to the specified output directory.
+///
+/// # Arguments
+/// * `input_file_path` - The path of the favicon file to copy, taken from the config
+/// * `output_dir` - The directory where the favicon file should be copied, taken from the CLI
+///
+/// # Returns
+/// Returns a `Result` indicating success or failure. If successful, the favicon file has been
+/// copied to the output directory.
 pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
     let file_name = input_file_path
         .rsplit('/')
