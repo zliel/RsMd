@@ -5,3 +5,4 @@ tab_size = 4
 # HTML Generation
 [html]
 css_file = "default" # "default" for the default styles
+favicon_file = ""    # Empty for no favicon

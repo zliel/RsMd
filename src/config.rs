@@ -21,6 +21,7 @@ pub struct LexerConfig {
 pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
+    pub favicon_file: String,
 }
 
 /// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
