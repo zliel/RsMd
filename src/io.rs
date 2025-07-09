@@ -146,52 +146,123 @@ pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
 pub fn generate_default_css() -> String {
     r#"
     body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 20px;
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+        Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    line-height: 1.75;
+    margin: 0;
+    padding: 2rem;
     }
-    h1, h2, h3 {
-        color: #333;
+
+    /* Card-like container for the page content */
+    #content {
+    background-color: #1e1e1e;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 0 1px #2c2c2c;
     }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+    color: #ffffff;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    }
+
+    h1 {
+    font-size: 2.25rem;
+    border-bottom: 2px solid #2c2c2c;
+    padding-bottom: 0.3rem;
+    }
+    h2 {
+    font-size: 1.75rem;
+    border-bottom: 1px solid #2c2c2c;
+    padding-bottom: 0.2rem;
+    }
+    h3 {
+    font-size: 1.5rem;
+    }
+    h4 {
+    font-size: 1.25rem;
+    }
+    h5,
+    h6 {
+    font-size: 1rem;
+    font-weight: normal;
+    }
+
     p {
-        margin: 0 0 10px;
+    margin-bottom: 1.2rem;
     }
+
     a {
-        color: #007bff;
-        text-decoration: none;
+    color: #4ea1f3;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
     }
     a:hover {
-        text-decoration: underline;
+    color: #82cfff;
+    text-decoration: underline;
     }
+
+    img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
     pre {
-        background-color: #f8f9fa;
-        padding: 10px;
-        border-radius: 5px;
-        overflow-x: auto;
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    box-shadow: inset 0 0 0 1px #333;
     }
     code {
-        font-family: monospace;
-        background-color: #f8f9fa;
-        padding: 2px 4px;
-        border-radius: 3px;
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    background-color: #2a2a2a;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.95em;
+    color: #dcdcdc;
     }
+
     blockquote {
-        border-left: 4px solid #ccc;
-        padding-left: 10px;
-        color: #666;
-        margin: 0 0 10px;
+    border-left: 4px solid #555;
+    padding-left: 1rem;
+    color: #aaa;
+    font-style: italic;
+    margin: 1.5rem 0;
+    background-color: #1a1a1a;
+    border-radius: 4px;
     }
-    ul, ol {
-        margin: 0 0 10px 20px;
+
+    ul,
+    ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.2rem;
     }
     li {
-        margin: 0 0 5px;
+    margin-bottom: 0.5rem;
     }
+
     hr {
-        border: none;
-        border-top: 1px solid #ccc;
-        margin: 20px 0;
+    border: none;
+    border-top: 1px solid #333;
+    margin: 2rem 0;
     }
     "#
     .to_string()
