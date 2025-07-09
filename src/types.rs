@@ -100,7 +100,20 @@ pub struct MdListItem {
 
 impl ToHtml for MdListItem {
     fn to_html(&self) -> String {
-        format!("<li>{}</li>", self.content.to_html())
+        match &self.content {
+            MdBlockElement::UnorderedList { items } => {
+                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                format!("<ul>{inner_items}</ul>")
+            }
+            MdBlockElement::OrderedList { items } => {
+                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                format!("<ol>{inner_items}</ol>")
+            }
+            _ => {
+                let inner_html = self.content.to_html();
+                format!("<li>{inner_html}</li>")
+            }
+        }
     }
 }
 
