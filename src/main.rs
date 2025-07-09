@@ -80,14 +80,6 @@ fn generate_static_site(
     // HTML Generation
     let generated_html = generate_html(file_name, parsed_elements);
     write_html_to_file(&generated_html, &cli.output_dir, file_name)?;
-    let css_file = CONFIG.get().unwrap().html.css_file.clone();
-    if css_file != "default" && !css_file.is_empty() {
-        println!("Using custom CSS file: {}", css_file);
-        copy_css_to_output_dir(&css_file, &cli.output_dir)?;
-    } else {
-        println!("Using default CSS file.");
-        write_default_css_file(&cli.output_dir)?;
-    }
 
     Ok(())
 }
