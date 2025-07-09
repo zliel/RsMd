@@ -59,6 +59,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         write_default_css_file(&cli.output_dir)?;
     }
 
+    let favicon_path = CONFIG.get().unwrap().html.favicon_file.clone();
+    if !favicon_path.is_empty() {
+        println!("Copying favicon from: {}", favicon_path);
+        copy_favicon_to_output_dir(&favicon_path, &cli.output_dir)?;
+    } else {
+        println!("No favicon specified in config.");
+    }
+
     Ok(())
 }
 
