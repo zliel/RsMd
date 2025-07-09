@@ -93,6 +93,7 @@ pub fn write_html_to_file(
         .ok_or("Failed to extract filename from input path")?
         .trim_end_matches(".md");
 
+    let output_dir = output_dir.trim_end_matches('/');
     let output_file_path = format!("{}/{}.html", output_dir, input_filename);
     let mut output_file = File::create(&output_file_path)
         .map_err(|e| format!("Failed to create file '{}': {}", output_file_path, e))?;
