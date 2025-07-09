@@ -106,6 +106,24 @@ pub fn write_html_to_file(
     Ok(())
 }
 
+pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
+    let file_name = input_file_path
+        .rsplit('/')
+        .next()
+        .ok_or("Failed to extract filename from input path")?;
+
+    let output_file_path = format!("{}/media/{}", output_dir, file_name);
+
+    // Ensure the media directory exists
+    create_dir_all(format!("{}/media", output_dir))
+        .map_err(|e| format!("Failed to create media directory: {}", e))?;
+
+    fs::copy(input_file_path, &output_file_path)
+        .map_err(|e| format!("Failed to copy favicon file: {}", e))?;
+
+    Ok(())
+}
+
 /// Copies a CSS file to the specified output directory.
 ///
 /// # Arguments
