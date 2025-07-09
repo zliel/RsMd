@@ -2,6 +2,19 @@
 
 RustMark is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust. It is designed to be fast, efficient, and easy to use.
 
+## Table of Contents
+
+<!--toc:start-->
+
+- [RustMark](#rustmark)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Installation (WIP)](#installation-wip)
+  - [Usage](#usage)
+    - [Options](#options)
+  - [Configuration](#configuration)
+  <!--toc:end-->
+
 ## Features
 
 - Fast Markdown parsing
