@@ -38,7 +38,7 @@ pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> Strin
 
     head.push_str("</head>\n");
 
-    let mut body = String::from("<body>\n");
+    let mut body = String::from("<body>\n<div id=\"content\">\n");
     let inner_html: String = md_elements
         .iter()
         .map(|element| element.to_html())
@@ -46,7 +46,7 @@ pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> Strin
         .join("\n");
 
     body.push_str(&inner_html);
-    body.push_str("\n</body>\n");
+    body.push_str("\n</div>\n</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
