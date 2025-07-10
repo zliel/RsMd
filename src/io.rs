@@ -286,6 +286,42 @@ pub fn generate_default_css() -> String {
     margin-bottom: 0.5rem;
     }
 
+    table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.95rem;
+    }
+
+    th,
+    td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    }
+
+    th {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    font-weight: 600;
+    }
+
+    tr:nth-child(even) td {
+    background-color: #222;
+    }
+
+    tr:hover td {
+    background-color: #2f2f2f;
+    }
+
+    td {
+    color: #ddd;
+    }
+
     hr {
     border: none;
     border-top: 1px solid #333;
