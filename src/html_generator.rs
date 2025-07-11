@@ -125,6 +125,14 @@ pub fn generate_index(file_names: &[String]) -> String {
 
     html_output
 }
+
+fn generate_navbar() -> String {
+    let mut navbar = String::from("<header><nav>\n<ul>\n");
+
+    navbar.push_str("<li><a href=\"index.html\">Home</a></li>\n");
+    navbar.push_str("</ul>\n</nav>\n</header>\n");
+    navbar
+}
 /// Formats the file name to create a title for the HTML document
 ///
 /// # Arguments
