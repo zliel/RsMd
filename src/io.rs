@@ -221,19 +221,62 @@ pub fn generate_default_css() -> String {
         Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     line-height: 1.75;
     margin: 0;
-    padding: 2rem;
+    padding: 0;
     }
 
     /* Card-like container for the page content */
     #content {
     background-color: #1e1e1e;
     max-width: 780px;
-    margin: 0 auto;
+    margin: 1.5rem;
     padding: 2rem;
     border-radius: 12px;
     box-shadow: 0 0 0 1px #2c2c2c;
     }
 
+    header {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    }
+
+    nav {
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    }
+
+    nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+    }
+
+    nav ul li {
+    margin: 0;
+    }
+
+    nav ul li a {
+    color: #ddd;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    nav ul li a:hover {
+    background-color: #2f2f2f;
+    color: #fff;
+    }
+
+    nav ul li a.active {
+    background-color: #4ea1f3;
+    color: #121212;
+    }
     h1,
     h2,
     h3,
