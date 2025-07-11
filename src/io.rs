@@ -134,6 +134,16 @@ pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Re
     Ok(())
 }
 
+/// Copies an image file to the specified output directory.
+///
+/// # Arguments
+/// * `input_file_path` - The path of the image file to copy, taken from the markdown file
+/// * `output_dir` - The directory where the image file should be copied, taken from the CLI
+/// * `md_dir` - The directory where the markdown file is located, used to resolve relative paths
+///
+/// # Returns
+/// Returns a `Result` indicating success or failure. If successful, the image file has been
+/// copied to the output directory under `{output_dir}/media/`.
 pub fn copy_image_to_output_dir(
     input_file_path: &str,
     output_dir: &str,
