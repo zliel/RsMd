@@ -479,6 +479,7 @@ where
         cursor.advance();
     }
 
+    push_buffer_to_collection(&mut label_elements, &mut label_buffer);
     resolve_emphasis(&mut label_elements, &mut delimiter_stack);
 
     // If we didn't find a closing bracket, treat it as text
