@@ -53,7 +53,10 @@ pub fn generate_html(
 
     head.push_str("</head>\n");
 
-    let mut body = String::from("<body>\n<div id=\"content\">\n");
+    let mut body = String::from("<body>\n");
+    body.push_str(&generate_navbar());
+    body.push_str("<div id=\"content\">\n");
+
     let inner_html: String = md_elements
         .iter()
         .map(|element| element.to_html(output_dir, input_dir))
