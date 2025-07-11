@@ -73,6 +73,13 @@ pub fn generate_html(
     html_output
 }
 
+/// Generates the index HTML file that lists all pages
+///
+/// # Arguments
+/// * `file_names` - A slice of `String` containing the names of the markdown files.
+///
+/// # Returns
+/// Returns a `String` containing the generated HTML for the index page.
 pub fn generate_index(file_names: &[String]) -> String {
     let mut html_output = String::new();
 
@@ -129,6 +136,7 @@ pub fn generate_index(file_names: &[String]) -> String {
     html_output
 }
 
+/// Generates the HTML for the navigation bar
 fn generate_navbar() -> String {
     let mut navbar = String::from("<header><nav>\n<ul>\n");
 
