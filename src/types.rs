@@ -2,6 +2,7 @@
 //! block elements, and a cursor for navigating through tokens.
 
 pub trait ToHtml {
+    /// Converts the implementing type to an String representing its HTML equivalent.
     fn to_html(&self) -> String;
 }
 
