@@ -59,11 +59,17 @@ impl ToHtml for MdBlockElement {
     fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
         match self {
             MdBlockElement::Header { level, content } => {
-                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<h{level}>{inner_html}</h{level}>")
             }
             MdBlockElement::Paragraph { content } => {
-                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<p>{inner_html}</p>")
             }
             MdBlockElement::CodeBlock { language, lines } => {
@@ -79,11 +85,17 @@ impl ToHtml for MdBlockElement {
             }
             MdBlockElement::ThematicBreak => "<hr>".to_string(),
             MdBlockElement::UnorderedList { items } => {
-                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<ul>{inner_items}</ul>")
             }
             MdBlockElement::OrderedList { items } => {
-                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
         }
@@ -103,15 +115,21 @@ impl ToHtml for MdListItem {
     fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
         match &self.content {
             MdBlockElement::UnorderedList { items } => {
-                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<ul>{inner_items}</ul>")
             }
             MdBlockElement::OrderedList { items } => {
-                let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
             _ => {
-                let inner_html = self.content.to_html();
+                let inner_html = self.content.to_html(output_dir, input_dir);
                 format!("<li>{inner_html}</li>")
             }
         }
@@ -159,15 +177,24 @@ impl ToHtml for MdInlineElement {
         match self {
             MdInlineElement::Text { content } => content.clone(),
             MdInlineElement::Bold { content } => {
-                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<b>{}</b>", inner_html)
             }
             MdInlineElement::Italic { content } => {
-                let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 format!("<i>{}</i>", inner_html)
             }
             MdInlineElement::Link { text, title, url } => {
-                let label_html = text.iter().map(|el| el.to_html()).collect::<String>();
+                let label_html = text
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir))
+                    .collect::<String>();
                 match title {
                     Some(text) => format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>"),
                     None => format!("<a href=\"{url}\">{label_html}</a>"),

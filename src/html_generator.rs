@@ -9,7 +9,12 @@ use crate::types::{MdBlockElement, ToHtml};
 ///
 /// # Returns
 /// Returns a `String` containing the generated HTML.
-pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> String {
+pub fn generate_html(
+    file_name: &str,
+    md_elements: Vec<MdBlockElement>,
+    output_dir: &str,
+    input_dir: &str,
+) -> String {
     let mut html_output = String::new();
 
     // Build the HTML head
@@ -51,7 +56,7 @@ pub fn generate_html(file_name: &str, md_elements: Vec<MdBlockElement>) -> Strin
     let mut body = String::from("<body>\n<div id=\"content\">\n");
     let inner_html: String = md_elements
         .iter()
-        .map(|element| element.to_html())
+        .map(|element| element.to_html(output_dir, input_dir))
         .collect::<Vec<String>>()
         .join("\n");
 

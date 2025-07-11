@@ -87,7 +87,7 @@ fn generate_static_site(
     let parsed_elements = parse_blocks(blocks);
 
     // HTML Generation
-    let generated_html = generate_html(file_name, parsed_elements);
+    let generated_html = generate_html(file_name, parsed_elements, &cli.output_dir, &cli.input_dir);
     write_html_to_file(&generated_html, &cli.output_dir, file_name)?;
 
     Ok(())
