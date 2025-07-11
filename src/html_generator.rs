@@ -70,6 +70,61 @@ pub fn generate_html(
     html_output
 }
 
+pub fn generate_index(file_names: &[String]) -> String {
+    let mut html_output = String::new();
+
+    let mut head = String::from(
+        r#"<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>All Pages</title>
+    "#,
+    );
+
+    let favicon_file = CONFIG.get().unwrap().html.favicon_file.clone();
+    if !favicon_file.is_empty() {
+        let favicon_file = favicon_file.rsplit("/").next().unwrap_or(&favicon_file);
+
+        head.push_str(&format!(
+            "<link rel=\"icon\" href=\"media/{}\">\n",
+            favicon_file
+        ));
+    }
+
+    let css_file = CONFIG.get().unwrap().html.css_file.clone();
+    if css_file == "default" {
+        head.push_str("<link rel=\"stylesheet\" href=\"styles.css\">\n");
+    } else {
+        head.push_str(&format!(
+            "<link rel=\"stylesheet\" href=\"{}\">\n",
+            css_file
+        ));
+    }
+
+    head.push_str("</head>\n");
+
+    let mut body = String::from("<body>\n");
+    body.push_str(&generate_navbar());
+    body.push_str("<div id=\"content\">\n");
+    body.push_str("<h1>All Pages</h1>\n");
+
+    file_names.iter().for_each(|file_name| {
+        body.push_str(&format!(
+            "<a href=\".\\{}.html\">{}</a><br>\n",
+            file_name.trim_end_matches(".md"),
+            format_title(file_name)
+        ));
+    });
+
+    body.push_str("\n</div>\n</body>\n");
+
+    html_output.push_str(&head);
+    html_output.push_str(&body);
+
+    html_output
+}
 /// Formats the file name to create a title for the HTML document
 ///
 /// # Arguments
