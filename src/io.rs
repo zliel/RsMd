@@ -5,6 +5,7 @@ use std::{
     error::Error,
     fs::{File, ReadDir, create_dir_all, read_dir},
     io::{Read, Write},
+    path::Path,
 };
 
 /// Reads all markdown files from the specified input directory and returns their contents.
@@ -129,6 +130,36 @@ pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Re
 
     fs::copy(input_file_path, &output_file_path)
         .map_err(|e| format!("Failed to copy favicon file: {}", e))?;
+
+    Ok(())
+}
+
+pub fn copy_image_to_output_dir(
+    input_file_path: &str,
+    output_dir: &str,
+    md_dir: &str,
+) -> Result<(), String> {
+    let abs_input_path = if Path::new(input_file_path).is_absolute() {
+        Path::new(input_file_path).to_path_buf()
+    } else {
+        Path::new(md_dir).join(input_file_path)
+    };
+
+    let file_name = abs_input_path
+        .file_name()
+        .ok_or("Failed to extract filename from input path")?;
+
+    let output_file_path = format!("{}/media/{}", output_dir, file_name.to_string_lossy());
+
+    // Ensure the media directory exists
+    create_dir_all(format!("{}/media", output_dir))
+        .map_err(|e| format!("Failed to create media directory: {}", e))?;
+
+    println!("Copying image from: {}", abs_input_path.display());
+    println!("Copying image to: {}", output_file_path);
+
+    fs::copy(&abs_input_path, &output_file_path)
+        .map_err(|e| format!("Failed to copy image file: {}", e))?;
 
     Ok(())
 }
