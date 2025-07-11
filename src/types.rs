@@ -1,6 +1,8 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
+use crate::io::copy_image_to_output_dir;
+
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
     fn to_html(&self, output_dir: &str, input_dir: &str) -> String;
@@ -204,12 +206,26 @@ impl ToHtml for MdInlineElement {
                 alt_text,
                 title,
                 url,
-            } => match title {
-                Some(text) => {
-                    format!("<img src=\"{url}\" alt=\"{alt_text}\" title=\"{text}\"/>")
+            } => {
+                let mut media_url = url.clone();
+
+                // If the image uses a relative path, copy it to the output directory
+                if !url.starts_with("http") {
+                    if let Err(e) = copy_image_to_output_dir(url, output_dir, input_dir) {
+                        eprintln!("Error copying image: {e}");
+                    } else {
+                        // Update the URL to point to the copied image in the output directory
+                        media_url = format!(".\\media\\{}", url);
+                    }
                 }
-                None => format!("<img src=\"{url}\" alt=\"{alt_text}\"/>"),
-            },
+
+                match title {
+                    Some(text) => {
+                        format!("<img src=\"{media_url}\" alt=\"{alt_text}\" title=\"{text}\"/>")
+                    }
+                    None => format!("<img src=\"{media_url}\" alt=\"{alt_text}\"/>"),
+                }
+            }
             MdInlineElement::Code { content } => format!("<code>{content}</code>"),
             MdInlineElement::Placeholder => unreachable!(),
         }
