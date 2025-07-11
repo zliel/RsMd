@@ -49,8 +49,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file_names: Vec<String> = Vec::new();
 
     for (file_name, file_content) in file_contents {
-        file_names.push(file_name.clone());
         generate_static_site(&cli, &file_name, file_content)?;
+        file_names.push(file_name);
     }
 
     let index_html = generate_index(&file_names);
