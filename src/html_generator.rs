@@ -163,7 +163,7 @@ pub fn generate_default_css() -> String {
     #content {
     background-color: #1e1e1e;
     max-width: 780px;
-    margin: 1.5rem;
+    margin: 1.5rem auto;
     padding: 2rem;
     border-radius: 12px;
     box-shadow: 0 0 0 1px #2c2c2c;
