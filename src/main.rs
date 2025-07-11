@@ -11,7 +11,7 @@ use std::error::Error;
 use std::sync::OnceLock;
 
 use crate::config::{Config, init_config};
-use crate::html_generator::generate_html;
+use crate::html_generator::{generate_html, generate_index};
 use crate::io::{
     copy_css_to_output_dir, copy_favicon_to_output_dir, read_input_dir, write_default_css_file,
     write_html_to_file,
@@ -46,10 +46,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Setup
     init_config(config_path)?;
     let file_contents = read_input_dir(input_dir)?;
+    let mut file_names: Vec<String> = Vec::new();
 
     for (file_name, file_content) in file_contents {
+        file_names.push(file_name.clone());
         generate_static_site(&cli, &file_name, file_content)?;
     }
+
+    let index_html = generate_index(&file_names);
+    write_html_to_file(&index_html, &cli.output_dir, "index")?;
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
