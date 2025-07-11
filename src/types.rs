@@ -3,7 +3,7 @@
 
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
-    fn to_html(&self) -> String;
+    fn to_html(&self, output_dir: &str, input_dir: &str) -> String;
 }
 
 /// Represents the different types of tokens that can be found in a markdown line.
@@ -56,7 +56,7 @@ pub enum MdBlockElement {
 }
 
 impl ToHtml for MdBlockElement {
-    fn to_html(&self) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
         match self {
             MdBlockElement::Header { level, content } => {
                 let inner_html = content.iter().map(|el| el.to_html()).collect::<String>();
@@ -100,7 +100,7 @@ pub struct MdListItem {
 }
 
 impl ToHtml for MdListItem {
-    fn to_html(&self) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
         match &self.content {
             MdBlockElement::UnorderedList { items } => {
                 let inner_items = items.iter().map(|item| item.to_html()).collect::<String>();
@@ -155,7 +155,7 @@ impl From<String> for MdInlineElement {
 }
 
 impl ToHtml for MdInlineElement {
-    fn to_html(&self) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
         match self {
             MdInlineElement::Text { content } => content.clone(),
             MdInlineElement::Bold { content } => {
