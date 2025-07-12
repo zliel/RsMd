@@ -109,93 +109,75 @@ pub fn write_html_to_file(
     Ok(())
 }
 
-/// Copies a favicon file to the specified output directory.
+/// Copies a file from the input path to the specified output directory, optionally creating a
+/// subdirectory.
 ///
 /// # Arguments
-/// * `input_file_path` - The path of the favicon file to copy, taken from the config
-/// * `output_dir` - The directory where the favicon file should be copied, taken from the CLI
+/// * `input_file_path` - The path of the file to copy.
+/// * `output_dir` - The directory where the file should be copied.
+/// * `subdir` - An optional subdirectory within the output directory.
+/// * `base_dir` - An optional base directory to resolve relative paths.
 ///
 /// # Returns
-/// Returns a `Result` indicating success or failure. If successful, the favicon file has been
-/// copied to the output directory.
-pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
-    let file_name = input_file_path
-        .rsplit('/')
-        .next()
-        .ok_or("Failed to extract filename from input path")?;
-
-    let output_file_path = format!("{}/media/{}", output_dir, file_name);
-
-    // Ensure the media directory exists
-    create_dir_all(format!("{}/media", output_dir))
-        .map_err(|e| format!("Failed to create media directory: {}", e))?;
-
-    fs::copy(input_file_path, &output_file_path)
-        .map_err(|e| format!("Failed to copy favicon file: {}", e))?;
-
-    Ok(())
-}
-
-/// Copies an image file to the specified output directory.
-///
-/// # Arguments
-/// * `input_file_path` - The path of the image file to copy, taken from the markdown file
-/// * `output_dir` - The directory where the image file should be copied, taken from the CLI
-/// * `md_dir` - The directory where the markdown file is located, used to resolve relative paths
-///
-/// # Returns
-/// Returns a `Result` indicating success or failure. If successful, the image file has been
-/// copied to the output directory under `{output_dir}/media/`.
-pub fn copy_image_to_output_dir(
+/// Returns a `Result` indicating success or failure. If successful, the file is copied to the
+/// output directory.
+pub fn copy_file_to_output_dir(
     input_file_path: &str,
     output_dir: &str,
-    md_dir: &str,
+    subdir: Option<&str>,
+    base_dir: Option<&str>,
 ) -> Result<(), String> {
-    let abs_input_path = if Path::new(input_file_path).is_absolute() {
-        Path::new(input_file_path).to_path_buf()
+    use std::path::PathBuf;
+
+    let abs_input_path = if let Some(base) = base_dir {
+        let input_path = Path::new(input_file_path);
+        if input_path.is_absolute() {
+            input_path.to_path_buf()
+        } else {
+            Path::new(base).join(input_file_path)
+        }
     } else {
-        Path::new(md_dir).join(input_file_path)
+        PathBuf::from(input_file_path)
     };
 
     let file_name = abs_input_path
         .file_name()
         .ok_or("Failed to extract filename from input path")?;
 
-    let output_file_path = format!("{}/media/{}", output_dir, file_name.to_string_lossy());
-
-    // Ensure the media directory exists
-    create_dir_all(format!("{}/media", output_dir))
-        .map_err(|e| format!("Failed to create media directory: {}", e))?;
-
-    println!("Copying image from: {}", abs_input_path.display());
-    println!("Copying image to: {}", output_file_path);
+    let mut output_file_path = PathBuf::from(output_dir);
+    if let Some(sub) = subdir {
+        output_file_path.push(sub);
+        create_dir_all(&output_file_path)
+            .map_err(|e| format!("Failed to create subdirectory '{}': {}", sub, e))?;
+    } else {
+        create_dir_all(&output_file_path)
+            .map_err(|e| format!("Failed to create output directory: {}", e))?;
+    }
+    output_file_path.push(file_name);
 
     fs::copy(&abs_input_path, &output_file_path)
-        .map_err(|e| format!("Failed to copy image file: {}", e))?;
+        .map_err(|e| format!("Failed to copy file: {}", e))?;
 
     Ok(())
 }
 
+/// Copies a favicon file to the specified output directory.
+pub fn copy_favicon_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
+    copy_file_to_output_dir(input_file_path, output_dir, Some("media"), None)
+}
+
+/// Copies an image file to the specified output directory.
+pub fn copy_image_to_output_dir(
+    input_file_path: &str,
+    output_dir: &str,
+    md_dir: &str,
+) -> Result<(), String> {
+    copy_file_to_output_dir(input_file_path, output_dir, Some("media"), Some(md_dir))
+}
+
 /// Copies a CSS file to the specified output directory.
-///
-/// # Arguments
-/// * `input_file_path` - The path of the CSS file to copy, taken from the config
-/// * `output_dir` - The directory where the CSS file should be copied, taken from the CLI
-///
-/// # Returns
-/// Returns a `Result` indicating success or failure. If successful, the CSS file has been copied to the
-/// output directory.
 pub fn copy_css_to_output_dir(input_file_path: &str, output_dir: &str) -> Result<(), String> {
-    let file_name = input_file_path
-        .rsplit('/')
-        .next()
-        .ok_or("Failed to extract filename from input path")?;
-
-    let output_file_path = format!("{}/{}", output_dir, file_name);
-    fs::copy(input_file_path, &output_file_path)
-        .map_err(|e| format!("Failed to copy file: {}", e))?;
-
-    Ok(())
+    copy_file_to_output_dir(input_file_path, output_dir, None, None)
 }
 
 /// Writes a default CSS file to the specified output directory.
