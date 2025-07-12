@@ -473,6 +473,12 @@ where
                 push_buffer_to_collection(&mut label_elements, &mut label_buffer);
                 break;
             }
+            Token::OpenBracket => {
+                push_buffer_to_collection(&mut label_elements, &mut label_buffer);
+
+                let inner_link = parse_link_type(cursor, make_link);
+                label_elements.push(inner_link);
+            }
             Token::EmphasisRun { delimiter, length } => {
                 push_buffer_to_collection(&mut label_elements, &mut label_buffer);
                 delimiter_stack.push(Delimiter {
@@ -485,6 +491,19 @@ where
                     can_close: true,
                 });
                 label_elements.push(MdInlineElement::Placeholder);
+            }
+            Token::Punctuation(s) if s == "!" => {
+                if cursor.peek_ahead(1) != Some(&Token::OpenBracket) {
+                    label_buffer.push('!');
+                    cursor.advance();
+                    continue;
+                }
+
+                push_buffer_to_collection(&mut label_elements, &mut label_buffer);
+                cursor.advance(); // Advance to the open bracket
+                let inner_image = parse_link_type(cursor, make_image);
+
+                label_elements.push(inner_image);
             }
             Token::Text(s) | Token::Punctuation(s) => label_buffer.push_str(s),
             Token::OrderedListMarker(s) => label_buffer.push_str(s),
