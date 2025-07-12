@@ -466,6 +466,7 @@ where
     let mut label_elements: Vec<MdInlineElement> = Vec::new();
     let mut label_buffer = String::new();
     let mut delimiter_stack: Vec<Delimiter> = Vec::new();
+    cursor.advance(); // Move past the open bracket
     while let Some(token) = cursor.current() {
         match token {
             Token::CloseBracket => {
