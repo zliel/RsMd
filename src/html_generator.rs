@@ -180,7 +180,7 @@ pub fn generate_default_css() -> String {
     nav {
     padding: 1rem 2rem;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     }
 
     nav ul {
