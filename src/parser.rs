@@ -431,6 +431,24 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
     code_content
 }
 
+/// Helper function used in `parse_link_type` to circumvent Rust's limitation on closure recursion
+fn make_image(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
+    MdInlineElement::Image {
+        alt_text: flatten_inline(label),
+        title,
+        url: uri,
+    }
+}
+
+/// Helper function used in `parse_link_type` to circumven Rust's limitation on closure recursion
+fn make_link(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
+    MdInlineElement::Link {
+        text: label,
+        title,
+        url: uri,
+    }
+}
+
 /// Parses a link type (either a link or an image) from the current position of the cursor.
 ///
 /// # Arguments
