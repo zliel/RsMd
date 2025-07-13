@@ -95,12 +95,12 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 
     let favicon_file = CONFIG.get().unwrap().html.favicon_file.clone();
     if !favicon_file.is_empty() {
-        let favicon_file = favicon_file.rsplit("/").next().unwrap_or(&favicon_file);
+        let mut favicon_path = build_rel_prefix(html_rel_path);
+        favicon_path.push("media");
+        favicon_path.push(favicon_file.rsplit("/").next().unwrap());
+        let favicon_href = favicon_path.to_string_lossy();
 
-        head.push_str(&format!(
-            "<link rel=\"icon\" href=\"media/{}\">\n",
-            favicon_file
-        ));
+        head.push_str(&format!("<link rel=\"icon\" href=\"{}\">\n", favicon_href));
     }
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
