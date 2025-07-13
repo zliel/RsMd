@@ -14,13 +14,14 @@ pub fn generate_html(
     md_elements: Vec<MdBlockElement>,
     output_dir: &str,
     input_dir: &str,
+    html_rel_path: &str,
 ) -> String {
     let mut html_output = String::new();
 
-    let head = generate_head(file_name);
+    let head = generate_head(file_name, html_rel_path);
 
     let mut body = String::from("<body>\n");
-    body.push_str(&generate_navbar());
+    body.push_str(&generate_navbar(html_rel_path));
     body.push_str("<div id=\"content\">\n");
 
     let inner_html: String = md_elements
@@ -49,10 +50,10 @@ pub fn generate_html(
 pub fn generate_index(file_names: &[String]) -> String {
     let mut html_output = String::new();
 
-    let head = generate_head("index");
+    let head = generate_head("index", "index.html");
 
     let mut body = String::from("<body>\n");
-    body.push_str(&generate_navbar());
+    body.push_str(&generate_navbar("index.html"));
     body.push_str("<div id=\"content\">\n");
     body.push_str("<h1>All Pages</h1>\n");
 
@@ -76,7 +77,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 ///
 /// # Arguments
 /// * `file_name` - The name of the markdown file, used to set the title of the HTML document.
-fn generate_head(file_name: &str) -> String {
+fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let mut head = String::from(
         r#"<!DOCTYPE html>
     <html lang="en">
@@ -115,7 +116,7 @@ fn generate_head(file_name: &str) -> String {
 }
 
 /// Generates the HTML for the navigation bar
-fn generate_navbar() -> String {
+fn generate_navbar(html_rel_path: &str) -> String {
     let mut navbar = String::from("<header><nav>\n<ul>\n");
 
     navbar.push_str("<li><a href=\"index.html\">Home</a></li>\n");
