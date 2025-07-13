@@ -1,6 +1,8 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
+use std::path::{Path, PathBuf};
+
 use crate::io::copy_image_to_output_dir;
 
 pub trait ToHtml {
@@ -213,10 +215,19 @@ impl ToHtml for MdInlineElement {
                 if !url.starts_with("http") {
                     if let Err(e) = copy_image_to_output_dir(url, output_dir, input_dir) {
                         eprintln!("Error copying image: {e}");
-                    } else {
-                        // Update the URL to point to the copied image in the output directory
-                        media_url = format!(".\\media\\{}", url);
                     }
+
+                    // Update the URL to point to the copied image in the output directory
+                    let url = url.rsplit('/').next().unwrap_or(url);
+
+                    let rel_path = Path::new(html_rel_path);
+                    let depth = rel_path.parent().map_or(0, |p| p.components().count());
+                    let mut rel_prefix = PathBuf::new();
+                    for _ in 0..depth {
+                        rel_prefix.push("..");
+                    }
+
+                    media_url = format!("{}/media/{}", rel_prefix.to_string_lossy(), url);
                 }
 
                 match title {
