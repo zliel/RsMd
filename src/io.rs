@@ -125,31 +125,38 @@ pub fn read_file(file_path: &str) -> Result<String, Box<dyn Error>> {
 pub fn write_html_to_file(
     html: &str,
     output_dir: &str,
-    input_filename: &str,
+    input_filepath: &str,
 ) -> Result<(), Box<dyn Error>> {
     println!("Writing output to directory: {}", output_dir);
+    let output_dir = Path::new(output_dir).join(input_filepath);
 
-    // Ensure the output directory exists
-    create_dir_all(output_dir)
-        .map_err(|e| format!("Failed to create directory '{}': {}", output_dir, e))?;
+    if let Some(parent) = output_dir.parent() {
+        create_dir_all(parent).map_err(|e| {
+            format!(
+                "Failed to create output directory '{}': {}",
+                parent.display(),
+                e
+            )
+        })?;
+    }
 
-    // Get only the filename without the extension and without the path
-    let input_filename = input_filename
-        .rsplit('/')
-        .next()
-        .ok_or("Failed to extract filename from input path")?
-        .trim_end_matches(".md");
+    let mut output_file = File::create(&output_dir).map_err(|e| {
+        format!(
+            "Failed to create output file '{}': {}",
+            output_dir.display(),
+            e
+        )
+    })?;
 
-    let output_dir = output_dir.trim_end_matches('/');
-    let output_file_path = format!("{}/{}.html", output_dir, input_filename);
-    let mut output_file = File::create(&output_file_path)
-        .map_err(|e| format!("Failed to create file '{}': {}", output_file_path, e))?;
+    output_file.write_all(html.as_bytes()).map_err(|e| {
+        format!(
+            "Failed to write to output file '{}': {}",
+            output_dir.display(),
+            e
+        )
+    })?;
 
-    output_file
-        .write_all(html.as_bytes())
-        .map_err(|e| format!("Failed to write to file '{}': {}", output_file_path, e))?;
-
-    println!("HTML written to: {}", output_file_path);
+    println!("HTML written to: {}", output_dir.display());
     Ok(())
 }
 
