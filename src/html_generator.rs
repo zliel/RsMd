@@ -85,7 +85,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 /// # Arguments
 /// * `file_name` - The name of the markdown file, used to set the title of the HTML document.
 /// * `html_rel_path` - The relative path to the HTML file from the output directory, used for
-/// linking
+///   linking
 fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let mut head = String::from(
         r#"<!DOCTYPE html>
