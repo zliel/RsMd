@@ -34,7 +34,8 @@ impl Config {
     /// Creates a new `Config` instance from the specified file path
     ///
     /// # Arguments
-    /// * `file_path` - The path to the configuration file.
+    /// * `file_path` - The path to the configuration file. If no file path is provided as a CLI
+    ///   arg, it will check for a config file in the default config directory.
     ///
     /// # Returns
     /// Returns a `Result` containing the `Config` instance if successful
