@@ -102,8 +102,16 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     }
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
+    let html_path = Path::new(html_rel_path);
+    let depth = html_path.parent().map_or(0, |p| p.components().count());
+    let mut css_path = PathBuf::new();
+    for _ in 0..depth {
+        css_path.push("..");
+    }
+    css_path.push("styles.css");
+    let css_href = css_path.to_string_lossy();
     if css_file == "default" {
-        head.push_str("<link rel=\"stylesheet\" href=\"styles.css\">\n");
+        head.push_str(format!("<link rel=\"stylesheet\" href=\"{}\">\n", css_href).as_str());
     } else {
         head.push_str(&format!(
             "<link rel=\"stylesheet\" href=\"{}\">\n",
