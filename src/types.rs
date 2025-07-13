@@ -197,6 +197,22 @@ impl ToHtml for MdInlineElement {
                     .iter()
                     .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
+
+                if url.contains("youtube.com") && url.contains("v=") {
+                    let video_id = url
+                        .split("v=")
+                        .nth(1)
+                        .and_then(|s| s.split('&').next())
+                        .unwrap_or("");
+
+                    return format!(
+                        r#"<div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/{}" 
+                        title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>"#,
+                        video_id
+                    );
+                }
                 match title {
                     Some(text) => format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>"),
                     None => format!("<a href=\"{url}\">{label_html}</a>"),
