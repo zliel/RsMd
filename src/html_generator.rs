@@ -28,7 +28,7 @@ pub fn generate_html(
 
     let inner_html: String = md_elements
         .iter()
-        .map(|element| element.to_html(output_dir, input_dir))
+        .map(|element| element.to_html(output_dir, input_dir, html_rel_path))
         .collect::<Vec<String>>()
         .join("\n");
 
@@ -112,6 +112,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     }
     css_path.push("styles.css");
     let css_href = css_path.to_string_lossy();
+
     if css_file == "default" {
         head.push_str(format!("<link rel=\"stylesheet\" href=\"{}\">\n", css_href).as_str());
     } else {
