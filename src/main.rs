@@ -32,7 +32,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 struct Cli {
     #[arg(value_name = "INPUT_DIR")]
     input_dir: String,
-    #[arg(short, long, default_value = "config.toml")]
+    #[arg(short, long, default_value = "")]
     config: String,
     #[arg(short, long, default_value = "./output")]
     output_dir: String,
