@@ -5,7 +5,7 @@ use crate::io::copy_image_to_output_dir;
 
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
-    fn to_html(&self, output_dir: &str, input_dir: &str) -> String;
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String;
 }
 
 /// Represents the different types of tokens that can be found in a markdown line.
@@ -58,19 +58,19 @@ pub enum MdBlockElement {
 }
 
 impl ToHtml for MdBlockElement {
-    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
         match self {
             MdBlockElement::Header { level, content } => {
                 let inner_html = content
                     .iter()
-                    .map(|el| el.to_html(output_dir, input_dir))
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<h{level}>{inner_html}</h{level}>")
             }
             MdBlockElement::Paragraph { content } => {
                 let inner_html = content
                     .iter()
-                    .map(|el| el.to_html(output_dir, input_dir))
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<p>{inner_html}</p>")
             }
@@ -89,14 +89,14 @@ impl ToHtml for MdBlockElement {
             MdBlockElement::UnorderedList { items } => {
                 let inner_items = items
                     .iter()
-                    .map(|item| item.to_html(output_dir, input_dir))
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<ul>{inner_items}</ul>")
             }
             MdBlockElement::OrderedList { items } => {
                 let inner_items = items
                     .iter()
-                    .map(|item| item.to_html(output_dir, input_dir))
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
@@ -114,24 +114,24 @@ pub struct MdListItem {
 }
 
 impl ToHtml for MdListItem {
-    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
         match &self.content {
             MdBlockElement::UnorderedList { items } => {
                 let inner_items = items
                     .iter()
-                    .map(|item| item.to_html(output_dir, input_dir))
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<ul>{inner_items}</ul>")
             }
             MdBlockElement::OrderedList { items } => {
                 let inner_items = items
                     .iter()
-                    .map(|item| item.to_html(output_dir, input_dir))
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
             _ => {
-                let inner_html = self.content.to_html(output_dir, input_dir);
+                let inner_html = self.content.to_html(output_dir, input_dir, html_rel_path);
                 format!("<li>{inner_html}</li>")
             }
         }
@@ -175,27 +175,27 @@ impl From<String> for MdInlineElement {
 }
 
 impl ToHtml for MdInlineElement {
-    fn to_html(&self, output_dir: &str, input_dir: &str) -> String {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
         match self {
             MdInlineElement::Text { content } => content.clone(),
             MdInlineElement::Bold { content } => {
                 let inner_html = content
                     .iter()
-                    .map(|el| el.to_html(output_dir, input_dir))
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<b>{}</b>", inner_html)
             }
             MdInlineElement::Italic { content } => {
                 let inner_html = content
                     .iter()
-                    .map(|el| el.to_html(output_dir, input_dir))
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<i>{}</i>", inner_html)
             }
             MdInlineElement::Link { text, title, url } => {
                 let label_html = text
                     .iter()
-                    .map(|el| el.to_html(output_dir, input_dir))
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 match title {
                     Some(text) => format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>"),
