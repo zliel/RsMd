@@ -214,3 +214,17 @@ pub fn get_config_path() -> Result<PathBuf, String> {
     Ok(config_path)
 }
 
+pub fn does_config_exist() -> Result<bool, String> {
+    let config_path = get_config_path()?;
+
+    let config_exists = fs::exists(&config_path).map_err(|e| {
+        format!(
+            "Failed to check if config file exists at '{}': {}",
+            config_path.display(),
+            e
+        )
+    })?;
+
+    Ok(config_exists)
+}
+
