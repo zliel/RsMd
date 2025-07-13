@@ -7,7 +7,12 @@ use crate::utils::build_rel_prefix;
 /// Generates an HTML string from a vector of MdBlockElements
 ///
 /// # Arguments
+/// * `file_name` - The name of the markdown file, used to set the title of the HTML document.
 /// * `md_elements` - A vector of `MdBlockElement` instances representing the markdown content.
+/// * `output_dir` - The directory where the generated HTML file will be saved.
+/// * `input_dir` - The directory where the markdown files are located, used for relative paths.
+/// * `html_rel_path` - The relative path to the HTML file from the output directory, used for
+///   linking resources.
 ///
 /// # Returns
 /// Returns a `String` containing the generated HTML.
@@ -79,6 +84,8 @@ pub fn generate_index(file_names: &[String]) -> String {
 ///
 /// # Arguments
 /// * `file_name` - The name of the markdown file, used to set the title of the HTML document.
+/// * `html_rel_path` - The relative path to the HTML file from the output directory, used for
+/// linking
 fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let mut head = String::from(
         r#"<!DOCTYPE html>
