@@ -1,9 +1,7 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
-use std::path::{Path, PathBuf};
-
-use crate::io::copy_image_to_output_dir;
+use crate::{io::copy_image_to_output_dir, utils::build_rel_prefix};
 
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
@@ -220,12 +218,7 @@ impl ToHtml for MdInlineElement {
                     // Update the URL to point to the copied image in the output directory
                     let url = url.rsplit('/').next().unwrap_or(url);
 
-                    let rel_path = Path::new(html_rel_path);
-                    let depth = rel_path.parent().map_or(0, |p| p.components().count());
-                    let mut rel_prefix = PathBuf::new();
-                    for _ in 0..depth {
-                        rel_prefix.push("..");
-                    }
+                    let rel_prefix = build_rel_prefix(html_rel_path);
 
                     media_url = format!("./{}/media/{}", rel_prefix.to_string_lossy(), url);
                 }

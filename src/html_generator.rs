@@ -1,8 +1,8 @@
 //! This module provides functionality to generate HTML from markdown block elements.
-use std::path::{Path, PathBuf};
 
 use crate::CONFIG;
 use crate::types::{MdBlockElement, ToHtml};
+use crate::utils::build_rel_prefix;
 
 /// Generates an HTML string from a vector of MdBlockElements
 ///
@@ -104,12 +104,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     }
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
-    let html_path = Path::new(html_rel_path);
-    let depth = html_path.parent().map_or(0, |p| p.components().count());
-    let mut css_path = PathBuf::new();
-    for _ in 0..depth {
-        css_path.push("..");
-    }
+    let mut css_path = build_rel_prefix(html_rel_path);
     css_path.push("styles.css");
     let css_href = css_path.to_string_lossy();
 
@@ -130,13 +125,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 fn generate_navbar(html_rel_path: &str) -> String {
     let mut navbar = String::from("<header><nav>\n<ul>\n");
 
-    let html_path = Path::new(html_rel_path);
-    let depth = html_path.parent().map_or(0, |p| p.components().count());
-    let mut home_path = PathBuf::new();
-    for _ in 0..depth {
-        home_path.push("..");
-    }
-
+    let mut home_path = build_rel_prefix(html_rel_path);
     home_path.push("index.html");
     let home_href = home_path.to_string_lossy();
 
