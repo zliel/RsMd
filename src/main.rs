@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Setup
     init_config(config_path)?;
-    let file_contents = read_input_dir(input_dir)?;
+    let file_contents = read_input_dir(input_dir, run_recursively)?;
     let mut file_names: Vec<String> = Vec::new();
 
     for (file_name, file_content) in file_contents {
