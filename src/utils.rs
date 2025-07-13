@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 /// Utility function for pushing a String buffer to a generic collection.
 ///
 /// This function checks if the buffer is not empty, converts it to the type `T`, and pushes it to
@@ -18,4 +20,14 @@ where
         collection.push(T::from(buffer.to_string()));
         buffer.clear();
     }
+}
+
+pub fn build_rel_prefix(html_rel_path: &str) -> PathBuf {
+    let rel_path = Path::new(html_rel_path);
+    let depth = rel_path.parent().map_or(0, |p| p.components().count());
+    let mut rel_prefix = PathBuf::new();
+    for _ in 0..depth {
+        rel_prefix.push("..");
+    }
+    rel_prefix
 }
