@@ -22,6 +22,8 @@ where
     }
 }
 
+/// Builds a relative prefix path based on the provided HTML relative path.
+/// Note that this function does not add the final file name, only the preceding directories.
 pub fn build_rel_prefix(html_rel_path: &str) -> PathBuf {
     let rel_path = Path::new(html_rel_path);
     let depth = rel_path.parent().map_or(0, |p| p.components().count());

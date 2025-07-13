@@ -66,6 +66,7 @@ pub fn read_input_dir(
     }
 }
 
+/// Helper function to recursively visit subdirectories and collect markdown file contents.
 fn visit_dir(
     dir: &Path,
     base: &Path,
@@ -245,6 +246,9 @@ pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Returns the OS-specific configuration path.
+///
+/// This function creates a directory named "rustmark" in the user's configuration directory.
 pub fn get_config_path() -> Result<PathBuf, String> {
     let mut config_path = config_dir().unwrap_or_else(|| PathBuf::from("."));
 
@@ -261,6 +265,7 @@ pub fn get_config_path() -> Result<PathBuf, String> {
     Ok(config_path)
 }
 
+/// Checks if the configuration file exists at the specified path.
 pub fn does_config_exist() -> Result<bool, String> {
     let config_path = get_config_path()?;
 
@@ -275,6 +280,8 @@ pub fn does_config_exist() -> Result<bool, String> {
     Ok(config_exists)
 }
 
+/// Writes the default configuration to the configuration file to the OS-specific default configuration
+/// path.
 pub fn write_default_config(default_config: &Config) -> Result<(), String> {
     let config_path = get_config_path()?;
 
