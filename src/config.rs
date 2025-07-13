@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::CONFIG;
+use crate::io::{does_config_exist, get_config_path, write_default_config};
 
 /// Represents the global configuration for the application.
 #[derive(Debug, Deserialize, Serialize)]
@@ -38,13 +39,46 @@ impl Config {
     /// # Returns
     /// Returns a `Result` containing the `Config` instance if successful
     pub fn from_file(file_path: &str) -> Result<Self, String> {
-        let contents = std::fs::read_to_string(file_path)
-            .map_err(|e| format!("Failed to read config file: {}", e))?;
+        // If the user provided a config file, try to load the config from it
+        if !file_path.is_empty() {
+            println!("Loading config from: {}", file_path);
+            let contents = std::fs::read_to_string(file_path)
+                .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-        let config: Config =
-            toml::from_str(&contents).map_err(|e| format!("Failed to parse config file: {}", e))?;
+            let config: Config = toml::from_str(&contents)
+                .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
-        Ok(config)
+            return Ok(config);
+        }
+
+        // If the user did not provide a config file, check if a config file exists in the config
+        // directory
+        if does_config_exist()? {
+            let config_path =
+                get_config_path().map_err(|e| format!("Failed to get config path: {}", e))?;
+
+            let contents = std::fs::read_to_string(&config_path)
+                .map_err(|e| format!("Failed to read config file: {}", e))?;
+
+            let config: Config = toml::from_str(&contents)
+                .map_err(|e| format!("Failed to parse config file: {}", e))?;
+
+            Ok(config)
+        } else {
+            // Write the default config if it does not exist
+            let default_config = Config {
+                lexer: LexerConfig { tab_size: 4 },
+                html: HtmlConfig {
+                    css_file: default_css(),
+                    favicon_file: String::new(),
+                },
+            };
+
+            write_default_config(&default_config)
+                .map_err(|e| format!("Failed to write default config: {}", e))?;
+
+            Ok(default_config)
+        }
     }
 }
 
