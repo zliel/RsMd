@@ -1,4 +1,6 @@
 //! This module provides functionality to generate HTML from markdown block elements.
+use std::path::{Path, PathBuf};
+
 use crate::CONFIG;
 use crate::types::{MdBlockElement, ToHtml};
 
