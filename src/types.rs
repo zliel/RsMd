@@ -213,9 +213,24 @@ impl ToHtml for MdInlineElement {
                         video_id
                     );
                 }
-                match title {
-                    Some(text) => format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>"),
-                    None => format!("<a href=\"{url}\">{label_html}</a>"),
+
+                // Links to external URLs will open in a new tab
+                if url.starts_with("http") {
+                    match title {
+                        Some(text) => {
+                            format!(
+                                "<a href=\"{url}\" title=\"{text}\" target=\"_blank\">{label_html}⮺</a>"
+                            )
+                        }
+                        None => format!("<a href=\"{url}\" target=\"_blank\">{label_html}⮺</a>"),
+                    }
+                } else {
+                    match title {
+                        Some(text) => {
+                            format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>")
+                        }
+                        None => format!("<a href=\"{url}\">{label_html}</a>"),
+                    }
                 }
             }
             MdInlineElement::Image {
