@@ -227,7 +227,7 @@ impl ToHtml for MdInlineElement {
                         rel_prefix.push("..");
                     }
 
-                    media_url = format!("{}/media/{}", rel_prefix.to_string_lossy(), url);
+                    media_url = format!("./{}/media/{}", rel_prefix.to_string_lossy(), url);
                 }
 
                 match title {
