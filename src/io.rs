@@ -22,31 +22,50 @@ use crate::html_generator::generate_default_css;
 /// # Returns
 /// Returns a `Result` containing a vector of tuples, where each tuple contains the file name
 /// and its contents as a string.
-pub fn read_input_dir(input_dir: &str) -> Result<Vec<(String, String)>, Box<dyn Error>> {
-    let entries: ReadDir = read_dir(input_dir)
-        .map_err(|e| format!("Failed to read input directory '{}': {}", input_dir, e))?;
+pub fn read_input_dir(
+    input_dir: &str,
+    run_recursively: &bool,
+) -> Result<Vec<(String, String)>, Box<dyn Error>> {
+    if *run_recursively {
+        // If recursive, visit all subdirectories
+        let mut file_contents: Vec<(String, String)> = Vec::new();
+        let input_dir = Path::new(input_dir);
+        visit_dir(Path::new(input_dir), input_dir, &mut file_contents)?;
 
-    // Collect the contents of all markdown files in the directory
-    let mut file_contents: Vec<(String, String)> = Vec::new();
-    for entry in entries {
-        let entry = entry
-            .map_err(|e| format!("Failed to read entry in directory '{}': {}", input_dir, e))?;
-        let file_path = entry.path();
-        let file_name = file_path
-            .file_name()
-            .and_then(|s| s.to_str())
-            .ok_or_else(|| {
-                format!(
-                    "Failed to get file name from path '{}'",
-                    file_path.display()
-                )
-            })?
-            .to_string();
+        Ok(file_contents)
+    } else {
+        let entries: ReadDir = read_dir(input_dir)
+            .map_err(|e| format!("Failed to read input directory '{}': {}", input_dir, e))?;
 
-        if file_path.extension().and_then(|s| s.to_str()) == Some("md") {
-            let contents = read_file(file_path.to_str().unwrap())
-                .map_err(|e| format!("Failed to read file '{}': {}", file_path.display(), e))?;
-            file_contents.push((file_name, contents));
+        // Collect the contents of all markdown files in the directory
+        let mut file_contents: Vec<(String, String)> = Vec::new();
+        for entry in entries {
+            let entry = entry
+                .map_err(|e| format!("Failed to read entry in directory '{}': {}", input_dir, e))?;
+
+            let file_path = entry.path();
+            let file_name = file_path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .ok_or_else(|| {
+                    format!(
+                        "Failed to get file name from path '{}'",
+                        file_path.display()
+                    )
+                })?
+                .to_string();
+
+            if file_path.extension().and_then(|s| s.to_str()) == Some("md") {
+                let contents = read_file(file_path.to_str().unwrap())
+                    .map_err(|e| format!("Failed to read file '{}': {}", file_path.display(), e))?;
+                file_contents.push((file_name, contents));
+            }
+        }
+
+        Ok(file_contents)
+    }
+}
+
 fn visit_dir(
     dir: &Path,
     base: &Path,
