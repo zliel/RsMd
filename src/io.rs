@@ -228,3 +228,33 @@ pub fn does_config_exist() -> Result<bool, String> {
     Ok(config_exists)
 }
 
+pub fn write_default_config(default_config: &Config) -> Result<(), String> {
+    let config_path = get_config_path()?;
+
+    if does_config_exist()? {
+        return Ok(());
+    }
+
+    println!(
+        "Config file does not exist, creating default config at: {}",
+        config_path.display()
+    );
+
+    let mut file = File::create(&config_path).map_err(|e| {
+        format!(
+            "Failed to create config file at '{}': {}",
+            config_path.display(),
+            e
+        )
+    })?;
+
+    let default_config_content = toml::to_string_pretty(&default_config)
+        .map_err(|e| format!("Failed to serialize default config: {}", e))?;
+
+    file.write_all(default_config_content.as_bytes())
+        .map_err(|e| format!("Failed to write to config file: {}", e))?;
+
+    println!("Default config file created at: {}", config_path.display());
+
+    Ok(())
+}
