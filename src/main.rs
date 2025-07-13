@@ -51,13 +51,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_contents = read_input_dir(input_dir, run_recursively)?;
     let mut file_names: Vec<String> = Vec::new();
 
-    for (file_name, file_content) in file_contents {
-        generate_static_site(&cli, &file_name, file_content)?;
-        file_names.push(file_name);
+    for (file_path, file_content) in file_contents {
+        generate_static_site(&cli, &file_path, file_content)?;
+        file_names.push(file_path);
     }
 
     let index_html = generate_index(&file_names);
-    write_html_to_file(&index_html, &cli.output_dir, "index")?;
+    write_html_to_file(&index_html, &cli.output_dir, "index.html")?;
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
@@ -81,7 +81,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn generate_static_site(
     cli: &Cli,
-    file_name: &str,
+    file_path: &str,
     file_contents: String,
 ) -> Result<(), Box<dyn Error>> {
     // Tokenizing
