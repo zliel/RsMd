@@ -36,12 +36,15 @@ struct Cli {
     config: String,
     #[arg(short, long, default_value = "./output")]
     output_dir: String,
+    #[arg(short, long, default_value = "false")]
+    recursive: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     let input_dir = &cli.input_dir;
     let config_path = &cli.config;
+    let run_recursively = &cli.recursive;
 
     // Setup
     init_config(config_path)?;
