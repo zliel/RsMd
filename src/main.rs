@@ -8,6 +8,7 @@ mod utils;
 
 use clap::{Parser, command};
 use std::error::Error;
+use std::path::Path;
 use std::sync::OnceLock;
 
 use crate::config::{Config, init_config};
@@ -95,8 +96,26 @@ fn generate_static_site(
     let parsed_elements = parse_blocks(blocks);
 
     // HTML Generation
-    let generated_html = generate_html(file_name, parsed_elements, &cli.output_dir, &cli.input_dir);
-    write_html_to_file(&generated_html, &cli.output_dir, file_name)?;
+    let generated_html = generate_html(
+        file_path,
+        parsed_elements,
+        &cli.output_dir,
+        &cli.input_dir,
+        file_path,
+    );
+
+    let html_relative_path = if file_path.ends_with(".md") {
+        file_path.trim_end_matches(".md").to_string() + ".html"
+    } else {
+        file_path.to_string() + ".html"
+    };
+
+    let output_path = Path::new(&cli.output_dir).join(&html_relative_path);
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    write_html_to_file(&generated_html, &cli.output_dir, &html_relative_path)?;
 
     Ok(())
 }
