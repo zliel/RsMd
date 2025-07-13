@@ -119,7 +119,17 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 fn generate_navbar(html_rel_path: &str) -> String {
     let mut navbar = String::from("<header><nav>\n<ul>\n");
 
-    navbar.push_str("<li><a href=\"index.html\">Home</a></li>\n");
+    let html_path = Path::new(html_rel_path);
+    let depth = html_path.parent().map_or(0, |p| p.components().count());
+    let mut home_path = PathBuf::new();
+    for _ in 0..depth {
+        home_path.push("..");
+    }
+
+    home_path.push("index.html");
+    let home_href = home_path.to_string_lossy();
+
+    navbar.push_str(format!("<li><a href=\"{}\">Home</a></li>\n", home_href).as_str());
     navbar.push_str("</ul>\n</nav>\n</header>\n");
     navbar
 }
