@@ -1,6 +1,7 @@
 //! This module provides functionality to related to reading/writing files.
 
 use std::fs;
+use std::path::PathBuf;
 use std::{
     error::Error,
     fs::{File, ReadDir, create_dir_all, read_dir},
@@ -8,6 +9,9 @@ use std::{
     path::Path,
 };
 
+use dirs::config_dir;
+
+use crate::config::Config;
 use crate::html_generator::generate_default_css;
 
 /// Reads all markdown files from the specified input directory and returns their contents.
@@ -193,3 +197,20 @@ pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
 
     Ok(())
 }
+
+pub fn get_config_path() -> Result<PathBuf, String> {
+    let mut config_path = config_dir().unwrap_or_else(|| PathBuf::from("."));
+
+    config_path.push("rustmark");
+    create_dir_all(&config_path).map_err(|e| {
+        format!(
+            "Failed to create config directory '{}': {}",
+            config_path.display(),
+            e
+        )
+    })?;
+    config_path.push("config.toml");
+
+    Ok(config_path)
+}
+
