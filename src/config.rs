@@ -1,23 +1,23 @@
 //! This module handles the configuration I/O for the application.
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::CONFIG;
 
 /// Represents the global configuration for the application.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     pub lexer: LexerConfig,
     pub html: HtmlConfig,
 }
 
 /// Manages all configuration for tokenization
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LexerConfig {
     pub tab_size: usize,
 }
 
 /// Manages all configuration for HTML generation
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
