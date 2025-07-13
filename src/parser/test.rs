@@ -939,7 +939,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("Plain text."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "Plain text."
             );
@@ -951,7 +951,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("\\*escaped chars work\\*"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "\\*escaped chars work\\*"
             );
@@ -963,7 +963,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("**Bold** text"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<b>Bold</b> text"
             );
@@ -975,7 +975,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("*Italic* text"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<i>Italic</i> text"
             );
@@ -987,7 +987,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("This is **bold** and *italic* text."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "This is <b>bold</b> and <i>italic</i> text."
             );
@@ -999,7 +999,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("[link text](http://example.com)"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<a href=\"http://example.com\">link text</a>"
             );
@@ -1011,7 +1011,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("![alt text](http://example.com/image.png)"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<img src=\"http://example.com/image.png\" alt=\"alt text\"/>"
             );
@@ -1023,7 +1023,7 @@ mod html_generation {
             assert_eq!(
                 parse_inline(tokenize("This is `inline code`."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "This is <code>inline code</code>."
             );
@@ -1039,7 +1039,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("Plain text."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p>Plain text.</p>"
             );
@@ -1051,7 +1051,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("**Bold** text"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p><b>Bold</b> text</p>"
             );
@@ -1063,7 +1063,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("*Italic* text"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p><i>Italic</i> text</p>"
             );
@@ -1075,7 +1075,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("This is **bold** and *italic* text."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p>This is <b>bold</b> and <i>italic</i> text.</p>"
             );
@@ -1087,7 +1087,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("[link text](http://example.com)"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p><a href=\"http://example.com\">link text</a></p>"
             );
@@ -1099,7 +1099,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("![alt text](http://example.com/image.png)"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p><img src=\"http://example.com/image.png\" alt=\"alt text\"/></p>"
             );
@@ -1111,7 +1111,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("This is `inline code`."))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<p>This is <code>inline code</code>.</p>"
             );
@@ -1123,7 +1123,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("# Heading 1"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<h1>Heading 1</h1>"
             );
@@ -1135,7 +1135,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("### Heading 3"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<h3>Heading 3</h3>"
             );
@@ -1147,7 +1147,7 @@ mod html_generation {
             assert_eq!(
                 parse_block(tokenize("## Heading 2 with **bold words**"))
                     .iter()
-                    .map(|el| el.to_html("test_output", "test_input"))
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
                 "<h2>Heading 2 with <b>bold words</b></h2>"
             );
@@ -1164,7 +1164,7 @@ mod html_generation {
                         .collect::<Vec<_>>()
                 ))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<pre><code>code block\nsecond line\n</code></pre>"
             );
@@ -1181,7 +1181,7 @@ mod html_generation {
                         .collect::<Vec<_>>()
                 ))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<pre><code class=\"language-rust\">fn main() {}\n</code></pre>"
             );
@@ -1196,7 +1196,7 @@ mod html_generation {
                     tokenize("- Item 2")
                 ]))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ul><li><p>Item 1</p></li><li><p>Item 2</p></li></ul>" // Note that list items contain block-level elements, so text becomes paragraphs
             );
@@ -1213,7 +1213,7 @@ mod html_generation {
                     tokenize("- Item 2")
                 ]))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ul><li><p>Item 1</p></li><ul><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ul><li><p>Item 2</p></li></ul>"
             );
@@ -1228,7 +1228,7 @@ mod html_generation {
                     tokenize("2. Second")
                 ]))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ol><li><p>First</p></li><li><p>Second</p></li></ol>"
             );
@@ -1245,7 +1245,7 @@ mod html_generation {
                     tokenize("2. Item 2")
                 ]))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ol><li><p>Item 1</p></li><ol><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ol><li><p>Item 2</p></li></ol>"
             );
@@ -1262,7 +1262,7 @@ mod html_generation {
                     tokenize("4. ![Image Item 4](http://example.com/image.png \"Some title\")"),
                 ]))
                 .iter()
-                .map(|el| el.to_html("test_output", "test_input"))
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\">Link Item 3</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
             );
