@@ -47,10 +47,31 @@ pub fn read_input_dir(input_dir: &str) -> Result<Vec<(String, String)>, Box<dyn 
             let contents = read_file(file_path.to_str().unwrap())
                 .map_err(|e| format!("Failed to read file '{}': {}", file_path.display(), e))?;
             file_contents.push((file_name, contents));
+fn visit_dir(
+    dir: &Path,
+    base: &Path,
+    file_contents: &mut Vec<(String, String)>,
+) -> Result<(), Box<dyn Error>> {
+    for entry in read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_dir() {
+            visit_dir(&path, base, file_contents)?;
+        } else if path.extension().and_then(|s| s.to_str()) == Some("md") {
+            let rel_path = path
+                .strip_prefix(base)
+                .map_err(|e| format!("Failed to strip base path: {}", e))?
+                .to_string_lossy()
+                .to_string();
+            let contents = read_file(path.to_str().unwrap())
+                .map_err(|e| format!("Failed to read file '{}': {}", path.display(), e))?;
+
+            file_contents.push((rel_path, contents));
         }
     }
 
-    Ok(file_contents)
+    Ok(())
 }
 
 /// Reads the contents of a file into a String.
