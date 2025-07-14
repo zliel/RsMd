@@ -1,6 +1,7 @@
 # RustMark
 
-RustMark is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust. It is designed to be fast, efficient, and easy to use.
+RustMark is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
+It is designed to be fast, efficient, and easy to use.
 
 ## Table of Contents
 
@@ -21,6 +22,21 @@ RustMark is a 100% Commonmark-compliant Markdown parser and static site generato
 - HTML generation
 - Custom configuration
 - Easy-to-use CLI
+
+## Preview
+
+For the example input:
+
+```markdown
+# Hello, World
+
+This is some sample Markdown content.
+Here's a picture saying "Hello, World!":
+![Image with a black background and white text saying "Hello, World!"](https://www.dummyimage.com/600x400/000/fff&text=Hello,+World!)
+```
+
+The following HTML page will be generated:
+![Image of the generated HTML page with matching content](./media/example_screenshot.png)
 
 ## Installation (WIP)
 
@@ -47,12 +63,23 @@ You can also use the following CLI arguments to customize the behavior of RustMa
 
 - `-c, --config <CONFIG>`: Specify a custom configuration file (default: `./config.toml`).
 - `-o, --output-dir <OUTPUT_DIR>`: Specify the output directory for the generated HTML files (default: `/output`).
+- `-r, --recursive`: Recursively parse all Markdown files in the specified directory and its subdirectories.
 - `-h, --help`: Display help information.
 - `-V, --version`: Display the version of RustMark.
 
 ## Configuration
 
-You can customize RustMark's behavior by specifying a config file to use. Here is the default configuration:
+You can customize RustMark's behavior by specifying a config file to use. If a config file is not specified, then the default configuration directory will be checked; if no config file already exists, then the default `config.toml` file will be written.
+
+The default configuration directories (defined by the [`dirs` crate](https://docs.rs/dirs/latest/dirs/) ) are:
+
+| Platform | Value                                 | Example                                           |
+| -------- | ------------------------------------- | ------------------------------------------------- |
+| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/rustmark                      |
+| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/rustmark |
+| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\rustmark           |
+
+Here is the default configuration:
 
 ```toml
 # Tokenization
