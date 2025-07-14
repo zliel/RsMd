@@ -63,7 +63,7 @@ You can also use the following CLI arguments to customize the behavior of RustMa
 
 - `-c, --config <CONFIG>`: Specify a custom configuration file (default: `./config.toml`).
 - `-o, --output-dir <OUTPUT_DIR>`: Specify the output directory for the generated HTML files (default: `/output`).
-- `-r, --recursive`: Recursively parse all Markdown files in the specified directory and its subdirectories.
+- `-r, --recursive`: Recursively parse all Markdown files in the specified directory and its subdirectories. (default: false if not present)
 - `-h, --help`: Display help information.
 - `-V, --version`: Display the version of RustMark.
 
