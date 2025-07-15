@@ -166,6 +166,7 @@ impl ToHtml for MdListItem {
     }
 }
 
+/// Represents a cell in a markdown table.
 #[derive(Debug, PartialEq, Clone)]
 pub struct MdTableCell {
     pub content: Vec<MdInlineElement>,
@@ -194,6 +195,7 @@ impl ToHtml for MdTableCell {
     }
 }
 
+/// Represents the alignment of table cells in markdown tables.
 #[derive(Debug, PartialEq, Clone)]
 pub enum TableAlignment {
     Left,
