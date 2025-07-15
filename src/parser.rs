@@ -847,6 +847,9 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::Text(_)) => {
                 group_text_lines(&mut blocks, &mut current_block, &mut previous_block, line);
             }
+            Some(Token::TableCellSeparator) => {
+                group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
+            }
             _ => {
                 // Catch-all for everything else
                 current_block.extend(line.to_owned());
@@ -860,6 +863,26 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
         current_block.clear();
     }
     blocks
+}
+
+fn group_table_rows(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if let Some(previous_line_start) = previous_block.first() {
+        if previous_line_start == &Token::TableCellSeparator {
+            previous_block.push(Token::Newline);
+            previous_block.extend(line.to_owned());
+            blocks.pop();
+            blocks.push(previous_block.clone());
+        } else {
+            current_block.extend(line.to_owned());
+        }
+    } else {
+        current_block.extend(line.to_owned());
+    }
 }
 
 /// Groups text lines into blocks based on the previous block's content.
