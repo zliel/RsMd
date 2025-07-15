@@ -226,6 +226,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
             Some(Token::CloseParenthesis) => line_buffer.push(')'),
             Some(Token::OpenBracket) => line_buffer.push('['),
             Some(Token::CloseBracket) => line_buffer.push(']'),
+            Some(Token::TableCellSeparator) => line_buffer.push('|'),
             Some(Token::EmphasisRun { delimiter, length }) => {
                 line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
             }
