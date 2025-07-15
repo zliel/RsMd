@@ -358,7 +358,7 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
 /// Helper function to split a row of tokens into individual cells.
 ///
 /// By removing the starting and ending "|" characters, it ensures that the row is
-/// split into the proper number of cells,.
+/// split into the proper number of cells.
 fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
     let mut cells: Vec<Vec<Token>> = row
         .split(|token| *token == Token::TableCellSeparator)
