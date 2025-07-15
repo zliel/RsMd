@@ -76,6 +76,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 
     html_output.push_str(&head);
     html_output.push_str(&body);
+    html_output.push_str("</html>\n");
 
     html_output
 }
