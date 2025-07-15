@@ -66,7 +66,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 
     file_names.iter().for_each(|file_name| {
         body.push_str(&format!(
-            "<a href=\".\\{}.html\">{}</a><br>\n",
+            "<a href=\"./{}.html\">{}</a><br>\n",
             file_name.trim_end_matches(".md"),
             format_title(file_name)
         ));
