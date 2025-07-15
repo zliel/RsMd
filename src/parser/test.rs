@@ -1250,6 +1250,123 @@ mod block {
             }]
         );
     }
+
+    #[test]
+    fn table_with_empty_cells() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("| Header 1 | Header 2 |"),
+                tokenize("| :-- | :-- |"),
+                tokenize("| Cell 1 ||"),
+                tokenize("|| Cell 4 |")
+            ])),
+            vec![Table {
+                headers: vec![
+                    MdTableCell {
+                        content: vec![Text {
+                            content: String::from(" Header 1 ")
+                        }],
+                        alignment: TableAlignment::Left,
+                        is_header: true,
+                    },
+                    MdTableCell {
+                        content: vec![Text {
+                            content: String::from(" Header 2 ")
+                        }],
+                        alignment: TableAlignment::Left,
+                        is_header: true,
+                    }
+                ],
+                body: vec![
+                    vec![
+                        MdTableCell {
+                            content: vec![Text {
+                                content: String::from(" Cell 1 ")
+                            }],
+                            alignment: TableAlignment::Left,
+                            is_header: false,
+                        },
+                        MdTableCell {
+                            content: vec![],
+                            alignment: TableAlignment::Left,
+                            is_header: false,
+                        }
+                    ],
+                    vec![
+                        MdTableCell {
+                            content: vec![],
+                            alignment: TableAlignment::Left,
+                            is_header: false,
+                        },
+                        MdTableCell {
+                            content: vec![Text {
+                                content: String::from(" Cell 4 ")
+                            }],
+                            alignment: TableAlignment::Left,
+                            is_header: false,
+                        }
+                    ]
+                ]
+            }]
+        );
+    }
+
+    #[test]
+    fn table_with_missing_cell() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("| Header 1 | Header 2 |"),
+                tokenize("| -- | -- |"),
+                tokenize("| Cell 1 | Cell 2 |"),
+                tokenize("| Cell 3 |")
+            ])),
+            vec![Table {
+                headers: vec![
+                    MdTableCell {
+                        content: vec![Text {
+                            content: String::from(" Header 1 ")
+                        }],
+                        alignment: TableAlignment::None,
+                        is_header: true,
+                    },
+                    MdTableCell {
+                        content: vec![Text {
+                            content: String::from(" Header 2 ")
+                        }],
+                        alignment: TableAlignment::None,
+                        is_header: true,
+                    }
+                ],
+                body: vec![
+                    vec![
+                        MdTableCell {
+                            content: vec![Text {
+                                content: String::from(" Cell 1 ")
+                            }],
+                            alignment: TableAlignment::None,
+                            is_header: false,
+                        },
+                        MdTableCell {
+                            content: vec![Text {
+                                content: String::from(" Cell 2 ")
+                            }],
+                            alignment: TableAlignment::None,
+                            is_header: false,
+                        }
+                    ],
+                    vec![MdTableCell {
+                        content: vec![Text {
+                            content: String::from(" Cell 3 ")
+                        }],
+                        alignment: TableAlignment::None,
+                        is_header: false,
+                    }]
+                ]
+            }]
+        )
+    }
 }
 
 mod html_generation {
@@ -1662,6 +1779,40 @@ mod html_generation {
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> <b>Bold Cell</b> </td><td style=\"text-align:left;\"> <i>Italic Cell</i> </td></tr><tr><td style=\"text-align:left;\"> <a href=\"http://example.com\" target=\"_blank\">Link⮺</a> </td><td style=\"text-align:left;\"> <img src=\"http://example.com/image.png\" alt=\"Image\"/> </td></tr></tbody></table>"
+            );
+        }
+
+        #[test]
+        fn table_with_empty_cells() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 |"),
+                    tokenize("| :-- | :-- |"),
+                    tokenize("| Cell 1 ||"),
+                    tokenize("|| Cell 4 |")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"></td></tr><tr><td style=\"text-align:left;\"></td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+            );
+        }
+
+        #[test]
+        fn table_with_missing_cell() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 |"),
+                    tokenize("| -- | -- |"),
+                    tokenize("| Cell 1 | Cell 2 |"),
+                    tokenize("| Cell 3 |")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td></tr></tbody></table>"
             );
         }
     }
