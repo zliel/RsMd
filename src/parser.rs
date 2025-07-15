@@ -440,7 +440,7 @@ fn make_image(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -
     }
 }
 
-/// Helper function used in `parse_link_type` to circumven Rust's limitation on closure recursion
+/// Helper function used in `parse_link_type` to circumvent Rust's limitation on closure recursion
 fn make_link(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
     MdInlineElement::Link {
         text: label,
