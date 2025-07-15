@@ -4,7 +4,10 @@
 //! It provides functions to parse block-level elements like headings, lists, and code blocks,
 //! as well as inline elements like links, images, and emphasis.
 
-use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, Token, TokenCursor};
+use crate::types::{
+    Delimiter, MdBlockElement, MdInlineElement, MdListItem, MdTableCell, TableAlignment, Token,
+    TokenCursor,
+};
 use crate::utils::push_buffer_to_collection;
 
 /// Parses a vector of tokenized markdown lines into a vector of block-level Markdown elements.
@@ -376,6 +379,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::OpenParenthesis => buffer.push('('),
             Token::CloseParenthesis => buffer.push(')'),
             Token::ThematicBreak => buffer.push_str("---"),
+            Token::TableCellSeparator => buffer.push('|'),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -414,6 +418,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::CloseParenthesis => code_content.push(')'),
             Token::OpenBracket => code_content.push('['),
             Token::CloseBracket => code_content.push(']'),
+            Token::TableCellSeparator => code_content.push('|'),
             Token::EmphasisRun { delimiter, length } => {
                 code_content.push_str(delimiter.to_string().repeat(*length).as_str())
             }
@@ -512,6 +517,7 @@ where
             Token::ThematicBreak => label_buffer.push_str("---"),
             Token::OpenParenthesis => label_buffer.push('('),
             Token::CloseParenthesis => label_buffer.push(')'),
+            Token::TableCellSeparator => label_buffer.push('|'),
             _ => {}
         }
         cursor.advance();
@@ -553,6 +559,7 @@ where
                 Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
+                Token::TableCellSeparator => uri.push('|'),
                 _ => {}
             }
         } else {
@@ -576,6 +583,7 @@ where
                 Token::OpenBracket => title.push('['),
                 Token::CloseBracket => title.push(']'),
                 Token::OpenParenthesis => title.push('('),
+                Token::TableCellSeparator => title.push('|'),
                 Token::Tab => title.push('\t'),
                 Token::Newline => title.push_str("\\n"),
                 Token::Whitespace => title.push(' '),
