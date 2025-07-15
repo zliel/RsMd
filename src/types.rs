@@ -1,6 +1,13 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
+use crate::{io::copy_image_to_output_dir, utils::build_rel_prefix};
+
+pub trait ToHtml {
+    /// Converts the implementing type to an String representing its HTML equivalent.
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String;
+}
+
 /// Represents the different types of tokens that can be found in a markdown line.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
@@ -50,6 +57,53 @@ pub enum MdBlockElement {
     },
 }
 
+impl ToHtml for MdBlockElement {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
+        match self {
+            MdBlockElement::Header { level, content } => {
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<h{level}>{inner_html}</h{level}>")
+            }
+            MdBlockElement::Paragraph { content } => {
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<p>{inner_html}</p>")
+            }
+            MdBlockElement::CodeBlock { language, lines } => {
+                let code = lines.join("\n");
+                match language {
+                    Some(language) => {
+                        format!("<pre><code class=\"language-{language}\">{code}</code></pre>")
+                    }
+                    None => {
+                        format!("<pre><code>{code}</code></pre>")
+                    }
+                }
+            }
+            MdBlockElement::ThematicBreak => "<hr>".to_string(),
+            MdBlockElement::UnorderedList { items } => {
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<ul>{inner_items}</ul>")
+            }
+            MdBlockElement::OrderedList { items } => {
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<ol>{inner_items}</ol>")
+            }
+        }
+    }
+}
+
 /// Represents a list item in markdown, which can contain block elements.
 ///
 /// # Fields
@@ -57,6 +111,31 @@ pub enum MdBlockElement {
 #[derive(Debug, PartialEq)]
 pub struct MdListItem {
     pub content: MdBlockElement,
+}
+
+impl ToHtml for MdListItem {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
+        match &self.content {
+            MdBlockElement::UnorderedList { items } => {
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<ul>{inner_items}</ul>")
+            }
+            MdBlockElement::OrderedList { items } => {
+                let inner_items = items
+                    .iter()
+                    .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<ol>{inner_items}</ol>")
+            }
+            _ => {
+                let inner_html = self.content.to_html(output_dir, input_dir, html_rel_path);
+                format!("<li>{inner_html}</li>")
+            }
+        }
+    }
 }
 
 /// Represents inline markdown elements (text, bold/italic, link, etc.)
@@ -91,6 +170,99 @@ impl From<String> for MdInlineElement {
     fn from(s: String) -> Self {
         MdInlineElement::Text {
             content: s.to_string(),
+        }
+    }
+}
+
+impl ToHtml for MdInlineElement {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
+        match self {
+            MdInlineElement::Text { content } => content.clone(),
+            MdInlineElement::Bold { content } => {
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<b>{}</b>", inner_html)
+            }
+            MdInlineElement::Italic { content } => {
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<i>{}</i>", inner_html)
+            }
+            MdInlineElement::Link { text, title, url } => {
+                let label_html = text
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+
+                if url.contains("youtube.com") && url.contains("v=") {
+                    let video_id = url
+                        .split("v=")
+                        .nth(1)
+                        .and_then(|s| s.split('&').next())
+                        .unwrap_or("");
+
+                    return format!(
+                        r#"<div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/{}" 
+                        title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>"#,
+                        video_id
+                    );
+                }
+
+                // Links to external URLs will open in a new tab
+                if url.starts_with("http") {
+                    match title {
+                        Some(text) => {
+                            format!(
+                                "<a href=\"{url}\" title=\"{text}\" target=\"_blank\">{label_html}⮺</a>"
+                            )
+                        }
+                        None => format!("<a href=\"{url}\" target=\"_blank\">{label_html}⮺</a>"),
+                    }
+                } else {
+                    match title {
+                        Some(text) => {
+                            format!("<a href=\"{url}\" title=\"{text}\">{label_html}</a>")
+                        }
+                        None => format!("<a href=\"{url}\">{label_html}</a>"),
+                    }
+                }
+            }
+            MdInlineElement::Image {
+                alt_text,
+                title,
+                url,
+            } => {
+                let mut media_url = url.clone();
+
+                // If the image uses a relative path, copy it to the output directory
+                if !url.starts_with("http") {
+                    if let Err(e) = copy_image_to_output_dir(url, output_dir, input_dir) {
+                        eprintln!("Error copying image: {e}");
+                    }
+
+                    // Update the URL to point to the copied image in the output directory
+                    let url = url.rsplit('/').next().unwrap_or(url);
+
+                    let rel_prefix = build_rel_prefix(html_rel_path);
+
+                    media_url = format!("./{}/media/{}", rel_prefix.to_string_lossy(), url);
+                }
+
+                match title {
+                    Some(text) => {
+                        format!("<img src=\"{media_url}\" alt=\"{alt_text}\" title=\"{text}\"/>")
+                    }
+                    None => format!("<img src=\"{media_url}\" alt=\"{alt_text}\"/>"),
+                }
+            }
+            MdInlineElement::Code { content } => format!("<code>{content}</code>"),
+            MdInlineElement::Placeholder => unreachable!(),
         }
     }
 }

@@ -431,6 +431,24 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
     code_content
 }
 
+/// Helper function used in `parse_link_type` to circumvent Rust's limitation on closure recursion
+fn make_image(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
+    MdInlineElement::Image {
+        alt_text: flatten_inline(label),
+        title,
+        url: uri,
+    }
+}
+
+/// Helper function used in `parse_link_type` to circumvent Rust's limitation on closure recursion
+fn make_link(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
+    MdInlineElement::Link {
+        text: label,
+        title,
+        url: uri,
+    }
+}
+
 /// Parses a link type (either a link or an image) from the current position of the cursor.
 ///
 /// # Arguments
@@ -448,11 +466,18 @@ where
     let mut label_elements: Vec<MdInlineElement> = Vec::new();
     let mut label_buffer = String::new();
     let mut delimiter_stack: Vec<Delimiter> = Vec::new();
+    cursor.advance(); // Move past the open bracket
     while let Some(token) = cursor.current() {
         match token {
             Token::CloseBracket => {
                 push_buffer_to_collection(&mut label_elements, &mut label_buffer);
                 break;
+            }
+            Token::OpenBracket => {
+                push_buffer_to_collection(&mut label_elements, &mut label_buffer);
+
+                let inner_link = parse_link_type(cursor, make_link);
+                label_elements.push(inner_link);
             }
             Token::EmphasisRun { delimiter, length } => {
                 push_buffer_to_collection(&mut label_elements, &mut label_buffer);
@@ -467,6 +492,19 @@ where
                 });
                 label_elements.push(MdInlineElement::Placeholder);
             }
+            Token::Punctuation(s) if s == "!" => {
+                if cursor.peek_ahead(1) != Some(&Token::OpenBracket) {
+                    label_buffer.push('!');
+                    cursor.advance();
+                    continue;
+                }
+
+                push_buffer_to_collection(&mut label_elements, &mut label_buffer);
+                cursor.advance(); // Advance to the open bracket
+                let inner_image = parse_link_type(cursor, make_image);
+
+                label_elements.push(inner_image);
+            }
             Token::Text(s) | Token::Punctuation(s) => label_buffer.push_str(s),
             Token::OrderedListMarker(s) => label_buffer.push_str(s),
             Token::Escape(ch) => label_buffer.push_str(format!("\\{ch}").as_str()),
@@ -479,6 +517,7 @@ where
         cursor.advance();
     }
 
+    push_buffer_to_collection(&mut label_elements, &mut label_buffer);
     resolve_emphasis(&mut label_elements, &mut delimiter_stack);
 
     // If we didn't find a closing bracket, treat it as text
