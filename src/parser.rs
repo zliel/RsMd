@@ -4,7 +4,10 @@
 //! It provides functions to parse block-level elements like headings, lists, and code blocks,
 //! as well as inline elements like links, images, and emphasis.
 
-use crate::types::{Delimiter, MdBlockElement, MdInlineElement, MdListItem, Token, TokenCursor};
+use crate::types::{
+    Delimiter, MdBlockElement, MdInlineElement, MdListItem, MdTableCell, TableAlignment, Token,
+    TokenCursor,
+};
 use crate::utils::push_buffer_to_collection;
 
 /// Parses a vector of tokenized markdown lines into a vector of block-level Markdown elements.
@@ -51,6 +54,7 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::OrderedListMarker(_)) => Some(parse_ordered_list(line)),
         Some(Token::CodeFence) => Some(parse_codeblock(line)),
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
+        Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
@@ -223,6 +227,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
             Some(Token::CloseParenthesis) => line_buffer.push(')'),
             Some(Token::OpenBracket) => line_buffer.push('['),
             Some(Token::CloseBracket) => line_buffer.push(']'),
+            Some(Token::TableCellSeparator) => line_buffer.push('|'),
             Some(Token::EmphasisRun { delimiter, length }) => {
                 line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
             }
@@ -275,6 +280,103 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
         level: heading_level,
         content: parse_inline(line[i + 1..].to_vec()),
     }
+}
+
+/// Parses GitHub-style tables from the input vector of tokens.
+pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
+    let rows = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    if rows.len() < 3 {
+        return MdBlockElement::Paragraph {
+            content: parse_inline(line),
+        };
+    }
+
+    let header_row = rows
+        .first()
+        .expect("Table should have at least a header row")
+        .to_vec();
+
+    let alignment_row = rows
+        .get(1)
+        .expect("Table should have an alignment row")
+        .to_vec();
+
+    let alignments: Vec<TableAlignment> = split_row(&alignment_row)
+        .into_iter()
+        .map(|cell_content| {
+            let content: String = cell_content
+                .iter()
+                .filter_map(|token| match token {
+                    Token::Text(s) => Some(s.clone()),
+                    Token::Punctuation(s) => Some(s.clone()),
+                    Token::ThematicBreak => Some("---".to_string()),
+                    _ => None,
+                })
+                .collect();
+
+            match (content.starts_with(':'), content.ends_with(':')) {
+                (true, true) => TableAlignment::Center,
+                (true, false) => TableAlignment::Left,
+                (false, true) => TableAlignment::Right,
+                _ => TableAlignment::None,
+            }
+        })
+        .collect();
+
+    let headers: Vec<MdTableCell> = split_row(&header_row)
+        .into_iter()
+        .enumerate()
+        .map(|(i, cell_content)| MdTableCell {
+            content: parse_inline(cell_content.to_vec()),
+            alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
+            is_header: true,
+        })
+        .collect();
+
+    let body: Vec<Vec<MdTableCell>> = rows
+        .iter()
+        .skip(2)
+        .map(|row| {
+            split_row(row)
+                .into_iter()
+                .enumerate()
+                .map(|(i, cell_tokens)| MdTableCell {
+                    content: parse_inline(cell_tokens.to_vec()),
+                    alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
+                    is_header: false,
+                })
+                .collect()
+        })
+        .collect();
+
+    MdBlockElement::Table { headers, body }
+}
+
+/// Helper function to split a row of tokens into individual cells.
+///
+/// By removing the starting and ending "|" characters, it ensures that the row is
+/// split into the proper number of cells.
+fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
+    let mut cells: Vec<Vec<Token>> = row
+        .split(|token| *token == Token::TableCellSeparator)
+        .map(|tokens| tokens.to_vec())
+        .collect();
+
+    if let Some(first) = cells.first() {
+        if first.is_empty() {
+            cells.remove(0);
+        }
+    }
+    if let Some(last) = cells.last() {
+        if last.is_empty() {
+            cells.pop();
+        }
+    }
+
+    cells
 }
 
 /// Parses a vector of tokens into a vector of inline Markdown elements (i.e. links, images,
@@ -376,6 +478,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::OpenParenthesis => buffer.push('('),
             Token::CloseParenthesis => buffer.push(')'),
             Token::ThematicBreak => buffer.push_str("---"),
+            Token::TableCellSeparator => buffer.push('|'),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -414,6 +517,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::CloseParenthesis => code_content.push(')'),
             Token::OpenBracket => code_content.push('['),
             Token::CloseBracket => code_content.push(']'),
+            Token::TableCellSeparator => code_content.push('|'),
             Token::EmphasisRun { delimiter, length } => {
                 code_content.push_str(delimiter.to_string().repeat(*length).as_str())
             }
@@ -512,6 +616,7 @@ where
             Token::ThematicBreak => label_buffer.push_str("---"),
             Token::OpenParenthesis => label_buffer.push('('),
             Token::CloseParenthesis => label_buffer.push(')'),
+            Token::TableCellSeparator => label_buffer.push('|'),
             _ => {}
         }
         cursor.advance();
@@ -553,6 +658,7 @@ where
                 Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
+                Token::TableCellSeparator => uri.push('|'),
                 _ => {}
             }
         } else {
@@ -576,6 +682,7 @@ where
                 Token::OpenBracket => title.push('['),
                 Token::CloseBracket => title.push(']'),
                 Token::OpenParenthesis => title.push('('),
+                Token::TableCellSeparator => title.push('|'),
                 Token::Tab => title.push('\t'),
                 Token::Newline => title.push_str("\\n"),
                 Token::Whitespace => title.push(' '),
@@ -838,6 +945,9 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::Text(_)) => {
                 group_text_lines(&mut blocks, &mut current_block, &mut previous_block, line);
             }
+            Some(Token::TableCellSeparator) => {
+                group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
+            }
             _ => {
                 // Catch-all for everything else
                 current_block.extend(line.to_owned());
@@ -851,6 +961,26 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
         current_block.clear();
     }
     blocks
+}
+
+fn group_table_rows(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    if let Some(previous_line_start) = previous_block.first() {
+        if previous_line_start == &Token::TableCellSeparator {
+            previous_block.push(Token::Newline);
+            previous_block.extend(line.to_owned());
+            blocks.pop();
+            blocks.push(previous_block.clone());
+        } else {
+            current_block.extend(line.to_owned());
+        }
+    } else {
+        current_block.extend(line.to_owned());
+    }
 }
 
 /// Groups text lines into blocks based on the previous block's content.

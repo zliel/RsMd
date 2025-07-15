@@ -18,6 +18,7 @@ pub enum Token {
     CloseBracket,
     OpenParenthesis,
     CloseParenthesis,
+    TableCellSeparator,
     OrderedListMarker(String),
     Whitespace,
     CodeTick,
@@ -54,6 +55,10 @@ pub enum MdBlockElement {
     },
     OrderedList {
         items: Vec<MdListItem>,
+    },
+    Table {
+        headers: Vec<MdTableCell>,
+        body: Vec<Vec<MdTableCell>>,
     },
 }
 
@@ -100,6 +105,29 @@ impl ToHtml for MdBlockElement {
                     .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
+            MdBlockElement::Table { headers, body } => {
+                let header_html = headers
+                    .iter()
+                    .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+
+                let body_html = body
+                    .iter()
+                    .map(|row| {
+                        let cell_html = row
+                            .iter()
+                            .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
+                            .collect::<String>();
+
+                        format!("<tr>{cell_html}</tr>")
+                    })
+                    .collect::<Vec<_>>()
+                    .join("");
+
+                format!(
+                    "<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
+                )
+            }
         }
     }
 }
@@ -136,6 +164,44 @@ impl ToHtml for MdListItem {
             }
         }
     }
+}
+
+/// Represents a cell in a markdown table.
+#[derive(Debug, PartialEq, Clone)]
+pub struct MdTableCell {
+    pub content: Vec<MdInlineElement>,
+    pub alignment: TableAlignment,
+    pub is_header: bool,
+}
+
+impl ToHtml for MdTableCell {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
+        let inner_html = self
+            .content
+            .iter()
+            .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+            .collect::<String>();
+
+        let text_alignment = match self.alignment {
+            TableAlignment::Left | TableAlignment::None => "left",
+            TableAlignment::Center => "center",
+            TableAlignment::Right => "right",
+        };
+
+        match self.is_header {
+            true => format!("<th style=\"text-align:{text_alignment};\">{inner_html}</th>"),
+            false => format!("<td style=\"text-align:{text_alignment};\">{inner_html}</td>"),
+        }
+    }
+}
+
+/// Represents the alignment of table cells in markdown tables.
+#[derive(Debug, PartialEq, Clone)]
+pub enum TableAlignment {
+    Left,
+    Center,
+    Right,
+    None,
 }
 
 /// Represents inline markdown elements (text, bold/italic, link, etc.)

@@ -26,7 +26,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 #[derive(Parser, Debug)]
 #[command(
     author = "Zackary Liel",
-    version = "0.1.0",
+    version = "1.0.0",
     about = "A Commonmark compliant markdown parser and static site generator.",
     override_usage = "rust_mark [OPTIONS] <INPUT_DIR>"
 )]

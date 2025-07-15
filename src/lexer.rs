@@ -106,6 +106,11 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
 
                 tokens.push(Token::CloseParenthesis);
             }
+            "|" => {
+                push_buffer_to_collection(&mut tokens, &mut buffer);
+
+                tokens.push(Token::TableCellSeparator);
+            }
             "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => {
                 // Check for valid ordered list marker
                 if i + 2 < str_len && chars[i + 1] == "." && chars[i + 2] == " " {
