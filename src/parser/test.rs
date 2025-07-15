@@ -1001,7 +1001,7 @@ mod html_generation {
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
-                "<a href=\"http://example.com\">link text</a>"
+                "<a href=\"http://example.com\" target=\"_blank\">link text⮺</a>"
             );
         }
 
@@ -1089,7 +1089,7 @@ mod html_generation {
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
-                "<p><a href=\"http://example.com\">link text</a></p>"
+                "<p><a href=\"http://example.com\" target=\"_blank\">link text⮺</a></p>"
             );
         }
 
@@ -1264,7 +1264,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\">Link Item 3</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
+                "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\" target=\"_blank\">Link Item 3⮺</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
             );
         }
     }
