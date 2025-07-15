@@ -54,6 +54,7 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::OrderedListMarker(_)) => Some(parse_ordered_list(line)),
         Some(Token::CodeFence) => Some(parse_codeblock(line)),
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
+        Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
@@ -279,6 +280,79 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
         level: heading_level,
         content: parse_inline(line[i + 1..].to_vec()),
     }
+}
+
+/// Parses GitHub-style tables from the input vector of tokens.
+pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
+    let rows = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    if rows.len() < 3 {
+        return MdBlockElement::Paragraph {
+            content: parse_inline(line),
+        };
+    }
+
+    let header_row = rows
+        .first()
+        .expect("Table should have at least a header row")
+        .to_vec();
+
+    let alignment_row = rows
+        .get(1)
+        .expect("Table should have an alignment row")
+        .to_vec();
+
+    let alignments: Vec<TableAlignment> = split_row(&alignment_row)
+        .into_iter()
+        .map(|cell_content| {
+            let content: String = cell_content
+                .iter()
+                .filter_map(|token| match token {
+                    Token::Text(s) => Some(s.clone()),
+                    Token::Punctuation(s) => Some(s.clone()),
+                    Token::ThematicBreak => Some("---".to_string()),
+                    _ => None,
+                })
+                .collect();
+
+            match (content.starts_with(':'), content.ends_with(':')) {
+                (true, true) => TableAlignment::Center,
+                (true, false) => TableAlignment::Left,
+                (false, true) => TableAlignment::Right,
+                _ => TableAlignment::None,
+            }
+        })
+        .collect();
+
+    let headers: Vec<MdTableCell> = split_row(&header_row)
+        .into_iter()
+        .enumerate()
+        .map(|(i, cell_content)| MdTableCell {
+            content: parse_inline(cell_content.to_vec()),
+            alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
+            is_header: true,
+        })
+        .collect();
+
+    let body: Vec<Vec<MdTableCell>> = rows
+        .iter()
+        .skip(2)
+        .map(|row| {
+            split_row(row)
+                .into_iter()
+                .enumerate()
+                .map(|(i, cell_tokens)| MdTableCell {
+                    content: parse_inline(cell_tokens.to_vec()),
+                    alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
+                    is_header: false,
+                })
+                .collect()
+        })
+        .collect();
+
+    MdBlockElement::Table { headers, body }
 }
 
 /// Helper function to split a row of tokens into individual cells.
