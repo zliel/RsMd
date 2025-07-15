@@ -281,6 +281,30 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Helper function to split a row of tokens into individual cells.
+///
+/// By removing the starting and ending "|" characters, it ensures that the row is
+/// split into the proper number of cells,.
+fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
+    let mut cells: Vec<Vec<Token>> = row
+        .split(|token| *token == Token::TableCellSeparator)
+        .map(|tokens| tokens.to_vec())
+        .collect();
+
+    if let Some(first) = cells.first() {
+        if first.is_empty() {
+            cells.remove(0);
+        }
+    }
+    if let Some(last) = cells.last() {
+        if last.is_empty() {
+            cells.pop();
+        }
+    }
+
+    cells
+}
+
 /// Parses a vector of tokens into a vector of inline Markdown elements (i.e. links, images,
 /// bold/italics, etc.).
 ///
