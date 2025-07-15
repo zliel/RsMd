@@ -105,6 +105,29 @@ impl ToHtml for MdBlockElement {
                     .collect::<String>();
                 format!("<ol>{inner_items}</ol>")
             }
+            MdBlockElement::Table { headers, body } => {
+                let header_html = headers
+                    .iter()
+                    .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+
+                let body_html = body
+                    .iter()
+                    .map(|row| {
+                        let cell_html = row
+                            .iter()
+                            .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
+                            .collect::<String>();
+
+                        format!("<tr>{cell_html}</tr>")
+                    })
+                    .collect::<Vec<_>>()
+                    .join("");
+
+                format!(
+                    "<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
+                )
+            }
         }
     }
 }
