@@ -139,6 +139,21 @@ impl ToHtml for MdListItem {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct MdTableCell {
+    pub content: Vec<MdInlineElement>,
+    pub alignment: TableAlignment,
+    pub is_header: bool,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum TableAlignment {
+    Left,
+    Center,
+    Right,
+    None,
+}
+
 /// Represents inline markdown elements (text, bold/italic, link, etc.)
 #[derive(Debug, PartialEq, Clone)]
 pub enum MdInlineElement {
