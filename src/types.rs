@@ -56,6 +56,10 @@ pub enum MdBlockElement {
     OrderedList {
         items: Vec<MdListItem>,
     },
+    Table {
+        headers: Vec<MdTableCell>,
+        body: Vec<Vec<MdTableCell>>,
+    },
 }
 
 impl ToHtml for MdBlockElement {
