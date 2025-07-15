@@ -18,6 +18,7 @@ pub enum Token {
     CloseBracket,
     OpenParenthesis,
     CloseParenthesis,
+    TableCellSeparator,
     OrderedListMarker(String),
     Whitespace,
     CodeTick,
