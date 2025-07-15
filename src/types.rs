@@ -150,6 +150,27 @@ pub struct MdTableCell {
     pub is_header: bool,
 }
 
+impl ToHtml for MdTableCell {
+    fn to_html(&self, output_dir: &str, input_dir: &str, html_rel_path: &str) -> String {
+        let inner_html = self
+            .content
+            .iter()
+            .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+            .collect::<String>();
+
+        let text_alignment = match self.alignment {
+            TableAlignment::Left | TableAlignment::None => "left",
+            TableAlignment::Center => "center",
+            TableAlignment::Right => "right",
+        };
+
+        match self.is_header {
+            true => format!("<th style=\"text-align:{text_alignment};\">{inner_html}</th>"),
+            false => format!("<td style=\"text-align:{text_alignment};\">{inner_html}</td>"),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum TableAlignment {
     Left,
