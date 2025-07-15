@@ -1594,5 +1594,75 @@ mod html_generation {
                 "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\" target=\"_blank\">Link Item 3⮺</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
             );
         }
+
+        #[test]
+        fn table_all_left_align() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 |"),
+                    tokenize("| :-- | :-- |"),
+                    tokenize("| Cell 1 | Cell 2 |"),
+                    tokenize("| Cell 3 | Cell 4 |")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+            );
+        }
+
+        #[test]
+        fn table_mixed_align() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 | Header 3 |"),
+                    tokenize("| :-- | :-: | --: |"),
+                    tokenize("| Cell 1 | Cell 2 | Cell 3 |"),
+                    tokenize("| Cell 4 | Cell 5 | Cell 6 |")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:center;\"> Header 2 </th><th style=\"text-align:right;\"> Header 3 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:center;\"> Cell 2 </td><td style=\"text-align:right;\"> Cell 3 </td></tr><tr><td style=\"text-align:left;\"> Cell 4 </td><td style=\"text-align:center;\"> Cell 5 </td><td style=\"text-align:right;\"> Cell 6 </td></tr></tbody></table>"
+            );
+        }
+
+        #[test]
+        fn table_no_align() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 |"),
+                    tokenize("| -- | -- |"),
+                    tokenize("| Cell 1 | Cell 2 |"),
+                    tokenize("| Cell 3 | Cell 4 |")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+            );
+        }
+
+        #[test]
+        fn table_with_inline_content() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("| Header 1 | Header 2 |"),
+                    tokenize("| :-- | :-- |"),
+                    tokenize("| **Bold Cell** | *Italic Cell* |"),
+                    tokenize(
+                        "| [Link](http://example.com) | ![Image](http://example.com/image.png) |"
+                    )
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> <b>Bold Cell</b> </td><td style=\"text-align:left;\"> <i>Italic Cell</i> </td></tr><tr><td style=\"text-align:left;\"> <a href=\"http://example.com\" target=\"_blank\">Link⮺</a> </td><td style=\"text-align:left;\"> <img src=\"http://example.com/image.png\" alt=\"Image\"/> </td></tr></tbody></table>"
+            );
+        }
     }
 }
