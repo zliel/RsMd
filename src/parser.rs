@@ -4,6 +4,7 @@
 //! It provides functions to parse block-level elements like headings, lists, and code blocks,
 //! as well as inline elements like links, images, and emphasis.
 
+use crate::CONFIG;
 use crate::types::{
     Delimiter, MdBlockElement, MdInlineElement, MdListItem, MdTableCell, TableAlignment, Token,
     TokenCursor,
@@ -522,8 +523,9 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
                 code_content.push_str(delimiter.to_string().repeat(*length).as_str())
             }
             Token::Whitespace => code_content.push(' '),
-            Token::Tab => code_content.push_str("    "), // 4 spaces for a tab,
-            // will be changed via configuration later
+            Token::Tab => {
+                code_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str())
+            }
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
             Token::CodeFence => {}
