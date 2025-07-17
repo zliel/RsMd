@@ -4,6 +4,8 @@
 //! It provides functions to parse block-level elements like headings, lists, and code blocks,
 //! as well as inline elements like links, images, and emphasis.
 
+use log::warn;
+
 use crate::CONFIG;
 use crate::types::{
     Delimiter, MdBlockElement, MdInlineElement, MdListItem, MdTableCell, TableAlignment, Token,
@@ -311,7 +313,10 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
             let content: String = cell_content
                 .iter()
                 .filter_map(|token| match token {
-                    Token::Text(s) => Some(s.clone()),
+                    Token::Text(s) => {
+                        warn!("Table alignment should not contain text as it could result in unexpected behavior: {s}");
+                        Some(s.clone())
+                    }
                     Token::Punctuation(s) => Some(s.clone()),
                     Token::ThematicBreak => Some("---".to_string()),
                     _ => None,
@@ -493,8 +498,6 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
         .for_each(|el| el.classify_flanking(&cursor.tokens));
 
     resolve_emphasis(&mut parsed_inline_elements, &mut delimiter_stack);
-
-    // Remove all placeholders
 
     parsed_inline_elements
 }

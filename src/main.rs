@@ -7,6 +7,8 @@ mod types;
 mod utils;
 
 use clap::{Parser, command};
+use env_logger::Env;
+use log::{error, info};
 use std::error::Error;
 use std::path::Path;
 use std::sync::OnceLock;
@@ -39,20 +41,43 @@ struct Cli {
     output_dir: String,
     #[arg(short, long, default_value = "false")]
     recursive: bool,
+    #[arg(short, long, default_value = "false")]
+    verbose: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    match run() {
+        Ok(_) => {
+            info!("Static site generation completed successfully.");
+            Ok(())
+        }
+        Err(e) => {
+            error!("An error occurred: {}", e);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn run() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     let input_dir = &cli.input_dir;
     let config_path = &cli.config;
     let run_recursively = &cli.recursive;
 
     // Setup
+    let env = if cli.verbose {
+        Env::default().default_filter_or("info")
+    } else {
+        Env::default().default_filter_or("warn")
+    };
+    env_logger::Builder::from_env(env).init();
+
     init_config(config_path)?;
     let file_contents = read_input_dir(input_dir, run_recursively)?;
     let mut file_names: Vec<String> = Vec::new();
 
     for (file_path, file_content) in file_contents {
+        info!("Generating HTML for file: {}", file_path);
         generate_static_site(&cli, &file_path, file_content)?;
         file_names.push(file_path);
     }
@@ -62,19 +87,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
-        println!("Using custom CSS file: {}", css_file);
+        info!("Using custom CSS file: {}", css_file);
         copy_css_to_output_dir(&css_file, &cli.output_dir)?;
     } else {
-        println!("Using default CSS file.");
+        info!("Using default CSS file.");
         write_default_css_file(&cli.output_dir)?;
     }
 
     let favicon_path = CONFIG.get().unwrap().html.favicon_file.clone();
     if !favicon_path.is_empty() {
-        println!("Copying favicon from: {}", favicon_path);
+        info!("Copying favicon from: {}", favicon_path);
         copy_favicon_to_output_dir(&favicon_path, &cli.output_dir)?;
     } else {
-        println!("No favicon specified in config.");
+        info!("No favicon specified in config.");
     }
 
     Ok(())

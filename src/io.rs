@@ -10,6 +10,7 @@ use std::{
 };
 
 use dirs::config_dir;
+use log::info;
 
 use crate::config::Config;
 use crate::html_generator::generate_default_css;
@@ -128,7 +129,7 @@ pub fn write_html_to_file(
     output_dir: &str,
     input_filepath: &str,
 ) -> Result<(), Box<dyn Error>> {
-    println!("Writing output to directory: {}", output_dir);
+    info!("Writing output to directory: {}", output_dir);
     let output_dir = Path::new(output_dir).join(input_filepath);
 
     if let Some(parent) = output_dir.parent() {
@@ -157,7 +158,7 @@ pub fn write_html_to_file(
         )
     })?;
 
-    println!("HTML written to: {}", output_dir.display());
+    info!("HTML written to: {}", output_dir.display());
     Ok(())
 }
 
@@ -282,7 +283,7 @@ pub fn write_default_config(default_config: &Config) -> Result<(), String> {
         return Ok(());
     }
 
-    println!(
+    info!(
         "Config file does not exist, creating default config at: {}",
         config_path.display()
     );
@@ -301,7 +302,7 @@ pub fn write_default_config(default_config: &Config) -> Result<(), String> {
     file.write_all(default_config_content.as_bytes())
         .map_err(|e| format!("Failed to write to config file: {}", e))?;
 
-    println!("Default config file created at: {}", config_path.display());
+    info!("Default config file created at: {}", config_path.display());
 
     Ok(())
 }

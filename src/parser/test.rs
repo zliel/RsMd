@@ -327,7 +327,6 @@ mod block {
     #[test]
     fn heading() {
         init_test_config();
-        println!("{:?}", tokenize("# Heading 1"));
         assert_eq!(
             parse_block(tokenize("# Heading 1")),
             Some(Header {

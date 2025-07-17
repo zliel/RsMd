@@ -1,6 +1,8 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
+use log::warn;
+
 use crate::{io::copy_image_to_output_dir, utils::build_rel_prefix};
 
 pub trait ToHtml {
@@ -309,7 +311,7 @@ impl ToHtml for MdInlineElement {
                 // If the image uses a relative path, copy it to the output directory
                 if !url.starts_with("http") {
                     if let Err(e) = copy_image_to_output_dir(url, output_dir, input_dir) {
-                        eprintln!("Error copying image: {e}");
+                        warn!("Unable to copy image {url}: {e}");
                     }
 
                     // Update the URL to point to the copied image in the output directory
