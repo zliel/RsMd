@@ -39,6 +39,8 @@ struct Cli {
     output_dir: String,
     #[arg(short, long, default_value = "false")]
     recursive: bool,
+    #[arg(short, long, default_value = "false")]
+    verbose: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
