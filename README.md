@@ -1,15 +1,15 @@
-# RsMd
+# Mark-rs
 
-[![CI](https://github.com/zliel/RsMd/actions/workflows/CI.yml/badge.svg)](https://github.com/zliel/RsMd/actions/workflows/CI.yml)
+[![CI](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml/badge.svg)](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml)
 
-RsMd is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
+Mark-rs is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
 It is designed to be fast, efficient, and easy to use.
 
 ## Table of Contents
 
 <!--toc:start-->
 
-- [RsMd](#rsmd)
+- [Mark-rs](#mark-rs)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Installation (WIP)](#installation-wip)
@@ -42,8 +42,8 @@ The following HTML page will be generated:
 
 ## Installation (WIP)
 
-To install RsMd, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
-Once you have Rust installed, you can install RsMd using Cargo:
+To install Mark-rs, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
+Once you have Rust installed, you can install Mark-rs using Cargo:
 
 ```bash
 cargo install rsmd
@@ -51,7 +51,7 @@ cargo install rsmd
 
 ## Usage
 
-To use RsMd, you can run the following command in your terminal:
+To use Mark-rs, you can run the following command in your terminal:
 
 ```bash
 rsmd [OPTIONS] <INPUT_DIR>
@@ -61,18 +61,18 @@ Where `<INPUT_DIR>` is the path to the directory of Markdown files you want to p
 
 ### Options
 
-You can also use the following CLI arguments to customize the behavior of RsMd:
+You can also use the following CLI arguments to customize the behavior of Mark-rs:
 
 - `-c, --config <CONFIG>`: Specify a custom configuration file (default: `./config.toml`).
 - `-o, --output-dir <OUTPUT_DIR>`: Specify the output directory for the generated HTML files (default: `/output`).
 - `-r, --recursive`: Recursively parse all Markdown files in the specified directory and its subdirectories. (default: false if not present)
 - `-v, --verbose`: Enable verbose output, which will print additional information while the program is running.
 - `-h, --help`: Display help information.
-- `-V, --version`: Display the version of RsMd.
+- `-V, --version`: Display the version of Mark-rs.
 
 ## Configuration
 
-You can customize RsMd's behavior by specifying a config file to use. If a config file is not specified, then the default configuration directory will be checked; if no config file already exists, then the default `config.toml` file will be written.
+You can customize Mark-rs's behavior by specifying a config file to use. If a config file is not specified, then the default configuration directory will be checked; if no config file already exists, then the default `config.toml` file will be written.
 
 The default configuration directories (defined by the [`dirs` crate](https://docs.rs/dirs/latest/dirs/) ) are:
 
