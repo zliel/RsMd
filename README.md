@@ -1,5 +1,7 @@
 # RsMd
 
+[![CI](https://github.com/zliel/RsMd/actions/workflows/CI.yml/badge.svg)](https://github.com/zliel/RsMd/actions/workflows/CI.yml)
+
 RsMd is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
 It is designed to be fast, efficient, and easy to use.
 
@@ -59,14 +61,14 @@ Where `<INPUT_DIR>` is the path to the directory of Markdown files you want to p
 
 ### Options
 
-You can also use the following CLI arguments to customize the behavior of RustMark:
+You can also use the following CLI arguments to customize the behavior of RsMd:
 
 - `-c, --config <CONFIG>`: Specify a custom configuration file (default: `./config.toml`).
 - `-o, --output-dir <OUTPUT_DIR>`: Specify the output directory for the generated HTML files (default: `/output`).
 - `-r, --recursive`: Recursively parse all Markdown files in the specified directory and its subdirectories. (default: false if not present)
 - `-v, --verbose`: Enable verbose output, which will print additional information while the program is running.
 - `-h, --help`: Display help information.
-- `-V, --version`: Display the version of RustMark.
+- `-V, --version`: Display the version of RsMd.
 
 ## Configuration
 
@@ -74,8 +76,8 @@ You can customize RsMd's behavior by specifying a config file to use. If a confi
 
 The default configuration directories (defined by the [`dirs` crate](https://docs.rs/dirs/latest/dirs/) ) are:
 
-| Platform | Value                                 | Example                                           |
-| -------- | ------------------------------------- | ------------------------------------------------- |
+| Platform | Value                                 | Example                                       |
+| -------- | ------------------------------------- | --------------------------------------------- |
 | Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/rsmd                      |
 | macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/rsmd |
 | Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\rsmd           |
