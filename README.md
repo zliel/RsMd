@@ -9,7 +9,8 @@ It is designed to be fast, efficient, and easy to use.
 
 <!--toc:start-->
 
-- [Mark-rs](#mark-rs)
+
+- [Mark-rs](#Mark-rs)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Installation (WIP)](#installation-wip)
@@ -46,7 +47,7 @@ To install Mark-rs, you need to have Rust installed on your system. You can inst
 Once you have Rust installed, you can install Mark-rs using Cargo:
 
 ```bash
-cargo install rsmd
+cargo install Mark-rs
 ```
 
 ## Usage
@@ -54,7 +55,7 @@ cargo install rsmd
 To use Mark-rs, you can run the following command in your terminal:
 
 ```bash
-rsmd [OPTIONS] <INPUT_DIR>
+markrs [OPTIONS] <INPUT_DIR>
 ```
 
 Where `<INPUT_DIR>` is the path to the directory of Markdown files you want to parse. The output will be written to `/output` by default.
@@ -78,9 +79,9 @@ The default configuration directories (defined by the [`dirs` crate](https://doc
 
 | Platform | Value                                 | Example                                       |
 | -------- | ------------------------------------- | --------------------------------------------- |
-| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/rsmd                      |
-| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/rsmd |
-| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\rsmd           |
+| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/markrs                      |
+| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/markrs |
+| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\markrs           |
 
 Here is the default configuration:
 
