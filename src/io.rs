@@ -1,4 +1,4 @@
-//! This module provides functionality to related to reading/writing files.
+//! This module provides functionality related to reading/writing files.
 
 use std::fs;
 use std::path::PathBuf;
