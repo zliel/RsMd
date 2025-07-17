@@ -8,6 +8,7 @@ mod utils;
 
 use clap::{Parser, command};
 use env_logger::Env;
+use log::info;
 use std::error::Error;
 use std::path::Path;
 use std::sync::OnceLock;

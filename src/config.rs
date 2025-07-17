@@ -95,7 +95,7 @@ impl Config {
 pub fn init_config(config_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     CONFIG.get_or_init(|| {
         Config::from_file(config_path).unwrap_or_else(|err| {
-            eprintln!("Error loading config: {}", err);
+            error!("Failed to load config: {}", err);
             std::process::exit(1);
         })
     });
