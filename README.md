@@ -1,13 +1,13 @@
-# RustMark
+# RsMd
 
-RustMark is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
+RsMd is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
 It is designed to be fast, efficient, and easy to use.
 
 ## Table of Contents
 
 <!--toc:start-->
 
-- [RustMark](#rustmark)
+- [RsMd](#rsmd)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Installation (WIP)](#installation-wip)
@@ -40,19 +40,19 @@ The following HTML page will be generated:
 
 ## Installation (WIP)
 
-To install RustMark, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
-Once you have Rust installed, you can install RustMark using Cargo:
+To install RsMd, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
+Once you have Rust installed, you can install RsMd using Cargo:
 
 ```bash
-cargo install rustmark
+cargo install rsmd
 ```
 
 ## Usage
 
-To use RustMark, you can run the following command in your terminal:
+To use RsMd, you can run the following command in your terminal:
 
 ```bash
-rust-mark [OPTIONS] <INPUT_DIR>
+rsmd [OPTIONS] <INPUT_DIR>
 ```
 
 Where `<INPUT_DIR>` is the path to the directory of Markdown files you want to parse. The output will be written to `/output` by default.
@@ -70,15 +70,15 @@ You can also use the following CLI arguments to customize the behavior of RustMa
 
 ## Configuration
 
-You can customize RustMark's behavior by specifying a config file to use. If a config file is not specified, then the default configuration directory will be checked; if no config file already exists, then the default `config.toml` file will be written.
+You can customize RsMd's behavior by specifying a config file to use. If a config file is not specified, then the default configuration directory will be checked; if no config file already exists, then the default `config.toml` file will be written.
 
 The default configuration directories (defined by the [`dirs` crate](https://docs.rs/dirs/latest/dirs/) ) are:
 
 | Platform | Value                                 | Example                                           |
 | -------- | ------------------------------------- | ------------------------------------------------- |
-| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/rustmark                      |
-| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/rustmark |
-| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\rustmark           |
+| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/rsmd                      |
+| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/rsmd |
+| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\rsmd           |
 
 Here is the default configuration:
 
