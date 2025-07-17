@@ -53,3 +53,13 @@ jobs:
 
       - name: Run Fmt
         run: cargo fmt --all -- --check
+
+  verify-docs-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Generate Docs
+        run: cargo doc --no-deps
