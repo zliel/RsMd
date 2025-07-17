@@ -8,7 +8,7 @@ mod utils;
 
 use clap::{Parser, command};
 use env_logger::Env;
-use log::info;
+use log::{error, info};
 use std::error::Error;
 use std::path::Path;
 use std::sync::OnceLock;
@@ -46,6 +46,19 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    match run() {
+        Ok(_) => {
+            info!("Static site generation completed successfully.");
+            Ok(())
+        }
+        Err(e) => {
+            error!("An error occurred: {}", e);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn run() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     let input_dir = &cli.input_dir;
     let config_path = &cli.config;
