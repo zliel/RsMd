@@ -4,7 +4,7 @@ edition = "2024"
 name = "rsmd"
 version = "1.0.0"
 license = "MIT OR Apache-2.0"
-keywords = ["markdown", "cli", "ssg", "static_site_generator", "notes"]
+keywords = ["markdown", "cli", "ssg", "static_site", "notes"]
 repository = "https://github.com/zliel/RsMd"
 readme = "README.md"
 
