@@ -3,6 +3,20 @@
 version = 4
 
 [[package]]
+name = "Mark-rs"
+version = "1.0.0"
+dependencies = [
+ "clap",
+ "dirs",
+ "env_logger",
+ "log",
+ "serde",
+ "toml",
+ "unicode-segmentation",
+ "unicode_categories",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -344,20 +358,6 @@ name = "regex-syntax"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
-
-[[package]]
-name = "rsmd"
-version = "1.0.0"
-dependencies = [
- "clap",
- "dirs",
- "env_logger",
- "log",
- "serde",
- "toml",
- "unicode-segmentation",
- "unicode_categories",
-]
 
 [[package]]
 name = "serde"

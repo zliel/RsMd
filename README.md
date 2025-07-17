@@ -9,6 +9,7 @@ It is designed to be fast, efficient, and easy to use.
 
 <!--toc:start-->
 
+
 - [Mark-rs](#Mark-rs)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
@@ -54,7 +55,7 @@ cargo install Mark-rs
 To use Mark-rs, you can run the following command in your terminal:
 
 ```bash
-Mark-rs [OPTIONS] <INPUT_DIR>
+markrs [OPTIONS] <INPUT_DIR>
 ```
 
 Where `<INPUT_DIR>` is the path to the directory of Markdown files you want to parse. The output will be written to `/output` by default.
@@ -78,9 +79,9 @@ The default configuration directories (defined by the [`dirs` crate](https://doc
 
 | Platform | Value                                 | Example                                       |
 | -------- | ------------------------------------- | --------------------------------------------- |
-| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/Mark-rs                      |
-| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/Mark-rs |
-| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\Mark-rs           |
+| Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/markrs                      |
+| macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/markrs |
+| Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\markrs           |
 
 Here is the default configuration:
 

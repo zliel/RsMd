@@ -1,4 +1,4 @@
-//! This module provides functionality to related to reading/writing files.
+//! This module provides functionality related to reading/writing files.
 
 use std::fs;
 use std::path::PathBuf;
@@ -249,11 +249,11 @@ pub fn write_default_css_file(output_dir: &str) -> Result<(), String> {
 
 /// Returns the OS-specific configuration path.
 ///
-/// This function creates a directory named "rsmd" in the user's configuration directory.
+/// This function creates a directory named "markrs" in the user's configuration directory.
 pub fn get_config_path() -> Result<PathBuf, String> {
     let mut config_path = config_dir().unwrap_or_else(|| PathBuf::from("."));
 
-    config_path.push("rsmd");
+    config_path.push("markrs");
     create_dir_all(&config_path).map_err(|e| {
         format!(
             "Failed to create config directory '{}': {}",
