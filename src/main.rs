@@ -30,7 +30,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
     author = "Zackary Liel",
     version = "1.0.0",
     about = "A Commonmark compliant markdown parser and static site generator.",
-    override_usage = "rust_mark [OPTIONS] <INPUT_DIR>"
+    override_usage = "markrs [OPTIONS] <INPUT_DIR>"
 )]
 struct Cli {
     #[arg(value_name = "INPUT_DIR")]
