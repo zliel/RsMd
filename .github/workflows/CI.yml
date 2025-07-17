@@ -16,3 +16,13 @@ jobs:
       - name: Run Build
         run: cargo build --verbose
 
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run Tests
+        run: cargo test --verbose
+
