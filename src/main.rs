@@ -7,6 +7,7 @@ mod types;
 mod utils;
 
 use clap::{Parser, command};
+use env_logger::Env;
 use std::error::Error;
 use std::path::Path;
 use std::sync::OnceLock;
@@ -50,6 +51,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let run_recursively = &cli.recursive;
 
     // Setup
+    let env = if cli.verbose {
+        Env::default().default_filter_or("info")
+    } else {
+        Env::default().default_filter_or("warn")
+    };
+    env_logger::Builder::from_env(env).init();
+
     init_config(config_path)?;
     let file_contents = read_input_dir(input_dir, run_recursively)?;
     let mut file_names: Vec<String> = Vec::new();
