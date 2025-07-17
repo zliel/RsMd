@@ -63,6 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file_names: Vec<String> = Vec::new();
 
     for (file_path, file_content) in file_contents {
+        info!("Generating HTML for file: {}", file_path);
         generate_static_site(&cli, &file_path, file_content)?;
         file_names.push(file_path);
     }
@@ -72,19 +73,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let css_file = CONFIG.get().unwrap().html.css_file.clone();
     if css_file != "default" && !css_file.is_empty() {
-        println!("Using custom CSS file: {}", css_file);
+        info!("Using custom CSS file: {}", css_file);
         copy_css_to_output_dir(&css_file, &cli.output_dir)?;
     } else {
-        println!("Using default CSS file.");
+        info!("Using default CSS file.");
         write_default_css_file(&cli.output_dir)?;
     }
 
     let favicon_path = CONFIG.get().unwrap().html.favicon_file.clone();
     if !favicon_path.is_empty() {
-        println!("Copying favicon from: {}", favicon_path);
+        info!("Copying favicon from: {}", favicon_path);
         copy_favicon_to_output_dir(&favicon_path, &cli.output_dir)?;
     } else {
-        println!("No favicon specified in config.");
+        info!("No favicon specified in config.");
     }
 
     Ok(())

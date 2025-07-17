@@ -1,4 +1,5 @@
 //! This module handles the configuration I/O for the application.
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 
 use crate::CONFIG;
@@ -42,7 +43,7 @@ impl Config {
     pub fn from_file(file_path: &str) -> Result<Self, String> {
         // If the user provided a config file, try to load the config from it
         if !file_path.is_empty() {
-            println!("Loading config from: {}", file_path);
+            info!("Loading config from file: {}", file_path);
             let contents = std::fs::read_to_string(file_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
