@@ -1,7 +1,12 @@
 [package]
+description = "A Markdown parser and Static Site Generator"
+edition = "2024"
 name = "rsmd"
 version = "1.0.0"
-edition = "2024"
+license = "MIT OR Apache-2.0"
+keywords = ["markdown", "cli", "ssg", "static_site_generator", "notes"]
+repository = "https://github.com/zliel/RsMd"
+readme = "README.md"
 
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
