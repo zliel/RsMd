@@ -419,7 +419,7 @@ impl TokenCursor {
 /// * `ch` - The character that represents the delimiter (e.g., `*`, `_`, `~`).
 /// * `run_length` - The number of times the delimiter character appears in a row.
 /// * `token_position` - The position of the first token in this delimiter run.
-/// * `parsed_position` - The position in the Vec<MdInlineElement> where the content of this
+/// * `parsed_position` - The position in the `Vec<MdInlineElement>` where the content of this
 ///   delimiter run will be stored.
 /// * `active` - Whether this delimiter run is currently active (i.e., it has not been closed).
 /// * `can_open` - Whether this delimiter can open a new emphasis run (e.g., it is left-flanking).
@@ -444,7 +444,7 @@ impl Delimiter {
     ///
     /// Modifies the `can_open` and `can_close` fields in-place based on the classification.
     ///
-    /// See https://spec.commonmark.org/0.31.2/#left-flanking-delimiter-run for more information.
+    /// See i<https://spec.commonmark.org/0.31.2/#left-flanking-delimiter-run> for more information.
     ///
     /// # Arguments
     /// * `tokens` - A slice of tokens to classify the delimiter against.

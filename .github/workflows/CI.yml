@@ -1,0 +1,74 @@
+name: CI
+on:
+  push:
+    branches: ["main"]
+    paths-ignore: ["README.md", ".gitignore"]
+  pull_request: {}
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run Build
+        run: cargo build --verbose
+
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run Tests
+        run: cargo test --verbose
+
+  run-fmt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run Fmt
+        run: cargo fmt --all -- --check
+
+  verify-docs-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Generate Docs
+        run: cargo doc --no-deps
