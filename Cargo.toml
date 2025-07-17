@@ -1,5 +1,5 @@
 [package]
-name = "rust_mark"
+name = "rsmd"
 version = "1.0.0"
 edition = "2024"
 
@@ -14,5 +14,5 @@ unicode-segmentation = "1.12.0"
 unicode_categories = "0.1.1"
 
 [[bin]]
-name = "rust-mark"
+name = "rsmd"
 path = "src/main.rs"
