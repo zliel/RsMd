@@ -1766,6 +1766,34 @@ mod html_generation {
         }
 
         #[test]
+        fn blockquote() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                    "> This is a blockquote."
+                )]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<blockquote><p>This is a blockquote.</p></blockquote>"
+            );
+        }
+
+        #[test]
+        fn blockquote_with_nested_block_element() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("> This is a blockquote with a nested heading:"),
+                    tokenize("> # Heading 1"),
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<blockquote><p>This is a blockquote with a nested heading:</p><h1>Heading 1</h1></blockquote>"
+            );
+        }
+
         #[test]
         fn table_all_left_align() {
             init_test_config();
