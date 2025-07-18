@@ -1,7 +1,7 @@
 [package]
 description = "A Markdown parser and Static Site Generator"
 edition = "2024"
-name = "Mark-rs"
+name = "mark-rs"
 version = "1.0.1"
 license = "MIT OR Apache-2.0"
 keywords = ["markdown", "cli", "ssg", "static_site", "notes"]
