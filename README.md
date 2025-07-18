@@ -1,6 +1,8 @@
 # Mark-rs
 
 [![CI](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml/badge.svg)](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml)
+[![Publish](https://github.com/zliel/Mark-rs/actions/workflows/publish.yml/badge.svg)](https://github.com/zliel/Mark-rs/actions/workflows/publish.yml)
+[![Crates.io Version](https://img.shields.io/crates/v/Mark-rs)](https://crates.io/crates/Mark-rs)
 
 Mark-rs is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
 It is designed to be fast, efficient, and easy to use.
@@ -9,8 +11,7 @@ It is designed to be fast, efficient, and easy to use.
 
 <!--toc:start-->
 
-
-- [Mark-rs](#Mark-rs)
+- [Mark-rs](#mark-rs)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Installation (WIP)](#installation-wip)
@@ -77,8 +78,8 @@ You can customize Mark-rs's behavior by specifying a config file to use. If a co
 
 The default configuration directories (defined by the [`dirs` crate](https://docs.rs/dirs/latest/dirs/) ) are:
 
-| Platform | Value                                 | Example                                       |
-| -------- | ------------------------------------- | --------------------------------------------- |
+| Platform | Value                                 | Example                                         |
+| -------- | ------------------------------------- | ----------------------------------------------- |
 | Linux    | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config/markrs                      |
 | macOS    | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support/markrs |
 | Windows  | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming\markrs           |
