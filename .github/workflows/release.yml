@@ -28,7 +28,11 @@ jobs:
       - name: Prep artifact
         run: |
           mkdir dist
-          cp target/release/${{ github.event.repository.name }}* dist/
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cp target/release/${{ github.event.repository.name }}.exe dist/
+          else
+            cp target/release/${{ github.event.repository.name }} dist/
+          fi
         shell: bash
 
       - name: Compress artifact
