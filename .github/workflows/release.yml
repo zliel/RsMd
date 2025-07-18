@@ -43,6 +43,7 @@ jobs:
           else
             tar -czvf ../${{ runner.os }}.tar.gz *
           fi
+        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
