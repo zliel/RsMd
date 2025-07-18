@@ -58,10 +58,48 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::CodeFence) => Some(parse_codeblock(line)),
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
+        Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
         }),
+    }
+}
+
+fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
+    let mut content: Vec<MdBlockElement> = Vec::new();
+
+    let lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    let inner_blocks: Vec<Vec<Token>> = lines_split_by_newline
+        .iter()
+        .map(|tokens| {
+            let mut result = Vec::new();
+            if tokens.first() == Some(&Token::BlockQuoteMarker)
+                && tokens.get(1) == Some(&Token::Whitespace)
+            {
+                result.extend_from_slice(&tokens[2..]);
+            } else if tokens.first() == Some(&Token::BlockQuoteMarker) {
+                result.extend_from_slice(&tokens[1..]);
+            } else {
+                result.extend_from_slice(tokens);
+            }
+            result
+        })
+        .collect();
+
+    let grouped_inner_blocks = group_lines_to_blocks(inner_blocks);
+
+    content.extend(parse_blocks(grouped_inner_blocks));
+
+    if content.is_empty() {
+        MdBlockElement::Paragraph {
+            content: parse_inline(line),
+        }
+    } else {
+        MdBlockElement::BlockQuote { content }
     }
 }
 
