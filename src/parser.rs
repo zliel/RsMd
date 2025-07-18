@@ -531,6 +531,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             }
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
+            Token::BlockQuoteMarker => code_content.push('>'),
             Token::CodeFence => {}
         }
 
@@ -622,6 +623,7 @@ where
             Token::OpenParenthesis => label_buffer.push('('),
             Token::CloseParenthesis => label_buffer.push(')'),
             Token::TableCellSeparator => label_buffer.push('|'),
+            Token::BlockQuoteMarker => label_buffer.push('>'),
             _ => {}
         }
         cursor.advance();
@@ -664,6 +666,7 @@ where
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
+                Token::BlockQuoteMarker => uri.push('>'),
                 _ => {}
             }
         } else {
@@ -694,6 +697,7 @@ where
                 Token::CodeTick => title.push('`'),
                 Token::CodeFence => title.push_str("```"),
                 Token::ThematicBreak => title.push_str("---"),
+                Token::BlockQuoteMarker => title.push('>'),
             }
         }
         cursor.advance();
@@ -917,6 +921,20 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                             blocks.pop();
                             blocks.push(previous_block.clone());
                         }
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
+                }
+            }
+            Some(Token::BlockQuoteMarker) => {
+                if let Some(previous_line_start) = previous_block.first() {
+                    if matches!(previous_line_start, Token::BlockQuoteMarker) {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    } else {
+                        current_block.extend(line.to_owned());
                     }
                 } else {
                     current_block.extend(line.to_owned());
