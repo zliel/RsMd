@@ -45,11 +45,20 @@ The following HTML page will be generated:
 ## Installation (WIP)
 
 To install Mark-rs, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
+
+### Install via Cargo
+
 Once you have Rust installed, you can install Mark-rs using Cargo:
 
 ```bash
 cargo install mark-rs
 ```
+
+### Install via Pre-built Binaries
+
+You can also download pre-built binaries for your platform from the [releases page](https://github.com/zliel/Mark-rs/releases)
+
+From there, you can download the appropriate binary for your operating system and architecture, extract it, and use it directly.
 
 **Note**: Make sure to have the `~/.cargo/bin` directory in your `PATH` environment variable so you can run the `markrs` command from anywhere.
 
