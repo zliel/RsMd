@@ -267,6 +267,26 @@ fn tab_via_spaces() {
 }
 
 #[test]
+fn blockquote() {
+    init_test_config();
+    assert_eq!(
+        tokenize("> This is a blockquote."),
+        vec![
+            BlockQuoteMarker,
+            Whitespace,
+            Text(String::from("This")),
+            Whitespace,
+            Text(String::from("is")),
+            Whitespace,
+            Text(String::from("a")),
+            Whitespace,
+            Text(String::from("blockquote")),
+            Punctuation(String::from("."))
+        ]
+    );
+}
+
+#[test]
 fn unicode_mixed() {
     init_test_config();
     assert_eq!(
