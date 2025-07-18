@@ -1009,6 +1009,14 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::TableCellSeparator) => {
                 group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
             }
+            Some(Token::Whitespace) => {
+                group_text_lines(
+                    &mut blocks,
+                    &mut current_block,
+                    &mut previous_block,
+                    &mut line[1..].to_vec(),
+                );
+            }
             _ => {
                 // Catch-all for everything else
                 current_block.extend(line.to_owned());
