@@ -16,6 +16,7 @@ jobs:
           - os: windows-latest
             ext: zip
           - os: macos-15
+            ext: tar.gz
 
     steps:
       - name: Checkout code
