@@ -903,6 +903,60 @@ mod block {
     }
 
     #[test]
+    fn blockquote() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("> This is a blockquote.")),
+            Some(BlockQuote {
+                content: vec![Paragraph {
+                    content: vec![Text {
+                        content: String::from("This is a blockquote.")
+                    }]
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn blockquote_with_nested_block_elements() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("> This is a blockquote with a nested list:"),
+                tokenize("> - Item 1"),
+                tokenize("> - Item 2")
+            ])),
+            vec![BlockQuote {
+                content: vec![
+                    Paragraph {
+                        content: vec![Text {
+                            content: String::from("This is a blockquote with a nested list:")
+                        }]
+                    },
+                    UnorderedList {
+                        items: vec![
+                            MdListItem {
+                                content: Paragraph {
+                                    content: vec![Text {
+                                        content: String::from("Item 1")
+                                    }]
+                                }
+                            },
+                            MdListItem {
+                                content: Paragraph {
+                                    content: vec![Text {
+                                        content: String::from("Item 2")
+                                    }]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
     fn code_block() {
         init_test_config();
         assert_eq!(
@@ -1711,6 +1765,7 @@ mod html_generation {
             );
         }
 
+        #[test]
         #[test]
         fn table_all_left_align() {
             init_test_config();
