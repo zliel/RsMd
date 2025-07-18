@@ -29,6 +29,7 @@ pub enum Token {
     Escape(String),
     Tab,
     Newline,
+    BlockQuoteMarker,
 }
 
 impl From<String> for Token {
