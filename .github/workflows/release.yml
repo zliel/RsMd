@@ -29,9 +29,9 @@ jobs:
         run: |
           mkdir dist
           if [ "$RUNNER_OS" = "Windows" ]; then
-            cp target/release/${{ github.event.repository.name }}.exe dist/
+            cp target/release/markrs.exe dist/
           else
-            cp target/release/${{ github.event.repository.name }} dist/
+            cp target/release/markrs dist/
           fi
         shell: bash
 
