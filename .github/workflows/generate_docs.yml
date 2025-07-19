@@ -1,0 +1,23 @@
+name: Generate and Push Docs to GH Pages
+
+on:
+  push:
+    branches: ["main"]
+jobs:
+  push_docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Generate Docs
+        run: cargo doc --no-deps
+
+      - name: Publish Docs
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: gh_pages
+          build_dir: target/doc
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
