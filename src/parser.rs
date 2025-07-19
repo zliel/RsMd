@@ -67,8 +67,6 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
 }
 
 fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
-    let mut content: Vec<MdBlockElement> = Vec::new();
-
     let lines_split_by_newline = line
         .split(|token| *token == Token::Newline)
         .collect::<Vec<_>>();
@@ -92,7 +90,7 @@ fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
 
     let grouped_inner_blocks = group_lines_to_blocks(inner_blocks);
 
-    content.extend(parse_blocks(grouped_inner_blocks));
+    let content = parse_blocks(grouped_inner_blocks);
 
     if content.is_empty() {
         MdBlockElement::Paragraph {
