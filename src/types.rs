@@ -29,6 +29,7 @@ pub enum Token {
     Escape(String),
     Tab,
     Newline,
+    BlockQuoteMarker,
 }
 
 impl From<String> for Token {
@@ -61,6 +62,9 @@ pub enum MdBlockElement {
     Table {
         headers: Vec<MdTableCell>,
         body: Vec<Vec<MdTableCell>>,
+    },
+    BlockQuote {
+        content: Vec<MdBlockElement>,
     },
 }
 
@@ -129,6 +133,13 @@ impl ToHtml for MdBlockElement {
                 format!(
                     "<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
                 )
+            }
+            MdBlockElement::BlockQuote { content } => {
+                let inner_html = content
+                    .iter()
+                    .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
+                    .collect::<String>();
+                format!("<blockquote>{inner_html}</blockquote>")
             }
         }
     }

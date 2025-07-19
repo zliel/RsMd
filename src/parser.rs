@@ -58,10 +58,46 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::CodeFence) => Some(parse_codeblock(line)),
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
+        Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
         }),
+    }
+}
+
+fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
+    let lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    let inner_blocks: Vec<Vec<Token>> = lines_split_by_newline
+        .iter()
+        .map(|tokens| {
+            let mut result = Vec::new();
+            if tokens.first() == Some(&Token::BlockQuoteMarker)
+                && tokens.get(1) == Some(&Token::Whitespace)
+            {
+                result.extend_from_slice(&tokens[2..]);
+            } else if tokens.first() == Some(&Token::BlockQuoteMarker) {
+                result.extend_from_slice(&tokens[1..]);
+            } else {
+                result.extend_from_slice(tokens);
+            }
+            result
+        })
+        .collect();
+
+    let grouped_inner_blocks = group_lines_to_blocks(inner_blocks);
+
+    let content = parse_blocks(grouped_inner_blocks);
+
+    if content.is_empty() {
+        MdBlockElement::Paragraph {
+            content: parse_inline(line),
+        }
+    } else {
+        MdBlockElement::BlockQuote { content }
     }
 }
 
@@ -531,6 +567,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             }
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
+            Token::BlockQuoteMarker => code_content.push('>'),
             Token::CodeFence => {}
         }
 
@@ -622,6 +659,7 @@ where
             Token::OpenParenthesis => label_buffer.push('('),
             Token::CloseParenthesis => label_buffer.push(')'),
             Token::TableCellSeparator => label_buffer.push('|'),
+            Token::BlockQuoteMarker => label_buffer.push('>'),
             _ => {}
         }
         cursor.advance();
@@ -664,6 +702,7 @@ where
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
+                Token::BlockQuoteMarker => uri.push('>'),
                 _ => {}
             }
         } else {
@@ -694,6 +733,7 @@ where
                 Token::CodeTick => title.push('`'),
                 Token::CodeFence => title.push_str("```"),
                 Token::ThematicBreak => title.push_str("---"),
+                Token::BlockQuoteMarker => title.push('>'),
             }
         }
         cursor.advance();
@@ -922,6 +962,20 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                     current_block.extend(line.to_owned());
                 }
             }
+            Some(Token::BlockQuoteMarker) => {
+                if let Some(previous_line_start) = previous_block.first() {
+                    if matches!(previous_line_start, Token::BlockQuoteMarker) {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    } else {
+                        current_block.extend(line.to_owned());
+                    }
+                } else {
+                    current_block.extend(line.to_owned());
+                }
+            }
             Some(Token::CodeTick) => {
                 current_block.extend(line.to_owned());
             }
@@ -952,6 +1006,14 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             }
             Some(Token::TableCellSeparator) => {
                 group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
+            }
+            Some(Token::Whitespace) => {
+                group_text_lines(
+                    &mut blocks,
+                    &mut current_block,
+                    &mut previous_block,
+                    &mut line[1..].to_vec(),
+                );
             }
             _ => {
                 // Catch-all for everything else

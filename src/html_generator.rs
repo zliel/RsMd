@@ -307,12 +307,12 @@ pub fn generate_default_css() -> String {
 
     blockquote {
     border-left: 4px solid #555;
-    padding-left: 1rem;
+    padding: 0.1rem 1rem;
     color: #aaa;
     font-style: italic;
     margin: 1.5rem 0;
     background-color: #1a1a1a;
-    border-radius: 4px;
+    border-radius: 2px;
     }
 
     ul,

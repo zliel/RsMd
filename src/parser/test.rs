@@ -903,6 +903,60 @@ mod block {
     }
 
     #[test]
+    fn blockquote() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("> This is a blockquote.")),
+            Some(BlockQuote {
+                content: vec![Paragraph {
+                    content: vec![Text {
+                        content: String::from("This is a blockquote.")
+                    }]
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn blockquote_with_nested_block_elements() {
+        init_test_config();
+        assert_eq!(
+            parse_blocks(group_lines_to_blocks(vec![
+                tokenize("> This is a blockquote with a nested list:"),
+                tokenize("> - Item 1"),
+                tokenize("> - Item 2")
+            ])),
+            vec![BlockQuote {
+                content: vec![
+                    Paragraph {
+                        content: vec![Text {
+                            content: String::from("This is a blockquote with a nested list:")
+                        }]
+                    },
+                    UnorderedList {
+                        items: vec![
+                            MdListItem {
+                                content: Paragraph {
+                                    content: vec![Text {
+                                        content: String::from("Item 1")
+                                    }]
+                                }
+                            },
+                            MdListItem {
+                                content: Paragraph {
+                                    content: vec![Text {
+                                        content: String::from("Item 2")
+                                    }]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }]
+        );
+    }
+
+    #[test]
     fn code_block() {
         init_test_config();
         assert_eq!(
@@ -1708,6 +1762,35 @@ mod html_generation {
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\" target=\"_blank\">Link Item 3⮺</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
+            );
+        }
+
+        #[test]
+        fn blockquote() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                    "> This is a blockquote."
+                )]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<blockquote><p>This is a blockquote.</p></blockquote>"
+            );
+        }
+
+        #[test]
+        fn blockquote_with_nested_block_element() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("> This is a blockquote with a nested heading:"),
+                    tokenize("> # Heading 1"),
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<blockquote><p>This is a blockquote with a nested heading:</p><h1>Heading 1</h1></blockquote>"
             );
         }
 
