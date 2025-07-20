@@ -1001,11 +1001,23 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 }
             }
             Some(Token::Text(string)) if string == "=" => {
+                let has_trailing_content = line.iter().skip(1).any(|token| match token {
+                    Token::Text(s) if s == "=" => false,
+                    Token::Whitespace | Token::Tab | Token::Newline => false,
+                    _ => true,
+                });
+
                 // Setext heading 1
                 if let Some(previous_line_start) = previous_block.first() {
-                    // If it's text, then prepend the previous line with "# "
-                    if matches!(previous_line_start, Token::Text(_)) {
+                    if !has_trailing_content && matches!(previous_line_start, Token::Text(_)) {
                         group_setext_heading_one(&mut blocks, &mut previous_block);
+                    } else {
+                        group_text_lines(
+                            &mut blocks,
+                            &mut current_block,
+                            &mut previous_block,
+                            line,
+                        );
                     }
                 } else {
                     current_block.extend(line.to_owned());
