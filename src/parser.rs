@@ -1193,6 +1193,12 @@ fn group_tabbed_lines(
                         blocks.pop();
                         blocks.push(previous_block.clone());
                     }
+                    Some(Token::RawHtmlTag(_)) => {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
                     _ => {
                         // If the previous block is not a list, then we just add the
                         // line to the current block
