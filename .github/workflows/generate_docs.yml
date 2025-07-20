@@ -19,6 +19,9 @@ jobs:
       - name: Generate Docs
         run: cargo doc --no-deps
 
+      - name: Insert Root index.html
+        run: echo '<meta http-equiv="refresh" content="0;url=markrs/index.html">' > target/doc/index.html
+
       - name: Publish Docs
         uses: crazy-max/ghaction-github-pages@v4
         with:
