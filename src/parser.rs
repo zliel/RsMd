@@ -1018,11 +1018,11 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             Some(Token::Whitespace) => {
-                group_text_lines(
+                group_lines_with_leading_whitespace(
                     &mut blocks,
                     &mut current_block,
                     &mut previous_block,
-                    &mut line[1..].to_vec(),
+                    line,
                 );
             }
             _ => {
@@ -1204,6 +1204,56 @@ fn group_tabbed_lines(
                 // current block
                 current_block.extend(line.to_owned());
             }
+        }
+    }
+}
+
+fn group_lines_with_leading_whitespace(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    let has_content = line
+        .iter()
+        .any(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
+
+    if has_content {
+        if let Some(previous_line_start) = previous_block.first() {
+            match previous_line_start {
+                Token::Whitespace => {
+                    // Check if the previous line has non-whitespace content
+                    if line
+                        .iter()
+                        .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
+                    {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    } else {
+                        current_block.extend(line.to_owned());
+                    }
+                }
+                Token::RawHtmlTag(_) | Token::Text(_) | Token::Punctuation(_) => {
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+                _ => {
+                    // Append the line to current block, excluding leading whitespace
+                    current_block.extend(
+                        line.iter()
+                            .skip_while(|t| {
+                                matches!(t, Token::Whitespace | Token::Tab | Token::Newline)
+                            })
+                            .cloned(),
+                    );
+                }
+            }
+        } else {
+            current_block.extend(line.to_owned());
         }
     }
 }
