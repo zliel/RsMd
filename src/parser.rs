@@ -59,10 +59,46 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
+        Some(Token::RawHtmlTag(_)) => Some(parse_raw_html(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
         }),
+    }
+}
+
+fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
+    let mut html_content = String::new();
+    for token in line {
+        match token {
+            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content.as_str()),
+            Token::Text(string) | Token::Punctuation(string) => html_content.push_str(&string),
+            Token::Whitespace => html_content.push(' '),
+            Token::Escape(esc_char) => {
+                html_content.push_str(format!("\\{esc_char}").as_str());
+            }
+            Token::Newline => html_content.push('\n'),
+            Token::OrderedListMarker(string) => html_content.push_str(string.as_str()),
+            Token::EmphasisRun { delimiter, length } => {
+                html_content.push_str(delimiter.to_string().repeat(length).as_str())
+            }
+            Token::OpenParenthesis => html_content.push('('),
+            Token::CloseParenthesis => html_content.push(')'),
+            Token::OpenBracket => html_content.push('['),
+            Token::CloseBracket => html_content.push(']'),
+            Token::TableCellSeparator => html_content.push('|'),
+            Token::CodeTick => html_content.push('`'),
+            Token::CodeFence => html_content.push_str("```"),
+            Token::BlockQuoteMarker => html_content.push('>'),
+            Token::Tab => {
+                html_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+            }
+            Token::ThematicBreak => html_content.push_str("---"),
+        }
+    }
+
+    MdBlockElement::RawHtml {
+        content: html_content,
     }
 }
 
