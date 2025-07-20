@@ -521,6 +521,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::CloseParenthesis => buffer.push(')'),
             Token::ThematicBreak => buffer.push_str("---"),
             Token::TableCellSeparator => buffer.push('|'),
+            Token::BlockQuoteMarker => buffer.push('>'),
+            Token::RawHtmlTag(tag_content) => buffer.push_str(tag_content.as_str()),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -568,6 +570,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
             Token::BlockQuoteMarker => code_content.push('>'),
+            Token::RawHtmlTag(tag_content) => code_content.push_str(tag_content),
             Token::CodeFence => {}
         }
 
@@ -703,6 +706,7 @@ where
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
                 Token::BlockQuoteMarker => uri.push('>'),
+                Token::RawHtmlTag(tag_content) => uri.push_str(tag_content),
                 _ => {}
             }
         } else {
@@ -734,6 +738,12 @@ where
                 Token::CodeFence => title.push_str("```"),
                 Token::ThematicBreak => title.push_str("---"),
                 Token::BlockQuoteMarker => title.push('>'),
+                Token::RawHtmlTag(tag_content) => {
+                    warn!(
+                        "Raw HTML tags in titles can result in unexpected behavior: {tag_content}"
+                    );
+                    title.push_str(tag_content);
+                }
             }
         }
         cursor.advance();
