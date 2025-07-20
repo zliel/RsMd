@@ -287,6 +287,42 @@ fn blockquote() {
 }
 
 #[test]
+fn raw_html_basic() {
+    init_test_config();
+    assert_eq!(tokenize("<br>"), vec![RawHtmlTag(String::from("<br>"))]);
+}
+
+#[test]
+fn raw_html_with_attributes() {
+    init_test_config();
+    assert_eq!(
+        tokenize("<img src=\"image.jpg\" alt=\"An image\">"),
+        vec![RawHtmlTag(String::from(
+            "<img src=\"image.jpg\" alt=\"An image\">"
+        ))]
+    );
+}
+
+#[test]
+fn raw_inline_html() {
+    init_test_config();
+    assert_eq!(
+        tokenize("This is <span>Inline HTML</span>"),
+        vec![
+            Text(String::from("This")),
+            Whitespace,
+            Text(String::from("is")),
+            Whitespace,
+            RawHtmlTag(String::from("<span>")),
+            Text(String::from("Inline")),
+            Whitespace,
+            Text(String::from("HTML")),
+            RawHtmlTag(String::from("</span>"))
+        ]
+    );
+}
+
+#[test]
 fn unicode_mixed() {
     init_test_config();
     assert_eq!(

@@ -314,6 +314,17 @@ mod inline {
             }]
         );
     }
+
+    #[test]
+    fn raw_inline_html() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("<span>Inline HTML</span>")),
+            vec![Text {
+                content: String::from("<span>Inline HTML</span>")
+            }]
+        );
+    }
 }
 
 mod block {
@@ -976,6 +987,68 @@ mod block {
             Some(CodeBlock {
                 language: Some(String::from("rust")),
                 lines: vec![String::from("\nfn main() {}\n")]
+            })
+        );
+    }
+
+    #[test]
+    fn raw_html_basic() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("<div>Raw HTML content</div>")),
+            Some(RawHtml {
+                content: String::from("<div>Raw HTML content</div>")
+            })
+        );
+    }
+
+    #[test]
+    fn raw_html_with_attributes() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("<img src=\"image.png\" alt=\"Image\"/>")),
+            Some(RawHtml {
+                content: String::from("<img src=\"image.png\" alt=\"Image\"/>")
+            })
+        );
+    }
+
+    #[test]
+    fn raw_inline_html() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("This is <span>inline HTML</span> content.")),
+            Some(Paragraph {
+                content: vec![Text {
+                    content: String::from("This is <span>inline HTML</span> content.")
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn mixed_markdown_and_html() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize(
+                "This is a paragraph with strong <strong>HTML</strong> and **Markdown**."
+            )),
+            Some(Paragraph {
+                content: vec![
+                    Text {
+                        content: String::from(
+                            "This is a paragraph with strong <strong>HTML</strong> and "
+                        )
+                    },
+                    Bold {
+                        content: vec![Text {
+                            content: String::from("Markdown")
+                        }]
+                    },
+                    Text {
+                        content: String::from(".")
+                    }
+                ]
             })
         );
     }
@@ -1791,6 +1864,50 @@ mod html_generation {
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<blockquote><p>This is a blockquote with a nested heading:</p><h1>Heading 1</h1></blockquote>"
+            );
+        }
+
+        #[test]
+        fn raw_html_basic() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("<br>",),
+                    tokenize("<h1>Hello, world!</h1>")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<br>\n<h1>Hello, world!</h1>\n"
+            );
+        }
+
+        #[test]
+        fn raw_html_with_attributes() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                    "<img src=\"image.jpg\" alt=\"An image\"/>"
+                )]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<img src=\"image.jpg\" alt=\"An image\"/>\n"
+            );
+        }
+
+        #[test]
+        fn mixed_markdown_and_html() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![
+                    tokenize("# This is a heading with <strong>bold text</strong> and <em>italic text</em>."),
+                    tokenize("<div>Some raw HTML content</div>")
+                ]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<h1>This is a heading with <strong>bold text</strong> and <em>italic text</em>.</h1><div>Some raw HTML content</div>\n"
             );
         }
 
