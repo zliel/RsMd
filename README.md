@@ -3,6 +3,7 @@
 [![CI](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml/badge.svg)](https://github.com/zliel/Mark-rs/actions/workflows/CI.yml)
 [![Publish](https://github.com/zliel/Mark-rs/actions/workflows/publish.yml/badge.svg)](https://github.com/zliel/Mark-rs/actions/workflows/publish.yml)
 [![Crates.io Version](https://img.shields.io/crates/v/mark-rs)](https://crates.io/crates/mark-rs)
+[![docs](https://img.shields.io/badge/docs-main-blue)](https://zliel.github.io/Mark-rs/markrs/index.html)
 
 Mark-rs is a 100% Commonmark-compliant Markdown parser and static site generator written in Rust.
 It is designed to be fast, efficient, and easy to use.
