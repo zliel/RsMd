@@ -55,12 +55,6 @@ Once you have Rust installed, you can install Mark-rs using Cargo:
 cargo install mark-rs
 ```
 
-### Install via Pre-built Binaries
-
-You can also download pre-built binaries for your platform from the [releases page](https://github.com/zliel/Mark-rs/releases)
-
-From there, you can download the appropriate binary for your operating system and architecture, extract it, and use it directly.
-
 **Note**: Make sure to have the `~/.cargo/bin` directory in your `PATH` environment variable so you can run the `markrs` command from anywhere.
 
 If it isn't already in your `PATH`, you can adding the following line to your shell configuration file (e.g., `~/.bashrc`, `~/.zshrc`, etc.):
@@ -70,6 +64,13 @@ export PATH="$HOME/.cargo/bin:$PATH"
 ```
 
 On Windows, you can add the `C:\Users\your_user\.cargo\bin` directory to your `PATH` environment variable.
+
+### Install via Pre-built Binaries
+
+You can also download pre-built binaries for your platform from the [releases page](https://github.com/zliel/Mark-rs/releases)
+
+From there, you can download the appropriate binary for your operating system and architecture, extract it, and use it directly.
+
 
 ## Usage
 
