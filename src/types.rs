@@ -30,6 +30,7 @@ pub enum Token {
     Tab,
     Newline,
     BlockQuoteMarker,
+    RawHtmlTag(String),
 }
 
 impl From<String> for Token {
@@ -65,6 +66,9 @@ pub enum MdBlockElement {
     },
     BlockQuote {
         content: Vec<MdBlockElement>,
+    },
+    RawHtml {
+        content: String,
     },
 }
 
@@ -140,6 +144,9 @@ impl ToHtml for MdBlockElement {
                     .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
                 format!("<blockquote>{inner_html}</blockquote>")
+            }
+            MdBlockElement::RawHtml { content } => {
+                format!("{}\n", content.clone())
             }
         }
     }
