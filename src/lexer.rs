@@ -120,6 +120,24 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
                     buffer.push_str(chars[i]);
                 }
             }
+            "<" => {
+                push_buffer_to_collection(&mut tokens, &mut buffer);
+
+                while i + 1 < str_len && chars[i + 1] != ">" {
+                    buffer.push_str(chars[i]);
+                    i += 1;
+                }
+
+                if i + 1 < str_len && chars[i + 1] == ">" {
+                    buffer.push_str(chars[i]);
+                    buffer.push_str(chars[i + 1]);
+                    tokens.push(Token::RawHtmlTag(buffer.clone()));
+                    buffer.clear();
+                    i += 1;
+                } else {
+                    buffer.push_str(chars[i]);
+                }
+            }
             "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" => {
                 // Check for valid ordered list marker
                 if i + 2 < str_len && chars[i + 1] == "." && chars[i + 2] == " " {
