@@ -1203,61 +1203,71 @@ fn group_tabbed_lines(
     previous_block: &mut Vec<Token>,
     line: &mut Vec<Token>,
 ) {
-    if line.len() > 1 {
-        let mut has_content: bool = false;
-        for idx in 1..line.len() {
-            match line.get(idx) {
-                Some(Token::Tab) | Some(Token::Whitespace) => continue,
-                None => {}
-                _ => {
-                    has_content = true;
-                    break;
-                }
-            }
+    if line.len() == 1 {
+        current_block.extend(line.to_owned());
+        return;
+    }
+
+    let non_whitespace_index = line
+        .iter()
+        .position(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
+
+    if let Some(first_content_token) = line.get(non_whitespace_index.unwrap_or(0)) {
+        if matches!(first_content_token, Token::RawHtmlTag(_)) {
+            // Short-circuit if the first token is a raw HTML tag
+            current_block.extend(
+                line.iter()
+                    .skip_while(|token| matches!(token, Token::Tab | Token::Newline))
+                    .cloned(),
+            );
+
+            return;
         }
 
-        if has_content {
-            // If there is content after the tab, then we append it to the previous
-            // block
-            if !previous_block.is_empty() {
-                let previous_line_start = previous_block.first();
-                match previous_line_start {
-                    Some(Token::Punctuation(string))
-                        if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
-                    {
-                        // If the previous block is a list, then we append the line to it
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    Some(Token::OrderedListMarker(_))
-                        if previous_block.get(1) == Some(&Token::Whitespace) =>
-                    {
-                        // If the previous block is an ordered list, then we append the
-                        // line to it
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    Some(Token::RawHtmlTag(_)) => {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    _ => {
-                        // If the previous block is not a list, then we just add the
-                        // line to the current block
-                        current_block.extend(line.to_owned());
-                    }
+        if !previous_block.is_empty() {
+            let previous_line_start = previous_block.first();
+            match previous_line_start {
+                Some(Token::Punctuation(string))
+                    if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
+                {
+                    // If the previous block is a list, then we append the line to it
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
                 }
-            } else {
-                // If the previous block is empty, then we just add the line to the
-                // current block
-                current_block.extend(line.to_owned());
+                Some(Token::OrderedListMarker(_))
+                    if previous_block.get(1) == Some(&Token::Whitespace) =>
+                {
+                    // If the previous block is an ordered list, then we append the
+                    // line to it
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+                Some(Token::RawHtmlTag(_)) => {
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+                Some(Token::Tab) => {
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+                _ => {
+                    // If the previous block is not a list, then we just add the
+                    // line to the current block
+                    current_block.extend(line.to_owned());
+                }
             }
+        } else {
+            // If the previous block is empty, then we just add the line to the
+            // current block
+            current_block.extend(line.to_owned());
         }
     }
 }
