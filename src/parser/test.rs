@@ -325,6 +325,39 @@ mod inline {
             }]
         );
     }
+
+    #[test]
+    fn malformed_raw_html_no_closing_bracket() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("<span Malformed HTML")),
+            vec![Text {
+                content: String::from("<span Malformed HTML")
+            }]
+        );
+    }
+
+    #[test]
+    fn malformed_raw_html_no_closing_tag() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("<span>Unclosed HTML")),
+            vec![Text {
+                content: String::from("<span>Unclosed HTML")
+            }]
+        );
+    }
+
+    #[test]
+    fn malformed_raw_html_mismatched_tags() {
+        init_test_config();
+        assert_eq!(
+            parse_inline(tokenize("<span>Unmatched </div> tags")),
+            vec![Text {
+                content: String::from("<span>Unmatched </div> tags")
+            }]
+        );
+    }
 }
 
 mod block {
@@ -1049,6 +1082,41 @@ mod block {
                         content: String::from(".")
                     }
                 ]
+            })
+        );
+    }
+
+    #[test]
+    fn malformed_raw_html_no_closing_bracket() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("<div Malformed HTML")),
+            Some(Paragraph {
+                content: vec![Text {
+                    content: String::from("<div Malformed HTML")
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn malformed_raw_html_no_closing_tag() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("<div>Unclosed HTML")),
+            Some(RawHtml {
+                content: String::from("<div>Unclosed HTML")
+            })
+        );
+    }
+
+    #[test]
+    fn malformed_raw_html_mismatched_tags() {
+        init_test_config();
+        assert_eq!(
+            parse_block(tokenize("<div>Unmatched </span> tags")),
+            Some(RawHtml {
+                content: String::from("<div>Unmatched </span> tags")
             })
         );
     }
@@ -1908,6 +1976,46 @@ mod html_generation {
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
                 "<h1>This is a heading with <strong>bold text</strong> and <em>italic text</em>.</h1><div>Some raw HTML content</div>\n"
+            );
+        }
+
+        #[test]
+        fn malformed_raw_html_no_closing_bracket() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                    "<div Missing bracket"
+                )]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<p><div Missing bracket</p>"
+            );
+        }
+
+        #[test]
+        fn malformed_raw_html_closing_tag() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize("<div>Unclosed tag")]))
+                    .iter()
+                    .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                    .collect::<String>(),
+                "<div>Unclosed tag\n"
+            );
+        }
+
+        #[test]
+        fn malformed_raw_html_mismatched_tags() {
+            init_test_config();
+            assert_eq!(
+                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                    "<div>Unmatched <span> tags"
+                )]))
+                .iter()
+                .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
+                .collect::<String>(),
+                "<div>Unmatched <span> tags\n"
             );
         }
 
