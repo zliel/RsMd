@@ -301,6 +301,7 @@ pub fn generate_default_css() -> String {
     }
     code {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-style: normal;
     background-color: #2a2a2a;
     padding: 0.2em 0.4em;
     border-radius: 4px;
