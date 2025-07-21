@@ -1271,6 +1271,7 @@ fn group_ordered_list(
     }
 }
 
+/// Attaches the current line to the previous block, optionally adding a separator token.
 fn attach_to_previous_block(
     blocks: &mut Vec<Vec<Token>>,
     previous_block: &mut Vec<Token>,
