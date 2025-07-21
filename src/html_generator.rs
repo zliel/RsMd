@@ -296,13 +296,31 @@ pub fn generate_default_css() -> String {
     font-size: 0.9rem;
     box-shadow: inset 0 0 0 1px #333;
     }
+    pre::before {
+    counter-reset: listing;
+    }
     code {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     background-color: #2a2a2a;
-    padding: 0.2em 0.4em;
+    counter-increment: listing;
+    padding: 0 0.4em;
     border-radius: 4px;
     font-size: 0.95em;
     color: #dcdcdc;
+    text-align: left;
+    float: left;
+    clear: left;
+    }
+    pre code::before {
+    content: counter(listing) ". ";
+    display: inline-block;
+    font-size: 0.85em;
+    float: left;
+    height: 1em;
+    padding-top: 0.2em;
+    padding-left: auto;
+    margin-left: auto;
+    text-align: right;
     }
 
     blockquote {
