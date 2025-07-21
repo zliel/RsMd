@@ -351,43 +351,50 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
     let mut language = None;
     let mut line_buffer: String = String::new();
+    let mut lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
 
     if let Some(Token::Text(string)) = line.get(1) {
         language = Some(string.clone());
+        lines_split_by_newline.remove(0);
     }
 
-    for i in 2..line.len() {
-        match line.get(i) {
-            Some(Token::CodeFence) => {
-                push_buffer_to_collection(&mut code_content, &mut line_buffer);
-
-                break;
-            }
-            Some(Token::Text(string)) | Some(Token::Punctuation(string)) => {
-                line_buffer.push_str(string);
-            }
-            Some(Token::OrderedListMarker(string)) => line_buffer.push_str(string),
-            Some(Token::Whitespace) => line_buffer.push(' '),
-            Some(Token::Newline) => line_buffer.push('\n'),
-            Some(Token::ThematicBreak) => line_buffer.push_str("---"),
-            Some(Token::Escape(esc_char)) => {
-                line_buffer.push_str(format!("\\{esc_char}").as_str());
-            }
-            Some(Token::CodeTick) => {
-                // If we encounter a code tick, treat it as a text element
-                line_buffer.push('`');
-            }
-            Some(Token::OpenParenthesis) => line_buffer.push('('),
-            Some(Token::CloseParenthesis) => line_buffer.push(')'),
-            Some(Token::OpenBracket) => line_buffer.push('['),
-            Some(Token::CloseBracket) => line_buffer.push(']'),
-            Some(Token::TableCellSeparator) => line_buffer.push('|'),
-            Some(Token::EmphasisRun { delimiter, length }) => {
-                line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
-            }
-            _ => {}
+    lines_split_by_newline.iter().for_each(|line| {
+        if line.is_empty() {
+            return;
         }
-    }
+        println!("Processing line: {:?}", line);
+
+        for token in line.iter() {
+            match token {
+                Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
+                Token::Whitespace => line_buffer.push(' '),
+                Token::Newline => {
+                    push_buffer_to_collection(&mut code_content, &mut line_buffer);
+                    line_buffer.clear();
+                }
+                Token::Escape(esc_char) => {
+                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                }
+                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::EmphasisRun { delimiter, length } => {
+                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                }
+                Token::OpenParenthesis => line_buffer.push('('),
+                Token::CloseParenthesis => line_buffer.push(')'),
+                Token::OpenBracket => line_buffer.push('['),
+                Token::CloseBracket => line_buffer.push(']'),
+                Token::TableCellSeparator => line_buffer.push('|'),
+                Token::CodeTick => line_buffer.push('`'),
+                Token::CodeFence => {}
+                Token::BlockQuoteMarker => line_buffer.push('>'),
+                _ => {}
+            }
+        }
+
+        push_buffer_to_collection(&mut code_content, &mut line_buffer);
+    });
 
     push_buffer_to_collection(&mut code_content, &mut line_buffer);
 
