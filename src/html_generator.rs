@@ -302,11 +302,14 @@ pub fn generate_default_css() -> String {
     code {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     background-color: #2a2a2a;
-    counter-increment: listing;
-    padding: 0 0.4em;
+    padding: 0.2em 0.4em;
     border-radius: 4px;
     font-size: 0.95em;
     color: #dcdcdc;
+    }
+    pre code {
+    counter-increment: listing;
+    padding: 0 0.4em;
     text-align: left;
     float: left;
     clear: left;
