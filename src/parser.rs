@@ -1044,18 +1044,13 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
         // Appending all tokens between two code fences to one block
         if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
             // If we are inside a code block, then we just append the line to the current block
-            previous_block.push(Token::Newline);
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(&mut blocks, &mut previous_block, line, Some(Token::Newline));
             continue;
         } else if is_inside_code_block && line.first() == Some(&Token::CodeFence) {
             // If we are inside a code block and the line starts with a code fence, then we end the
             // code block
             is_inside_code_block = false;
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(&mut blocks, &mut previous_block, line, None);
             continue;
         }
 
@@ -1097,10 +1092,12 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::BlockQuoteMarker) => {
                 if let Some(previous_line_start) = previous_block.first() {
                     if matches!(previous_line_start, Token::BlockQuoteMarker) {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                        attach_to_previous_block(
+                            &mut blocks,
+                            &mut previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
                     } else {
                         current_block.extend(line.to_owned());
                     }
@@ -1190,10 +1187,7 @@ fn group_table_rows(
 ) {
     if let Some(previous_line_start) = previous_block.first() {
         if previous_line_start == &Token::TableCellSeparator {
-            previous_block.push(Token::Newline);
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
         } else {
             current_block.extend(line.to_owned());
         }
@@ -1218,10 +1212,7 @@ fn group_text_lines(
 ) {
     if !previous_block.is_empty() {
         if matches!(previous_block.first(), Some(Token::Text(_))) {
-            previous_block.push(Token::Whitespace);
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(blocks, previous_block, line, Some(Token::Whitespace));
         } else if matches!(previous_block.first(), Some(Token::Punctuation(_))) {
             // If the previous block was a heading, then this is a new paragraph
             current_block.extend(line.to_owned());
@@ -1269,10 +1260,7 @@ fn group_ordered_list(
         match previous_line_start {
             Token::OrderedListMarker(_) if previous_block.get(1) == Some(&Token::Whitespace) => {
                 // If the previous block is a list, then we append the line to it
-                previous_block.push(Token::Newline);
-                previous_block.extend(line.to_owned());
-                blocks.pop();
-                blocks.push(previous_block.clone());
+                attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
             }
             _ => {
                 current_block.extend(line.to_owned());
@@ -1281,6 +1269,21 @@ fn group_ordered_list(
     } else {
         current_block.extend(line.to_owned());
     }
+}
+
+fn attach_to_previous_block(
+    blocks: &mut Vec<Vec<Token>>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+    separator: Option<Token>,
+) {
+    if let Some(separator) = separator {
+        previous_block.push(separator);
+    }
+
+    previous_block.extend(line.to_owned());
+    blocks.pop();
+    blocks.push(previous_block.clone());
 }
 
 /// Groups tabbed lines into blocks based on the previous block's content.
@@ -1328,32 +1331,20 @@ fn group_tabbed_lines(
                     if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
                 {
                     // If the previous block is a list, then we append the line to it
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 Some(Token::OrderedListMarker(_))
                     if previous_block.get(1) == Some(&Token::Whitespace) =>
                 {
                     // If the previous block is an ordered list, then we append the
                     // line to it
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 Some(Token::RawHtmlTag(_)) => {
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 Some(Token::Tab) => {
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 _ => {
                     // If the previous block is not a list, then we just add the
@@ -1396,19 +1387,18 @@ fn group_lines_with_leading_whitespace(
                         .iter()
                         .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
                     {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                        attach_to_previous_block(
+                            blocks,
+                            previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
                     } else {
                         current_block.extend(line.to_owned());
                     }
                 }
                 Token::RawHtmlTag(_) | Token::Text(_) | Token::Punctuation(_) => {
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 _ => {
                     // Append the line to current block, excluding leading whitespace
@@ -1448,10 +1438,7 @@ fn group_dashed_lines(
             {
                 // Then it is either the start of a list or part of a list
 
-                previous_block.push(Token::Newline);
-                previous_block.extend(line.to_owned());
-                blocks.pop();
-                blocks.push(previous_block.clone());
+                attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
             }
             Token::Punctuation(string) if string == "#" => {
                 blocks.push(line.to_owned());
