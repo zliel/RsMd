@@ -668,9 +668,11 @@ mod block {
                 },
                 CodeBlock {
                     language: Some(String::from("rust")),
-                    lines: vec![String::from(
-                        "fn main() {\nprintln!(\"Hello, world!\");\n}\n"
-                    )]
+                    lines: vec![
+                        String::from("fn main() {"),
+                        String::from("    println!(\"Hello, world!\");"),
+                        String::from("}")
+                    ]
                 }
             ]
         )
@@ -1007,7 +1009,7 @@ mod block {
             parse_block(tokenize("```\ncode block\n```")),
             Some(CodeBlock {
                 language: None,
-                lines: vec![String::from("code block\n")]
+                lines: vec![String::from("code block")]
             })
         );
     }
@@ -1019,7 +1021,7 @@ mod block {
             parse_block(tokenize("```rust\nfn main() {}\n```")),
             Some(CodeBlock {
                 language: Some(String::from("rust")),
-                lines: vec![String::from("\nfn main() {}\n")]
+                lines: vec![String::from("fn main() {}")]
             })
         );
     }
@@ -1804,7 +1806,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<pre><code>code block\nsecond line\n</code></pre>"
+                "<pre><code>code block</code>\n<code>second line</code></pre>"
             );
         }
 
@@ -1821,7 +1823,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<pre><code class=\"language-rust\">fn main() {}\n</code></pre>"
+                "<pre><code class=\"language-rust\">fn main() {}</code></pre>"
             );
         }
 

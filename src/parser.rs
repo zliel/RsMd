@@ -60,6 +60,7 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
         Some(Token::RawHtmlTag(_)) => Some(parse_raw_html(line)),
+        Some(Token::Tab) => Some(parse_indented_codeblock(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
@@ -67,6 +68,81 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     }
 }
 
+/// Parses an indented code block from a vector of tokens.
+///
+/// Note that CommonMark defines indented code blocks as lines that start with at least 4 spaces or
+/// a tab. However, this implementation only focuses on tabs, the size of which is defined in
+/// `config.toml`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing an indented code block.
+///
+/// # Returns
+/// An `MdBlockElement::CodeBlock` containing the parsed code content.
+fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
+    let mut code_content: Vec<String> = Vec::new();
+    let mut line_buffer: String = String::new();
+
+    let lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    lines_split_by_newline.iter().for_each(|token_line| {
+        if token_line.is_empty() {
+            return;
+        }
+
+        for token in &token_line[1..] {
+            match token {
+                Token::Tab => {
+                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                }
+                Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
+                Token::Whitespace => line_buffer.push(' '),
+                Token::Newline => {
+                    push_buffer_to_collection(&mut code_content, &mut line_buffer);
+                    line_buffer.clear();
+                }
+                Token::Escape(esc_char) => {
+                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                }
+                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::EmphasisRun { delimiter, length } => {
+                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                }
+                Token::OpenParenthesis => line_buffer.push('('),
+                Token::CloseParenthesis => line_buffer.push(')'),
+                Token::OpenBracket => line_buffer.push('['),
+                Token::CloseBracket => line_buffer.push(']'),
+                Token::TableCellSeparator => line_buffer.push('|'),
+                Token::CodeTick => line_buffer.push('`'),
+                Token::CodeFence => line_buffer.push_str("```"),
+                Token::BlockQuoteMarker => line_buffer.push('>'),
+                Token::ThematicBreak => line_buffer.push_str("---"),
+                Token::RawHtmlTag(tag_content) => {
+                    // This should never be the first token, but inline html is allowed
+                    let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
+                    line_buffer.push_str(escaped_tag.as_str());
+                }
+            }
+        }
+
+        push_buffer_to_collection(&mut code_content, &mut line_buffer);
+    });
+
+    MdBlockElement::CodeBlock {
+        language: None,
+        lines: code_content,
+    }
+}
+
+/// Parses raw HTML tags from a vector of tokens into an `MdBlockElement::RawHtml`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing a line of raw HTML.
+///
+/// # Returns
+/// An `MdBlockElement::RawHtml` containing the parsed HTML content.
 fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
     let mut html_content = String::new();
     for token in line {
@@ -102,6 +178,14 @@ fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Parses a blockquote from a vector of tokens into an `MdBlockElement::BlockQuote`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing a blockquote.
+///
+/// # Returns
+/// An `MdBlockElement::BlockQuote` containing the parsed content, or a `MdBlockElement::Paragraph`
+/// if the content is empty.
 fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
     let lines_split_by_newline = line
         .split(|token| *token == Token::Newline)
@@ -272,43 +356,56 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
     let mut language = None;
     let mut line_buffer: String = String::new();
+    let mut lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
 
     if let Some(Token::Text(string)) = line.get(1) {
         language = Some(string.clone());
+        lines_split_by_newline.remove(0);
     }
 
-    for i in 2..line.len() {
-        match line.get(i) {
-            Some(Token::CodeFence) => {
-                push_buffer_to_collection(&mut code_content, &mut line_buffer);
-
-                break;
-            }
-            Some(Token::Text(string)) | Some(Token::Punctuation(string)) => {
-                line_buffer.push_str(string);
-            }
-            Some(Token::OrderedListMarker(string)) => line_buffer.push_str(string),
-            Some(Token::Whitespace) => line_buffer.push(' '),
-            Some(Token::Newline) => line_buffer.push('\n'),
-            Some(Token::ThematicBreak) => line_buffer.push_str("---"),
-            Some(Token::Escape(esc_char)) => {
-                line_buffer.push_str(format!("\\{esc_char}").as_str());
-            }
-            Some(Token::CodeTick) => {
-                // If we encounter a code tick, treat it as a text element
-                line_buffer.push('`');
-            }
-            Some(Token::OpenParenthesis) => line_buffer.push('('),
-            Some(Token::CloseParenthesis) => line_buffer.push(')'),
-            Some(Token::OpenBracket) => line_buffer.push('['),
-            Some(Token::CloseBracket) => line_buffer.push(']'),
-            Some(Token::TableCellSeparator) => line_buffer.push('|'),
-            Some(Token::EmphasisRun { delimiter, length }) => {
-                line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
-            }
-            _ => {}
+    lines_split_by_newline.iter().for_each(|line| {
+        if line.is_empty() {
+            return;
         }
-    }
+
+        for token in line.iter() {
+            match token {
+                Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
+                Token::Whitespace => line_buffer.push(' '),
+                Token::Newline => {
+                    push_buffer_to_collection(&mut code_content, &mut line_buffer);
+                    line_buffer.clear();
+                }
+                Token::Tab => {
+                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                }
+                Token::Escape(esc_char) => {
+                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                }
+                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::EmphasisRun { delimiter, length } => {
+                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                }
+                Token::OpenParenthesis => line_buffer.push('('),
+                Token::CloseParenthesis => line_buffer.push(')'),
+                Token::OpenBracket => line_buffer.push('['),
+                Token::CloseBracket => line_buffer.push(']'),
+                Token::TableCellSeparator => line_buffer.push('|'),
+                Token::CodeTick => line_buffer.push('`'),
+                Token::CodeFence => {}
+                Token::BlockQuoteMarker => line_buffer.push('>'),
+                Token::RawHtmlTag(tag_content) => {
+                    let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
+                    line_buffer.push_str(escaped_tag.as_str());
+                }
+                Token::ThematicBreak => line_buffer.push_str("---"),
+            }
+        }
+
+        push_buffer_to_collection(&mut code_content, &mut line_buffer);
+    });
 
     push_buffer_to_collection(&mut code_content, &mut line_buffer);
 
@@ -821,6 +918,7 @@ fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
     }
     result
 }
+
 /// Parses (resolves) emphasis in a vector of inline Markdown elements.
 ///
 /// Modifies the elements in place to convert delimiter runs into bold or italic elements as appropriate.
@@ -957,19 +1055,15 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
 
         // Appending all tokens between two code fences to one block
         if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
+            println!("Appending to code block: {:?}", line);
             // If we are inside a code block, then we just append the line to the current block
-            previous_block.extend(line.to_owned());
-            previous_block.push(Token::Newline);
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(&mut blocks, &mut previous_block, line, Some(Token::Newline));
             continue;
         } else if is_inside_code_block && line.first() == Some(&Token::CodeFence) {
             // If we are inside a code block and the line starts with a code fence, then we end the
             // code block
             is_inside_code_block = false;
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(&mut blocks, &mut previous_block, line, None);
             continue;
         }
 
@@ -1011,10 +1105,12 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
             Some(Token::BlockQuoteMarker) => {
                 if let Some(previous_line_start) = previous_block.first() {
                     if matches!(previous_line_start, Token::BlockQuoteMarker) {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                        attach_to_previous_block(
+                            &mut blocks,
+                            &mut previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
                     } else {
                         current_block.extend(line.to_owned());
                     }
@@ -1088,6 +1184,14 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
     blocks
 }
 
+/// Groups lines beginning with "|" denoting Markdown tables.
+///
+/// # Arguments
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
 fn group_table_rows(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
@@ -1096,10 +1200,7 @@ fn group_table_rows(
 ) {
     if let Some(previous_line_start) = previous_block.first() {
         if previous_line_start == &Token::TableCellSeparator {
-            previous_block.push(Token::Newline);
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
         } else {
             current_block.extend(line.to_owned());
         }
@@ -1124,10 +1225,7 @@ fn group_text_lines(
 ) {
     if !previous_block.is_empty() {
         if matches!(previous_block.first(), Some(Token::Text(_))) {
-            previous_block.push(Token::Whitespace);
-            previous_block.extend(line.to_owned());
-            blocks.pop();
-            blocks.push(previous_block.clone());
+            attach_to_previous_block(blocks, previous_block, line, Some(Token::Whitespace));
         } else if matches!(previous_block.first(), Some(Token::Punctuation(_))) {
             // If the previous block was a heading, then this is a new paragraph
             current_block.extend(line.to_owned());
@@ -1175,10 +1273,7 @@ fn group_ordered_list(
         match previous_line_start {
             Token::OrderedListMarker(_) if previous_block.get(1) == Some(&Token::Whitespace) => {
                 // If the previous block is a list, then we append the line to it
-                previous_block.push(Token::Newline);
-                previous_block.extend(line.to_owned());
-                blocks.pop();
-                blocks.push(previous_block.clone());
+                attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
             }
             _ => {
                 current_block.extend(line.to_owned());
@@ -1189,7 +1284,26 @@ fn group_ordered_list(
     }
 }
 
+/// Attaches the current line to the previous block, optionally adding a separator token.
+fn attach_to_previous_block(
+    blocks: &mut Vec<Vec<Token>>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+    separator: Option<Token>,
+) {
+    if let Some(separator) = separator {
+        previous_block.push(separator);
+    }
+
+    previous_block.extend(line.to_owned());
+    blocks.pop();
+    blocks.push(previous_block.clone());
+}
+
 /// Groups tabbed lines into blocks based on the previous block's content.
+///
+/// Note that this function short-circuits when the first token of the line is a raw HTML tag,
+/// to allow for indented HTML.
 ///
 /// # Arguments
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
@@ -1203,65 +1317,71 @@ fn group_tabbed_lines(
     previous_block: &mut Vec<Token>,
     line: &mut Vec<Token>,
 ) {
-    if line.len() > 1 {
-        let mut has_content: bool = false;
-        for idx in 1..line.len() {
-            match line.get(idx) {
-                Some(Token::Tab) | Some(Token::Whitespace) => continue,
-                None => {}
-                _ => {
-                    has_content = true;
-                    break;
-                }
-            }
+    if line.len() == 1 {
+        current_block.extend(line.to_owned());
+        return;
+    }
+
+    let non_whitespace_index = line
+        .iter()
+        .position(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
+
+    if let Some(first_content_token) = line.get(non_whitespace_index.unwrap_or(0)) {
+        if matches!(first_content_token, Token::RawHtmlTag(_)) {
+            // Short-circuit if the first token is a raw HTML tag
+            current_block.extend(
+                line.iter()
+                    .skip_while(|token| matches!(token, Token::Tab | Token::Newline))
+                    .cloned(),
+            );
+
+            return;
         }
 
-        if has_content {
-            // If there is content after the tab, then we append it to the previous
-            // block
-            if !previous_block.is_empty() {
-                let previous_line_start = previous_block.first();
-                match previous_line_start {
-                    Some(Token::Punctuation(string))
-                        if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
-                    {
-                        // If the previous block is a list, then we append the line to it
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    Some(Token::OrderedListMarker(_))
-                        if previous_block.get(1) == Some(&Token::Whitespace) =>
-                    {
-                        // If the previous block is an ordered list, then we append the
-                        // line to it
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    Some(Token::RawHtmlTag(_)) => {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
-                    }
-                    _ => {
-                        // If the previous block is not a list, then we just add the
-                        // line to the current block
-                        current_block.extend(line.to_owned());
-                    }
+        if !previous_block.is_empty() {
+            let previous_line_start = previous_block.first();
+            match previous_line_start {
+                Some(Token::Punctuation(string))
+                    if string == "-" && previous_block.get(1) == Some(&Token::Whitespace) =>
+                {
+                    // If the previous block is a list, then we append the line to it
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
-            } else {
-                // If the previous block is empty, then we just add the line to the
-                // current block
-                current_block.extend(line.to_owned());
+                Some(Token::OrderedListMarker(_))
+                    if previous_block.get(1) == Some(&Token::Whitespace) =>
+                {
+                    // If the previous block is an ordered list, then we append the
+                    // line to it
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
+                }
+                Some(Token::RawHtmlTag(_)) => {
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
+                }
+                Some(Token::Tab) => {
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
+                }
+                _ => {
+                    // If the previous block is not a list, then we just add the
+                    // line to the current block
+                    current_block.extend(line.to_owned());
+                }
             }
+        } else {
+            // If the previous block is empty, then we just add the line to the
+            // current block
+            current_block.extend(line.to_owned());
         }
     }
 }
 
+/// Groups lines with leading whitespace into blocks based on the previous block's content.
+///
+/// # Arguments
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
 fn group_lines_with_leading_whitespace(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
@@ -1281,19 +1401,18 @@ fn group_lines_with_leading_whitespace(
                         .iter()
                         .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
                     {
-                        previous_block.push(Token::Newline);
-                        previous_block.extend(line.to_owned());
-                        blocks.pop();
-                        blocks.push(previous_block.clone());
+                        attach_to_previous_block(
+                            blocks,
+                            previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
                     } else {
                         current_block.extend(line.to_owned());
                     }
                 }
                 Token::RawHtmlTag(_) | Token::Text(_) | Token::Punctuation(_) => {
-                    previous_block.push(Token::Newline);
-                    previous_block.extend(line.to_owned());
-                    blocks.pop();
-                    blocks.push(previous_block.clone());
+                    attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 _ => {
                     // Append the line to current block, excluding leading whitespace
@@ -1333,10 +1452,7 @@ fn group_dashed_lines(
             {
                 // Then it is either the start of a list or part of a list
 
-                previous_block.push(Token::Newline);
-                previous_block.extend(line.to_owned());
-                blocks.pop();
-                blocks.push(previous_block.clone());
+                attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
             }
             Token::Punctuation(string) if string == "#" => {
                 blocks.push(line.to_owned());

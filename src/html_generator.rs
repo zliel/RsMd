@@ -296,13 +296,35 @@ pub fn generate_default_css() -> String {
     font-size: 0.9rem;
     box-shadow: inset 0 0 0 1px #333;
     }
+    pre::before {
+    counter-reset: listing;
+    }
     code {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    font-style: normal;
     background-color: #2a2a2a;
     padding: 0.2em 0.4em;
     border-radius: 4px;
     font-size: 0.95em;
     color: #dcdcdc;
+    }
+    pre code {
+    counter-increment: listing;
+    padding: 0 0.4em;
+    text-align: left;
+    float: left;
+    clear: left;
+    }
+    pre code::before {
+    content: counter(listing) ". ";
+    display: inline-block;
+    font-size: 0.85em;
+    float: left;
+    height: 1em;
+    padding-top: 0.2em;
+    padding-left: auto;
+    margin-left: auto;
+    text-align: right;
     }
 
     blockquote {
@@ -326,7 +348,7 @@ pub fn generate_default_css() -> String {
 
     table {
     width: 100%;
-    border-collapse: collapse;
+    border-spacing: 0;
     margin: 2rem 0;
     background-color: #1e1e1e;
     border: 1px solid #333;
@@ -339,7 +361,6 @@ pub fn generate_default_css() -> String {
     td {
     padding: 0.75rem 1rem;
     text-align: left;
-    border-bottom: 1px solid #333;
     }
 
     th {
@@ -358,6 +379,7 @@ pub fn generate_default_css() -> String {
 
     td {
     color: #ddd;
+    border-top: 1px solid #333;
     }
 
     hr {
