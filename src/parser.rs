@@ -364,7 +364,6 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
         if line.is_empty() {
             return;
         }
-        println!("Processing line: {:?}", line);
 
         for token in line.iter() {
             match token {
