@@ -1088,6 +1088,14 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
     blocks
 }
 
+/// Groups lines beginning with "|" denoting Markdown tables.
+///
+/// # Arguments
+/// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
+/// * `current_block` - A mutable reference to the current block being processed.
+/// * `previous_block` - A mutable reference to the previous block, used for context.
+/// * `line` - A mutable reference to the current line being processed, which is a vector of
+///   tokens.
 fn group_table_rows(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
