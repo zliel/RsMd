@@ -287,6 +287,80 @@ fn blockquote() {
 }
 
 #[test]
+fn raw_html_basic() {
+    init_test_config();
+    assert_eq!(tokenize("<br>"), vec![RawHtmlTag(String::from("<br>"))]);
+}
+
+#[test]
+fn raw_html_with_attributes() {
+    init_test_config();
+    assert_eq!(
+        tokenize("<img src=\"image.jpg\" alt=\"An image\">"),
+        vec![RawHtmlTag(String::from(
+            "<img src=\"image.jpg\" alt=\"An image\">"
+        ))]
+    );
+}
+
+#[test]
+fn raw_inline_html() {
+    init_test_config();
+    assert_eq!(
+        tokenize("This is <span>Inline HTML</span>"),
+        vec![
+            Text(String::from("This")),
+            Whitespace,
+            Text(String::from("is")),
+            Whitespace,
+            RawHtmlTag(String::from("<span>")),
+            Text(String::from("Inline")),
+            Whitespace,
+            Text(String::from("HTML")),
+            RawHtmlTag(String::from("</span>"))
+        ]
+    );
+}
+
+#[test]
+fn malformed_raw_html_no_closing_bracket() {
+    init_test_config();
+    assert_eq!(
+        tokenize("<div Missing bracket"),
+        vec![Text(String::from("<div Missing bracket")),]
+    );
+}
+
+#[test]
+fn malformed_raw_html_no_closing_tag() {
+    init_test_config();
+    assert_eq!(
+        tokenize("<div>Unclosed tag"),
+        vec![
+            RawHtmlTag(String::from("<div>")),
+            Text(String::from("Unclosed")),
+            Whitespace,
+            Text(String::from("tag"))
+        ]
+    );
+}
+
+#[test]
+fn malformed_raw_html_mismatched_tags() {
+    init_test_config();
+    assert_eq!(
+        tokenize("<div>Unmatched tags</span>"),
+        vec![
+            RawHtmlTag(String::from("<div>")),
+            Text(String::from("Unmatched")),
+            Whitespace,
+            Text(String::from("tags")),
+            RawHtmlTag(String::from("</span>"))
+        ]
+    );
+}
+
+#[test]
 fn unicode_mixed() {
     init_test_config();
     assert_eq!(

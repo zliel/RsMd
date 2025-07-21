@@ -59,10 +59,46 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::ThematicBreak) => Some(MdBlockElement::ThematicBreak),
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
+        Some(Token::RawHtmlTag(_)) => Some(parse_raw_html(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
         }),
+    }
+}
+
+fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
+    let mut html_content = String::new();
+    for token in line {
+        match token {
+            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content.as_str()),
+            Token::Text(string) | Token::Punctuation(string) => html_content.push_str(&string),
+            Token::Whitespace => html_content.push(' '),
+            Token::Escape(esc_char) => {
+                html_content.push_str(format!("\\{esc_char}").as_str());
+            }
+            Token::Newline => html_content.push('\n'),
+            Token::OrderedListMarker(string) => html_content.push_str(string.as_str()),
+            Token::EmphasisRun { delimiter, length } => {
+                html_content.push_str(delimiter.to_string().repeat(length).as_str())
+            }
+            Token::OpenParenthesis => html_content.push('('),
+            Token::CloseParenthesis => html_content.push(')'),
+            Token::OpenBracket => html_content.push('['),
+            Token::CloseBracket => html_content.push(']'),
+            Token::TableCellSeparator => html_content.push('|'),
+            Token::CodeTick => html_content.push('`'),
+            Token::CodeFence => html_content.push_str("```"),
+            Token::BlockQuoteMarker => html_content.push('>'),
+            Token::Tab => {
+                html_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+            }
+            Token::ThematicBreak => html_content.push_str("---"),
+        }
+    }
+
+    MdBlockElement::RawHtml {
+        content: html_content,
     }
 }
 
@@ -521,6 +557,8 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::CloseParenthesis => buffer.push(')'),
             Token::ThematicBreak => buffer.push_str("---"),
             Token::TableCellSeparator => buffer.push('|'),
+            Token::BlockQuoteMarker => buffer.push('>'),
+            Token::RawHtmlTag(tag_content) => buffer.push_str(tag_content.as_str()),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -568,6 +606,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
             Token::BlockQuoteMarker => code_content.push('>'),
+            Token::RawHtmlTag(tag_content) => code_content.push_str(tag_content),
             Token::CodeFence => {}
         }
 
@@ -703,6 +742,7 @@ where
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
                 Token::BlockQuoteMarker => uri.push('>'),
+                Token::RawHtmlTag(tag_content) => uri.push_str(tag_content),
                 _ => {}
             }
         } else {
@@ -734,6 +774,12 @@ where
                 Token::CodeFence => title.push_str("```"),
                 Token::ThematicBreak => title.push_str("---"),
                 Token::BlockQuoteMarker => title.push('>'),
+                Token::RawHtmlTag(tag_content) => {
+                    warn!(
+                        "Raw HTML tags in titles can result in unexpected behavior: {tag_content}"
+                    );
+                    title.push_str(tag_content);
+                }
             }
         }
         cursor.advance();
@@ -991,11 +1037,23 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 }
             }
             Some(Token::Text(string)) if string == "=" => {
+                let has_trailing_content = line.iter().skip(1).any(|token| match token {
+                    Token::Text(s) if s == "=" => false,
+                    Token::Whitespace | Token::Tab | Token::Newline => false,
+                    _ => true,
+                });
+
                 // Setext heading 1
                 if let Some(previous_line_start) = previous_block.first() {
-                    // If it's text, then prepend the previous line with "# "
-                    if matches!(previous_line_start, Token::Text(_)) {
+                    if !has_trailing_content && matches!(previous_line_start, Token::Text(_)) {
                         group_setext_heading_one(&mut blocks, &mut previous_block);
+                    } else {
+                        group_text_lines(
+                            &mut blocks,
+                            &mut current_block,
+                            &mut previous_block,
+                            line,
+                        );
                     }
                 } else {
                     current_block.extend(line.to_owned());
@@ -1008,11 +1066,11 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
                 group_table_rows(&mut blocks, &mut current_block, &mut previous_block, line);
             }
             Some(Token::Whitespace) => {
-                group_text_lines(
+                group_lines_with_leading_whitespace(
                     &mut blocks,
                     &mut current_block,
                     &mut previous_block,
-                    &mut line[1..].to_vec(),
+                    line,
                 );
             }
             _ => {
@@ -1183,6 +1241,12 @@ fn group_tabbed_lines(
                         blocks.pop();
                         blocks.push(previous_block.clone());
                     }
+                    Some(Token::RawHtmlTag(_)) => {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    }
                     _ => {
                         // If the previous block is not a list, then we just add the
                         // line to the current block
@@ -1194,6 +1258,56 @@ fn group_tabbed_lines(
                 // current block
                 current_block.extend(line.to_owned());
             }
+        }
+    }
+}
+
+fn group_lines_with_leading_whitespace(
+    blocks: &mut Vec<Vec<Token>>,
+    current_block: &mut Vec<Token>,
+    previous_block: &mut Vec<Token>,
+    line: &mut Vec<Token>,
+) {
+    let has_content = line
+        .iter()
+        .any(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
+
+    if has_content {
+        if let Some(previous_line_start) = previous_block.first() {
+            match previous_line_start {
+                Token::Whitespace => {
+                    // Check if the previous line has non-whitespace content
+                    if line
+                        .iter()
+                        .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
+                    {
+                        previous_block.push(Token::Newline);
+                        previous_block.extend(line.to_owned());
+                        blocks.pop();
+                        blocks.push(previous_block.clone());
+                    } else {
+                        current_block.extend(line.to_owned());
+                    }
+                }
+                Token::RawHtmlTag(_) | Token::Text(_) | Token::Punctuation(_) => {
+                    previous_block.push(Token::Newline);
+                    previous_block.extend(line.to_owned());
+                    blocks.pop();
+                    blocks.push(previous_block.clone());
+                }
+                _ => {
+                    // Append the line to current block, excluding leading whitespace
+                    current_block.extend(
+                        line.iter()
+                            .skip_while(|t| {
+                                matches!(t, Token::Whitespace | Token::Tab | Token::Newline)
+                            })
+                            .cloned(),
+                    );
+                }
+            }
+        } else {
+            current_block.extend(line.to_owned());
         }
     }
 }

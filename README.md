@@ -19,6 +19,7 @@ It is designed to be fast, efficient, and easy to use.
   - [Usage](#usage)
     - [Options](#options)
   - [Configuration](#configuration)
+  - [Note: Raw HTML](note-raw-html)
   <!--toc:end-->
 
 ## Features
@@ -43,7 +44,7 @@ Here's a picture saying "Hello, World!":
 The following HTML page will be generated:
 ![Image of the generated HTML page with matching content](./media/example_screenshot.png)
 
-## Installation (WIP)
+## Installation
 
 To install Mark-rs, you need to have Rust installed on your system. You can install Rust using [rustup](https://rustup.rs/).
 
@@ -117,3 +118,9 @@ tab_size = 4
 css_file = "default" # "default" for the default styles
 favicon_file = ""    # Empty for no favicon
 ```
+
+## ⚠️Note: Raw HTML
+
+Mark-rs supports using raw HTML in input Markdown files, but it should be noted that using raw HTML can lead to security vulnerabilities, such as XSS (Cross-Site Scripting) attacks, if the input is not properly sanitized. Therefore, it is recommended to use raw HTML with caution and only when necessary.
+
+As of right now, Mark-rs does not sanitize raw HTML, so that users can use things like script tags and embedded content, but do so with caution. For more information on XSS attacks, see [OWASP](https://owasp.org/www-community/attacks/xss/) and the [OWASP XSS Prevention Cheat Sheet.](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
