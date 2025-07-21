@@ -67,6 +67,14 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     }
 }
 
+
+/// Parses raw HTML tags from a vector of tokens into an `MdBlockElement::RawHtml`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing a line of raw HTML.
+///
+/// # Returns
+/// An `MdBlockElement::RawHtml` containing the parsed HTML content.
 fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
     let mut html_content = String::new();
     for token in line {
@@ -829,6 +837,7 @@ fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
     }
     result
 }
+
 /// Parses (resolves) emphasis in a vector of inline Markdown elements.
 ///
 /// Modifies the elements in place to convert delimiter runs into bold or italic elements as appropriate.
