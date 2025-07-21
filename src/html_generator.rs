@@ -344,7 +344,7 @@ pub fn generate_default_css() -> String {
 
     table {
     width: 100%;
-    border-collapse: collapse;
+    border-spacing: 0;
     margin: 2rem 0;
     background-color: #1e1e1e;
     border: 1px solid #333;
