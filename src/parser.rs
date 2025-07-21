@@ -1191,6 +1191,9 @@ fn group_ordered_list(
 
 /// Groups tabbed lines into blocks based on the previous block's content.
 ///
+/// Note that this function short-circuits when the first token of the line is a raw HTML tag,
+/// to allow for indented HTML.
+///
 /// # Arguments
 /// * `blocks` - A mutable reference to a vector of blocks, where each block is a vector of tokens.
 /// * `current_block` - A mutable reference to the current block being processed.
