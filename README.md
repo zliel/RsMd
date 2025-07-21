@@ -15,7 +15,7 @@ It is designed to be fast, efficient, and easy to use.
 - [Mark-rs](#mark-rs)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
-  - [Installation (WIP)](#installation-wip)
+  - [Installation](#installation)
   - [Usage](#usage)
     - [Options](#options)
   - [Configuration](#configuration)
@@ -72,6 +72,15 @@ You can also download pre-built binaries for your platform from the [releases pa
 
 From there, you can download the appropriate binary for your operating system and architecture, extract it, and use it directly.
 
+### Updates
+
+If Mark-rs was installed using Cargo, you can update it to the latest version by running:
+
+```bash
+cargo install mark-rs
+```
+
+If you installed Mark-rs using pre-built binaries, you can download the latest version from the [releases page](https://github.com/zliel/Mark-rs/releases)
 
 ## Usage
 
