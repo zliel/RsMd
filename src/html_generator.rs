@@ -357,7 +357,6 @@ pub fn generate_default_css() -> String {
     td {
     padding: 0.75rem 1rem;
     text-align: left;
-    border-bottom: 1px solid #333;
     }
 
     th {
@@ -376,6 +375,7 @@ pub fn generate_default_css() -> String {
 
     td {
     color: #ddd;
+    border-top: 1px solid #333;
     }
 
     hr {
