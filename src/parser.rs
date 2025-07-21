@@ -118,7 +118,12 @@ fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
                 Token::CodeTick => line_buffer.push('`'),
                 Token::CodeFence => line_buffer.push_str("```"),
                 Token::BlockQuoteMarker => line_buffer.push('>'),
-                _ => {}
+                Token::ThematicBreak => line_buffer.push_str("---"),
+                Token::RawHtmlTag(tag_content) => {
+                    // This should never be the first token, but inline html is allowed
+                    let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
+                    line_buffer.push_str(escaped_tag.as_str());
+                }
             }
         }
 
