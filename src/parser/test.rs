@@ -670,7 +670,7 @@ mod block {
                     language: Some(String::from("rust")),
                     lines: vec![
                         String::from("fn main() {"),
-                        String::from("println!(\"Hello, world!\");"),
+                        String::from("    println!(\"Hello, world!\");"),
                         String::from("}")
                     ]
                 }
