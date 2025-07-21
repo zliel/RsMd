@@ -102,6 +102,14 @@ fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
     }
 }
 
+/// Parses a blockquote from a vector of tokens into an `MdBlockElement::BlockQuote`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing a blockquote.
+///
+/// # Returns
+/// An `MdBlockElement::BlockQuote` containing the parsed content, or a `MdBlockElement::Paragraph`
+/// if the content is empty.
 fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
     let lines_split_by_newline = line
         .split(|token| *token == Token::Newline)
