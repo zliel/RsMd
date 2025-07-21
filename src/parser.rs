@@ -966,8 +966,8 @@ pub fn group_lines_to_blocks(mut tokenized_lines: Vec<Vec<Token>>) -> Vec<Vec<To
         // Appending all tokens between two code fences to one block
         if is_inside_code_block && line.first() != Some(&Token::CodeFence) {
             // If we are inside a code block, then we just append the line to the current block
-            previous_block.extend(line.to_owned());
             previous_block.push(Token::Newline);
+            previous_block.extend(line.to_owned());
             blocks.pop();
             blocks.push(previous_block.clone());
             continue;
