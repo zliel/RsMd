@@ -19,7 +19,7 @@ It is designed to be fast, efficient, and easy to use.
   - [Usage](#usage)
     - [Options](#options)
   - [Configuration](#configuration)
-  - [Note: Raw HTML](Note-raw-html)
+  - [Note: Raw HTML](note-raw-html)
   <!--toc:end-->
 
 ## Features
