@@ -60,6 +60,7 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
         Some(Token::TableCellSeparator) => Some(parse_table(line)),
         Some(Token::BlockQuoteMarker) => Some(parse_blockquote(line)),
         Some(Token::RawHtmlTag(_)) => Some(parse_raw_html(line)),
+        Some(Token::Tab) => Some(parse_indented_codeblock(line)),
         Some(Token::Newline) => None,
         _ => Some(MdBlockElement::Paragraph {
             content: parse_inline(line),
@@ -67,6 +68,68 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
     }
 }
 
+/// Parses an indented code block from a vector of tokens.
+///
+/// Note that CommonMark defines indented code blocks as lines that start with at least 4 spaces or
+/// a tab. However, this implementation only focuses on tabs, the size of which is defined in
+/// `config.toml`.
+///
+/// # Arguments
+/// * `line` - A vector of tokens representing an indented code block.
+///
+/// # Returns
+/// An `MdBlockElement::CodeBlock` containing the parsed code content.
+fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
+    let mut code_content: Vec<String> = Vec::new();
+    let mut line_buffer: String = String::new();
+
+    let lines_split_by_newline = line
+        .split(|token| *token == Token::Newline)
+        .collect::<Vec<_>>();
+
+    lines_split_by_newline.iter().for_each(|token_line| {
+        if token_line.is_empty() {
+            return;
+        }
+
+        for token in &token_line[1..] {
+            match token {
+                Token::Tab => {
+                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                }
+                Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
+                Token::Whitespace => line_buffer.push(' '),
+                Token::Newline => {
+                    push_buffer_to_collection(&mut code_content, &mut line_buffer);
+                    line_buffer.clear();
+                }
+                Token::Escape(esc_char) => {
+                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                }
+                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::EmphasisRun { delimiter, length } => {
+                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                }
+                Token::OpenParenthesis => line_buffer.push('('),
+                Token::CloseParenthesis => line_buffer.push(')'),
+                Token::OpenBracket => line_buffer.push('['),
+                Token::CloseBracket => line_buffer.push(']'),
+                Token::TableCellSeparator => line_buffer.push('|'),
+                Token::CodeTick => line_buffer.push('`'),
+                Token::CodeFence => line_buffer.push_str("```"),
+                Token::BlockQuoteMarker => line_buffer.push('>'),
+                _ => {}
+            }
+        }
+
+        push_buffer_to_collection(&mut code_content, &mut line_buffer);
+    });
+
+    MdBlockElement::CodeBlock {
+        language: None,
+        lines: code_content,
+    }
+}
 
 /// Parses raw HTML tags from a vector of tokens into an `MdBlockElement::RawHtml`.
 ///
