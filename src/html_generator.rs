@@ -49,6 +49,8 @@ pub fn generate_html(
             "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js\" integrity=\"sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>"
         );
 
+    body.push_str("\n</body>\n");
+
     html_output.push_str(&head);
     html_output.push_str(&body);
     html_output.push_str("</html>\n");
