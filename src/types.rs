@@ -90,18 +90,13 @@ impl ToHtml for MdBlockElement {
                 format!("<p>{inner_html}</p>")
             }
             MdBlockElement::CodeBlock { language, lines } => {
-                let code = lines
-                    .iter()
-                    .map(|line| match language {
-                        Some(language) => {
-                            format!("<code class=\"language-{language}\">{line}</code>")
-                        }
-                        None => format!("<code>{line}</code>"),
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
+                    let code = lines
+                        .iter()
+                        .map(|line| format!("<code class=\"non_prism\">{line}</code>"))
+                        .collect::<Vec<_>>()
+                        .join("\n");
 
-                format!("<pre>{code}</pre>")
+                    format!("<pre class=\"non_prism\">{code}</pre>")
             }
             MdBlockElement::ThematicBreak => "<hr>".to_string(),
             MdBlockElement::UnorderedList { items } => {

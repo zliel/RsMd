@@ -288,7 +288,8 @@ pub fn generate_default_css() -> String {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    pre {
+    /* Styles for when "use_prism = false" is set in config.toml */
+    pre.non_prism {
     background-color: #2a2a2a;
     padding: 1rem;
     border-radius: 8px;
@@ -296,10 +297,10 @@ pub fn generate_default_css() -> String {
     font-size: 0.9rem;
     box-shadow: inset 0 0 0 1px #333;
     }
-    pre::before {
+    pre.non_prism::before {
     counter-reset: listing;
     }
-    code {
+    code.non_prism {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     font-style: normal;
     background-color: #2a2a2a;
@@ -308,14 +309,14 @@ pub fn generate_default_css() -> String {
     font-size: 0.95em;
     color: #dcdcdc;
     }
-    pre code {
+    pre.non_prism code.non_prism {
     counter-increment: listing;
     padding: 0 0.4em;
     text-align: left;
     float: left;
     clear: left;
     }
-    pre code::before {
+    pre.non_prism code.non_prism::before {
     content: counter(listing) ". ";
     display: inline-block;
     font-size: 0.85em;
@@ -325,6 +326,10 @@ pub fn generate_default_css() -> String {
     padding-left: auto;
     margin-left: auto;
     text-align: right;
+    }
+
+    code {
+    font-style: normal;
     }
 
     blockquote {

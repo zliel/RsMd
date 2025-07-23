@@ -1806,7 +1806,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<pre><code>code block</code>\n<code>second line</code></pre>"
+                "<pre class=\"non_prism\"><code class=\"non_prism\">code block</code>\n<code class=\"non_prism\">second line</code></pre>"
             );
         }
 
@@ -1823,7 +1823,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<pre><code class=\"language-rust\">fn main() {}</code></pre>"
+                "<pre class=\"non_prism\"><code class=\"non_prism\">fn main() {}</code></pre>"
             );
         }
 
