@@ -1,7 +1,7 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
-use log::{info, warn};
+use log::warn;
 
 use crate::{CONFIG, io::copy_image_to_output_dir, utils::build_rel_prefix};
 
