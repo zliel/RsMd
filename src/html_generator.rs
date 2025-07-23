@@ -41,7 +41,7 @@ pub fn generate_html(
 
     let inner_html = if CONFIG.get().unwrap().html.sanitize_html {
         ammonia::Builder::default()
-            .add_tag_attributes("a", &["class", "href", "title", "target"])
+            .add_tag_attributes("a", &["href", "title", "target"])
             .add_tag_attribute_values("a", "target", &["_blank", "_self"])
             .add_tag_attributes("pre", &["class"])
             .add_tag_attributes("code", &["class"])
