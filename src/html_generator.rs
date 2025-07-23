@@ -88,6 +88,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 /// * `html_rel_path` - The relative path to the HTML file from the output directory, used for
 ///   linking
 fn generate_head(file_name: &str, html_rel_path: &str) -> String {
+    let config = CONFIG.get().unwrap();
     let mut head = String::from(
         r#"<!DOCTYPE html>
     <html lang="en">
@@ -101,7 +102,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let title = format_title(file_name);
     head.push_str(&format!("<title>{}</title>\n", title));
 
-    let favicon_file = CONFIG.get().unwrap().html.favicon_file.clone();
+    let favicon_file = config.html.favicon_file.clone();
     if !favicon_file.is_empty() {
         let mut favicon_path = build_rel_prefix(html_rel_path);
         favicon_path.push("media");
@@ -111,7 +112,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
         head.push_str(&format!("<link rel=\"icon\" href=\"{}\">\n", favicon_href));
     }
 
-    let css_file = CONFIG.get().unwrap().html.css_file.clone();
+    let css_file = config.html.css_file.clone();
     let mut css_path = build_rel_prefix(html_rel_path);
     css_path.push("styles.css");
     let css_href = css_path.to_string_lossy();
