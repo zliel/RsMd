@@ -90,6 +90,18 @@ impl ToHtml for MdBlockElement {
                 format!("<p>{inner_html}</p>")
             }
             MdBlockElement::CodeBlock { language, lines } => {
+                let language_class = match language {
+                    Some(language) => format!("language-{language}"),
+                    None => "language-none".to_string(),
+                };
+
+                if CONFIG.get().unwrap().html.use_prism {
+                    let code = lines.join("\n");
+
+                    format!(
+                        "<pre class=\"{language_class} line-numbers\" style=\"white-space: pre-wrap;\" data-prismjs-copy=\"📋\"><code class=\"{language_class} line-numbers\">{code}</code></pre>"
+                    )
+                } else {
                     let code = lines
                         .iter()
                         .map(|line| format!("<code class=\"non_prism\">{line}</code>"))
@@ -97,6 +109,7 @@ impl ToHtml for MdBlockElement {
                         .join("\n");
 
                     format!("<pre class=\"non_prism\">{code}</pre>")
+                }
             }
             MdBlockElement::ThematicBreak => "<hr>".to_string(),
             MdBlockElement::UnorderedList { items } => {
