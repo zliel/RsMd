@@ -28,6 +28,7 @@ pub struct HtmlConfig {
     pub use_prism: bool,
     #[serde(default = "String::new")]
     pub prism_theme: String,
+    pub sanitize_html: bool,
 }
 
 /// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
@@ -79,6 +80,7 @@ impl Config {
                     favicon_file: String::new(),
                     use_prism: false,
                     prism_theme: String::new(),
+                    sanitize_html: true,
                 },
             };
 
