@@ -1328,11 +1328,7 @@ fn group_tabbed_lines(
     if let Some(first_content_token) = line.get(non_whitespace_index.unwrap_or(0)) {
         if matches!(first_content_token, Token::RawHtmlTag(_)) {
             // Short-circuit if the first token is a raw HTML tag
-            current_block.extend(
-                line.iter()
-                    .skip_while(|token| matches!(token, Token::Tab | Token::Newline))
-                    .cloned(),
-            );
+            attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
 
             return;
         }

@@ -1,5 +1,7 @@
 //! This module provides functionality to generate HTML from markdown block elements.
 
+use ammonia::clean;
+
 use crate::CONFIG;
 use crate::types::{MdBlockElement, ToHtml};
 use crate::utils::build_rel_prefix;
@@ -36,6 +38,30 @@ pub fn generate_html(
         .map(|element| element.to_html(output_dir, input_dir, html_rel_path))
         .collect::<Vec<String>>()
         .join("\n");
+
+    let inner_html = if CONFIG.get().unwrap().html.sanitize_html {
+        ammonia::Builder::default()
+            .add_tag_attributes("a", &["href", "title", "target"])
+            .add_tag_attribute_values("a", "target", &["_blank", "_self"])
+            .add_tag_attributes("pre", &["class"])
+            .add_tag_attributes("code", &["class"])
+            .add_tags(&["iframe"])
+            .add_tag_attributes(
+                "iframe",
+                &[
+                    "src",
+                    "width",
+                    "height",
+                    "title",
+                    "frameborder",
+                    "allowfullscreen",
+                ],
+            )
+            .clean(&inner_html)
+            .to_string()
+    } else {
+        inner_html
+    };
 
     body.push_str(&inner_html);
     body.push_str("\n</div>");
@@ -143,7 +169,13 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 
     if config.html.use_prism {
         if !config.html.prism_theme.is_empty() {
-            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", config.html.prism_theme).as_str());
+            let theme = if config.html.sanitize_html {
+                clean(&config.html.prism_theme)
+            } else {
+                config.html.prism_theme.clone()
+            };
+
+            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme).as_str());
         } else {
             head.push_str("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
         }
