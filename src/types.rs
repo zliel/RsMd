@@ -1,9 +1,9 @@
 //! This module defines the types used in the markdown parser, including tokens, inline elements,
 //! block elements, and a cursor for navigating through tokens.
 
-use log::warn;
+use log::{info, warn};
 
-use crate::{io::copy_image_to_output_dir, utils::build_rel_prefix};
+use crate::{CONFIG, io::copy_image_to_output_dir, utils::build_rel_prefix};
 
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
