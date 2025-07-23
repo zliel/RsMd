@@ -135,6 +135,8 @@ sanitize_html = true # If "true", the HTML will be sanitized to prevent XSS atta
 
 ## ⚠️Note: Raw HTML
 
-Mark-rs supports using raw HTML in input Markdown files, but it should be noted that using raw HTML can lead to security vulnerabilities, such as XSS (Cross-Site Scripting) attacks, if the input is not properly sanitized. Therefore, it is recommended to use raw HTML with caution and only when necessary.
+Mark-rs supports using raw HTML in input Markdown files, but it should be noted that using raw HTML can lead to security vulnerabilities, such as XSS (Cross-Site Scripting) attacks, if the input is not properly sanitized. Therefore, it is recommended to use raw HTML with caution and only when necessary. By default, Mark-rs will sanitize the generated HTML before it is written to each file, but you should still be careful when using raw HTML.
 
-As of right now, Mark-rs does not sanitize raw HTML, so that users can use things like script tags and embedded content, but do so with caution. For more information on XSS attacks, see [OWASP](https://owasp.org/www-community/attacks/xss/) and the [OWASP XSS Prevention Cheat Sheet.](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+If you want to use raw HTML without any sanitizing, you can disable HTML sanitizing by setting `sanitize_html = false` in your `config.toml` file.
+
+For more information on XSS attacks, see [OWASP](https://owasp.org/www-community/attacks/xss/) and the [OWASP XSS Prevention Cheat Sheet.](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
