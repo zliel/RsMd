@@ -39,6 +39,31 @@ pub fn generate_html(
         .collect::<Vec<String>>()
         .join("\n");
 
+    let inner_html = if CONFIG.get().unwrap().html.sanitize_html {
+        ammonia::Builder::default()
+            .add_tag_attributes("a", &["class", "href", "title", "target"])
+            .add_tag_attribute_values("a", "target", &["_blank", "_self"])
+            .add_tag_attributes("pre", &["class"])
+            .add_tag_attributes("code", &["class"])
+            .add_tags(&["iframe"])
+            .add_tag_attributes(
+                "iframe",
+                &[
+                    "src",
+                    "width",
+                    "height",
+                    "title",
+                    "frameborder",
+                    "allowfullscreen",
+                ],
+            )
+            .clean(&inner_html)
+            .to_string()
+        // inner_html
+    } else {
+        inner_html
+    };
+
     body.push_str(&inner_html);
     body.push_str("\n</div>");
 
