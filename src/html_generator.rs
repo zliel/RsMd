@@ -59,7 +59,6 @@ pub fn generate_html(
             )
             .clean(&inner_html)
             .to_string()
-        // inner_html
     } else {
         inner_html
     };
