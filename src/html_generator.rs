@@ -50,6 +50,8 @@ pub fn generate_html(
         );
         body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.js\" integrity=\"sha512-st608h+ZqzliahyzEpETxzU0f7z7a9acN6AFvYmHvpFhmcFuKT8a22TT5TpKpjDa3pt3Wv7Z3SdQBCBdDPhyWA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
         body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js\" integrity=\"sha512-/kVH1uXuObC0iYgxxCKY41JdWOkKOxorFVmip+YVifKsJ4Au/87EisD1wty7vxN2kAhnWh6Yc8o/dSAXj6Oz7A==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js\" integrity=\"sha512-d1t+YumgzdIHUL78me4B9NzNTu9Lcj6RdGVbdiFDlxRV9JTN9s+iBQRhUqLRq5xtWUp1AD+cW2sN2OlST716fw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+    }
 
     body.push_str("\n</body>\n");
 
