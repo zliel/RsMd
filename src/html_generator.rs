@@ -1,5 +1,7 @@
 //! This module provides functionality to generate HTML from markdown block elements.
 
+use ammonia::clean;
+
 use crate::CONFIG;
 use crate::types::{MdBlockElement, ToHtml};
 use crate::utils::build_rel_prefix;
@@ -143,7 +145,13 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 
     if config.html.use_prism {
         if !config.html.prism_theme.is_empty() {
-            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", config.html.prism_theme).as_str());
+            let theme = if config.html.sanitize_html {
+                clean(&config.html.prism_theme)
+            } else {
+                config.html.prism_theme.clone()
+            };
+
+            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme).as_str());
         } else {
             head.push_str("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
         }
