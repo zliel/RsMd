@@ -38,7 +38,15 @@ pub fn generate_html(
         .join("\n");
 
     body.push_str(&inner_html);
-    body.push_str("\n</div>\n</body>\n");
+    body.push_str("\n</div>");
+
+    if CONFIG.get().unwrap().html.use_prism {
+        body.push_str(
+            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js\" integrity=\"sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>",
+        );
+        body.push_str(
+            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js\" integrity=\"sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>"
+        );
 
     html_output.push_str(&head);
     html_output.push_str(&body);
@@ -124,6 +132,10 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
             "<link rel=\"stylesheet\" href=\"{}\">\n",
             css_file
         ));
+    }
+
+    if config.html.use_prism {
+            head.push_str("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
     }
 
     head.push_str("</head>\n");
