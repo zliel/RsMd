@@ -362,6 +362,12 @@ pub fn generate_default_css() -> String {
     border-radius: 2px;
     }
 
+    /* "button.copy-to-clipboard-button matches PrismJS' clipboard button */
+    button.copy-to-clipboard-button {
+    font-style: normal;
+    margin-right: 0.2em;
+    }
+
     ul,
     ol {
     padding-left: 1.5rem;
