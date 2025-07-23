@@ -24,6 +24,10 @@ pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
     pub favicon_file: String,
+    #[serde(default = "bool::default")]
+    pub use_prism: bool,
+    #[serde(default = "String::new")]
+    pub prism_theme: String,
 }
 
 /// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
@@ -73,6 +77,8 @@ impl Config {
                 html: HtmlConfig {
                     css_file: default_css(),
                     favicon_file: String::new(),
+                    use_prism: false,
+                    prism_theme: String::new(),
                 },
             };
 

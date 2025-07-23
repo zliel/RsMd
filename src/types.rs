@@ -3,7 +3,7 @@
 
 use log::warn;
 
-use crate::{io::copy_image_to_output_dir, utils::build_rel_prefix};
+use crate::{CONFIG, io::copy_image_to_output_dir, utils::build_rel_prefix};
 
 pub trait ToHtml {
     /// Converts the implementing type to an String representing its HTML equivalent.
@@ -90,18 +90,26 @@ impl ToHtml for MdBlockElement {
                 format!("<p>{inner_html}</p>")
             }
             MdBlockElement::CodeBlock { language, lines } => {
-                let code = lines
-                    .iter()
-                    .map(|line| match language {
-                        Some(language) => {
-                            format!("<code class=\"language-{language}\">{line}</code>")
-                        }
-                        None => format!("<code>{line}</code>"),
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
+                let language_class = match language {
+                    Some(language) => format!("language-{language}"),
+                    None => "language-none".to_string(),
+                };
 
-                format!("<pre>{code}</pre>")
+                if CONFIG.get().unwrap().html.use_prism {
+                    let code = lines.join("\n");
+
+                    format!(
+                        "<pre class=\"{language_class} line-numbers\" style=\"white-space: pre-wrap;\" data-prismjs-copy=\"📋\"><code class=\"{language_class} line-numbers\">{code}</code></pre>"
+                    )
+                } else {
+                    let code = lines
+                        .iter()
+                        .map(|line| format!("<code class=\"non_prism\">{line}</code>"))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+
+                    format!("<pre class=\"non_prism\">{code}</pre>")
+                }
             }
             MdBlockElement::ThematicBreak => "<hr>".to_string(),
             MdBlockElement::UnorderedList { items } => {

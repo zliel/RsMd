@@ -126,6 +126,10 @@ tab_size = 4
 [html]
 css_file = "default" # "default" for the default styles
 favicon_file = ""    # Empty for no favicon
+use_prism = false    # If "true", the CDN links for PrismJS will be used for codeblock highlighting
+# Note that `use_prism = true` this will add `<script>` and `<link>` elements to the page
+prism_theme = "vsc-dark-plus" # Will only take effect if "use_prism" is set to "true"
+# See https://github.com/PrismJS/prism-themes for themes and https://cdnjs.com/libraries/prism-themes for what to set "prism_theme" to
 ```
 
 ## ⚠️Note: Raw HTML

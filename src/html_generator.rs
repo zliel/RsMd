@@ -38,7 +38,22 @@ pub fn generate_html(
         .join("\n");
 
     body.push_str(&inner_html);
-    body.push_str("\n</div>\n</body>\n");
+    body.push_str("\n</div>");
+
+    if CONFIG.get().unwrap().html.use_prism {
+        body.push_str(
+            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js\" integrity=\"sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>",
+        );
+        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js\" integrity=\"sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str(
+            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js\" integrity=\"sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>"
+        );
+        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.js\" integrity=\"sha512-st608h+ZqzliahyzEpETxzU0f7z7a9acN6AFvYmHvpFhmcFuKT8a22TT5TpKpjDa3pt3Wv7Z3SdQBCBdDPhyWA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js\" integrity=\"sha512-/kVH1uXuObC0iYgxxCKY41JdWOkKOxorFVmip+YVifKsJ4Au/87EisD1wty7vxN2kAhnWh6Yc8o/dSAXj6Oz7A==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js\" integrity=\"sha512-d1t+YumgzdIHUL78me4B9NzNTu9Lcj6RdGVbdiFDlxRV9JTN9s+iBQRhUqLRq5xtWUp1AD+cW2sN2OlST716fw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+    }
+
+    body.push_str("\n</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
@@ -88,6 +103,7 @@ pub fn generate_index(file_names: &[String]) -> String {
 /// * `html_rel_path` - The relative path to the HTML file from the output directory, used for
 ///   linking
 fn generate_head(file_name: &str, html_rel_path: &str) -> String {
+    let config = CONFIG.get().unwrap();
     let mut head = String::from(
         r#"<!DOCTYPE html>
     <html lang="en">
@@ -101,7 +117,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let title = format_title(file_name);
     head.push_str(&format!("<title>{}</title>\n", title));
 
-    let favicon_file = CONFIG.get().unwrap().html.favicon_file.clone();
+    let favicon_file = config.html.favicon_file.clone();
     if !favicon_file.is_empty() {
         let mut favicon_path = build_rel_prefix(html_rel_path);
         favicon_path.push("media");
@@ -111,7 +127,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
         head.push_str(&format!("<link rel=\"icon\" href=\"{}\">\n", favicon_href));
     }
 
-    let css_file = CONFIG.get().unwrap().html.css_file.clone();
+    let css_file = config.html.css_file.clone();
     let mut css_path = build_rel_prefix(html_rel_path);
     css_path.push("styles.css");
     let css_href = css_path.to_string_lossy();
@@ -123,6 +139,16 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
             "<link rel=\"stylesheet\" href=\"{}\">\n",
             css_file
         ));
+    }
+
+    if config.html.use_prism {
+        if !config.html.prism_theme.is_empty() {
+            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", config.html.prism_theme).as_str());
+        } else {
+            head.push_str("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
+        }
+        head.push_str("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.css\" integrity=\"sha512-Dqf5696xtofgH089BgZJo2lSWTvev4GFo+gA2o4GullFY65rzQVQLQVlzLvYwTo0Bb2Gpb6IqwxYWtoMonfdhQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
+        head.push_str("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css\" integrity=\"sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
     }
 
     head.push_str("</head>\n");
@@ -288,7 +314,8 @@ pub fn generate_default_css() -> String {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    pre {
+    /* Styles for when "use_prism = false" is set in config.toml */
+    pre.non_prism {
     background-color: #2a2a2a;
     padding: 1rem;
     border-radius: 8px;
@@ -296,10 +323,10 @@ pub fn generate_default_css() -> String {
     font-size: 0.9rem;
     box-shadow: inset 0 0 0 1px #333;
     }
-    pre::before {
+    pre.non_prism::before {
     counter-reset: listing;
     }
-    code {
+    code.non_prism {
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
     font-style: normal;
     background-color: #2a2a2a;
@@ -308,14 +335,14 @@ pub fn generate_default_css() -> String {
     font-size: 0.95em;
     color: #dcdcdc;
     }
-    pre code {
+    pre.non_prism code.non_prism {
     counter-increment: listing;
     padding: 0 0.4em;
     text-align: left;
     float: left;
     clear: left;
     }
-    pre code::before {
+    pre.non_prism code.non_prism::before {
     content: counter(listing) ". ";
     display: inline-block;
     font-size: 0.85em;
@@ -327,6 +354,10 @@ pub fn generate_default_css() -> String {
     text-align: right;
     }
 
+    code {
+    font-style: normal;
+    }
+
     blockquote {
     border-left: 4px solid #555;
     padding: 0.1rem 1rem;
@@ -335,6 +366,11 @@ pub fn generate_default_css() -> String {
     margin: 1.5rem 0;
     background-color: #1a1a1a;
     border-radius: 2px;
+    }
+
+    .toolbar-item {
+    font-style: normal;
+    margin-right: 0.2em;
     }
 
     ul,
