@@ -1403,7 +1403,7 @@ fn group_lines_with_leading_whitespace(
     previous_block: &mut Vec<Token>,
     line: &mut Vec<Token>,
 ) {
-    if let Some(content) = line
+    if let Some(first_content_token) = line
         .iter()
         .find(|t| !matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
     {
@@ -1426,7 +1426,7 @@ fn group_lines_with_leading_whitespace(
                     }
                 }
                 Token::RawHtmlTag(_) => {
-                    if matches!(content, Token::RawHtmlTag(_)) {
+                    if matches!(first_content_token, Token::RawHtmlTag(_)) {
                         // If the first token is a raw HTML tag, we attach the line to the previous block
                         attach_to_previous_block(
                             blocks,
@@ -1439,7 +1439,7 @@ fn group_lines_with_leading_whitespace(
                     }
                 }
                 Token::Punctuation(string) if string == "-" => {
-                    if matches!(content, Token::Punctuation(_)) {
+                    if matches!(first_content_token, Token::Punctuation(_)) {
                         attach_to_previous_block(
                             blocks,
                             previous_block,
