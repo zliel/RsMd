@@ -29,9 +29,9 @@ pub fn generate_html(
 
     let head = generate_head(file_name, html_rel_path);
 
-    let mut body = String::from("<body>\n");
-    body.push_str(&generate_navbar(html_rel_path));
-    body.push_str("<div id=\"content\">\n");
+    let mut body = String::from("\t<body>\n");
+    body.push_str(&indent_html(&generate_navbar(html_rel_path), 2));
+    body.push_str("\n\t\t<div id=\"content\">");
 
     let inner_html: String = md_elements
         .iter()
@@ -63,23 +63,23 @@ pub fn generate_html(
         inner_html
     };
 
-    body.push_str(&inner_html);
-    body.push_str("\n</div>");
+    body.push_str(&indent_html(&inner_html, 3));
+    body.push_str("\n\t\t</div>");
 
     if CONFIG.get().unwrap().html.use_prism {
         body.push_str(
-            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js\" integrity=\"sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>",
+            "\n\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js\" integrity=\"sha512-Uw06iFFf9hwoN77+kPl/1DZL66tKsvZg6EWm7n6QxInyptVuycfrO52hATXDRozk7KWeXnrSueiglILct8IkkA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>",
         );
-        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js\" integrity=\"sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js\" integrity=\"sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
         body.push_str(
-            "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js\" integrity=\"sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>"
+            "\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js\" integrity=\"sha512-SkmBfuA2hqjzEVpmnMt/LINrjop3GKWqsuLSSB3e7iBmYK7JuWw4ldmmxwD9mdm2IRTTi0OxSAfEGvgEi0i2Kw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>"
         );
-        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.js\" integrity=\"sha512-st608h+ZqzliahyzEpETxzU0f7z7a9acN6AFvYmHvpFhmcFuKT8a22TT5TpKpjDa3pt3Wv7Z3SdQBCBdDPhyWA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
-        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js\" integrity=\"sha512-/kVH1uXuObC0iYgxxCKY41JdWOkKOxorFVmip+YVifKsJ4Au/87EisD1wty7vxN2kAhnWh6Yc8o/dSAXj6Oz7A==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
-        body.push_str("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js\" integrity=\"sha512-d1t+YumgzdIHUL78me4B9NzNTu9Lcj6RdGVbdiFDlxRV9JTN9s+iBQRhUqLRq5xtWUp1AD+cW2sN2OlST716fw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.js\" integrity=\"sha512-st608h+ZqzliahyzEpETxzU0f7z7a9acN6AFvYmHvpFhmcFuKT8a22TT5TpKpjDa3pt3Wv7Z3SdQBCBdDPhyWA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js\" integrity=\"sha512-/kVH1uXuObC0iYgxxCKY41JdWOkKOxorFVmip+YVifKsJ4Au/87EisD1wty7vxN2kAhnWh6Yc8o/dSAXj6Oz7A==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
+        body.push_str("\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js\" integrity=\"sha512-d1t+YumgzdIHUL78me4B9NzNTu9Lcj6RdGVbdiFDlxRV9JTN9s+iBQRhUqLRq5xtWUp1AD+cW2sN2OlST716fw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
     }
 
-    body.push_str("\n</body>\n");
+    body.push_str("\n\t</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
@@ -100,9 +100,9 @@ pub fn generate_index(file_names: &[String]) -> String {
 
     let head = generate_head("index", "index.html");
 
-    let mut body = String::from("<body>\n");
+    let mut body = String::from("\t<body>\n");
     body.push_str(&generate_navbar("index.html"));
-    body.push_str("<div id=\"content\">\n");
+    body.push_str("\n\t<div id=\"content\">\n");
     body.push_str("<h1>All Pages</h1>\n");
 
     file_names.iter().for_each(|file_name| {
@@ -113,7 +113,7 @@ pub fn generate_index(file_names: &[String]) -> String {
         ));
     });
 
-    body.push_str("\n</div>\n</body>\n");
+    body.push_str("\n</div>\n\t</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
@@ -141,7 +141,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
 
     // Remove the file extension from the file name and make it title case
     let title = format_title(file_name);
-    head.push_str(&format!("<title>{}</title>\n", title));
+    head.push_str(&format!("\t<title>{}</title>\n", title));
 
     let favicon_file = config.html.favicon_file.clone();
     if !favicon_file.is_empty() {
@@ -150,7 +150,10 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
         favicon_path.push(favicon_file.rsplit("/").next().unwrap());
         let favicon_href = favicon_path.to_string_lossy();
 
-        head.push_str(&format!("<link rel=\"icon\" href=\"{}\">\n", favicon_href));
+        head.push_str(&format!(
+            "\t<link rel=\"icon\" href=\"{}\">\n",
+            favicon_href
+        ));
     }
 
     let css_file = config.html.css_file.clone();
@@ -159,10 +162,10 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let css_href = css_path.to_string_lossy();
 
     if css_file == "default" {
-        head.push_str(format!("<link rel=\"stylesheet\" href=\"{}\">\n", css_href).as_str());
+        head.push_str(format!("\t\t<link rel=\"stylesheet\" href=\"{}\">\n", css_href).as_str());
     } else {
         head.push_str(&format!(
-            "<link rel=\"stylesheet\" href=\"{}\">\n",
+            "\t\t<link rel=\"stylesheet\" href=\"{}\">\n",
             css_file
         ));
     }
@@ -175,28 +178,28 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
                 config.html.prism_theme.clone()
             };
 
-            head.push_str(format!("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme).as_str());
+            head.push_str(format!("\t\t<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme).as_str());
         } else {
-            head.push_str("<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
+            head.push_str("\t\t<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
         }
-        head.push_str("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.css\" integrity=\"sha512-Dqf5696xtofgH089BgZJo2lSWTvev4GFo+gA2o4GullFY65rzQVQLQVlzLvYwTo0Bb2Gpb6IqwxYWtoMonfdhQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
-        head.push_str("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css\" integrity=\"sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
+        head.push_str("\t\t<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/toolbar/prism-toolbar.min.css\" integrity=\"sha512-Dqf5696xtofgH089BgZJo2lSWTvev4GFo+gA2o4GullFY65rzQVQLQVlzLvYwTo0Bb2Gpb6IqwxYWtoMonfdhQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
+        head.push_str("\t\t<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css\" integrity=\"sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />");
     }
 
-    head.push_str("</head>\n");
+    head.push_str("\t</head>\n");
     head
 }
 
 /// Generates the HTML for the navigation bar
 fn generate_navbar(html_rel_path: &str) -> String {
-    let mut navbar = String::from("<header><nav>\n<ul>\n");
+    let mut navbar = String::from("<header>\n\t<nav>\n\t\t<ul>\n");
 
     let mut home_path = build_rel_prefix(html_rel_path);
     home_path.push("index.html");
     let home_href = home_path.to_string_lossy();
 
-    navbar.push_str(format!("<li><a href=\"{}\">Home</a></li>\n", home_href).as_str());
-    navbar.push_str("</ul>\n</nav>\n</header>\n");
+    navbar.push_str(format!("\t\t\t<li><a href=\"{}\">Home</a></li>", home_href).as_str());
+    navbar.push_str("\n\t\t</ul>\n\t</nav>\n</header>\n\n");
     navbar
 }
 /// Formats the file name to create a title for the HTML document
@@ -220,6 +223,23 @@ fn format_title(file_name: &str) -> String {
         })
         .collect::<Vec<String>>()
         .join(" ")
+}
+
+/// Indents each line of the given HTML string by the specified number of tabs.
+pub fn indent_html(html: &str, level: usize) -> String {
+    let indent = "\t".repeat(level);
+    html.lines()
+        .map(|line| {
+            let first_non_whitespace_token = line.chars().find(|c| !c.is_whitespace());
+
+            match first_non_whitespace_token {
+                Some('<') => format!("{indent}{line}"),
+                Some(_) => line.to_string(),
+                None => line.to_string(), // If the line is empty or only whitespace, return it unchanged
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Generates a default CSS stylesheet as a string.

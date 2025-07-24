@@ -1326,10 +1326,30 @@ fn group_tabbed_lines(
         .position(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
 
     if let Some(first_content_token) = line.get(non_whitespace_index.unwrap_or(0)) {
-        if matches!(first_content_token, Token::RawHtmlTag(_)) {
-            // Short-circuit if the first token is a raw HTML tag
-            attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
+        if matches!(first_content_token, Token::RawHtmlTag(_))
+            && matches!(previous_block.first(), Some(Token::RawHtmlTag(_)))
+        {
+            // If the first token is a raw HTML tag, we attach the line to the previous block
+            let mut line_to_attach = line
+                .iter()
+                .skip_while(|t| matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
+                .cloned()
+                .collect();
 
+            attach_to_previous_block(
+                blocks,
+                previous_block,
+                &mut line_to_attach,
+                Some(Token::Newline),
+            );
+
+            return;
+        } else if matches!(first_content_token, Token::RawHtmlTag(_)) {
+            current_block.extend(
+                line.iter()
+                    .skip_while(|t| matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
+                    .cloned(),
+            );
             return;
         }
 
@@ -1383,11 +1403,10 @@ fn group_lines_with_leading_whitespace(
     previous_block: &mut Vec<Token>,
     line: &mut Vec<Token>,
 ) {
-    let has_content = line
+    if let Some(first_content_token) = line
         .iter()
-        .any(|token| !matches!(token, Token::Whitespace | Token::Tab | Token::Newline));
-
-    if has_content {
+        .find(|t| !matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
+    {
         if let Some(previous_line_start) = previous_block.first() {
             match previous_line_start {
                 Token::Whitespace => {
@@ -1406,7 +1425,32 @@ fn group_lines_with_leading_whitespace(
                         current_block.extend(line.to_owned());
                     }
                 }
-                Token::RawHtmlTag(_) | Token::Text(_) | Token::Punctuation(_) => {
+                Token::RawHtmlTag(_) => {
+                    if matches!(first_content_token, Token::RawHtmlTag(_)) {
+                        // If the first token is a raw HTML tag, we attach the line to the previous block
+                        attach_to_previous_block(
+                            blocks,
+                            previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
+                    } else {
+                        current_block.extend(line.to_owned());
+                    }
+                }
+                Token::Punctuation(string) if string == "-" => {
+                    if matches!(first_content_token, Token::Punctuation(_)) {
+                        attach_to_previous_block(
+                            blocks,
+                            previous_block,
+                            line,
+                            Some(Token::Newline),
+                        );
+                    } else {
+                        current_block.extend(line.to_owned());
+                    }
+                }
+                Token::Text(_) | Token::Punctuation(_) => {
                     attach_to_previous_block(blocks, previous_block, line, Some(Token::Newline));
                 }
                 _ => {

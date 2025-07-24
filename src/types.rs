@@ -3,6 +3,7 @@
 
 use log::warn;
 
+use crate::html_generator::indent_html;
 use crate::{CONFIG, io::copy_image_to_output_dir, utils::build_rel_prefix};
 
 pub trait ToHtml {
@@ -80,7 +81,8 @@ impl ToHtml for MdBlockElement {
                     .iter()
                     .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<h{level}>{inner_html}</h{level}>")
+
+                format!("\n<h{level}>{inner_html}</h{level}>\n")
             }
             MdBlockElement::Paragraph { content } => {
                 let inner_html = content
@@ -99,14 +101,13 @@ impl ToHtml for MdBlockElement {
                     let code = lines.join("\n");
 
                     format!(
-                        "<pre class=\"{language_class} line-numbers\" style=\"white-space: pre-wrap;\" data-prismjs-copy=\"📋\"><code class=\"{language_class} line-numbers\">{code}</code></pre>"
+                        "<pre class=\"{language_class} line-numbers\" style=\"white-space: pre-wrap;\" data-prismjs-copy=\"📋\">\n<code class=\"{language_class} line-numbers\">{code}</code></pre>"
                     )
                 } else {
                     let code = lines
                         .iter()
                         .map(|line| format!("<code class=\"non_prism\">{line}</code>"))
-                        .collect::<Vec<_>>()
-                        .join("\n");
+                        .collect::<String>();
 
                     format!("<pre class=\"non_prism\">{code}</pre>")
                 }
@@ -117,20 +118,27 @@ impl ToHtml for MdBlockElement {
                     .iter()
                     .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<ul>{inner_items}</ul>")
+
+                let inner_items = indent_html(&inner_items, 1);
+                format!("<ul>\n{inner_items}\n</ul>")
             }
             MdBlockElement::OrderedList { items } => {
                 let inner_items = items
                     .iter()
                     .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<ol>{inner_items}</ol>")
+
+                let inner_items = indent_html(&inner_items, 1);
+                format!("<ol>\n{inner_items}\n</ol>")
             }
             MdBlockElement::Table { headers, body } => {
                 let header_html = headers
                     .iter()
                     .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
-                    .collect::<String>();
+                    .collect::<Vec<_>>()
+                    .join("\n");
+
+                let header_html = indent_html(&header_html, 3);
 
                 let body_html = body
                     .iter()
@@ -138,15 +146,20 @@ impl ToHtml for MdBlockElement {
                         let cell_html = row
                             .iter()
                             .map(|cell| cell.to_html(output_dir, input_dir, html_rel_path))
-                            .collect::<String>();
+                            .collect::<Vec<_>>()
+                            .join("\n");
 
-                        format!("<tr>{cell_html}</tr>")
+                        let cell_html = indent_html(&cell_html, 1);
+
+                        format!("<tr>\n{cell_html}\n</tr>")
                     })
                     .collect::<Vec<_>>()
-                    .join("");
+                    .join("\n");
+
+                let body_html = indent_html(&body_html, 2);
 
                 format!(
-                    "<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
+                    "<table>\n\t<thead>\n\t\t<tr>\n{header_html}\n\t\t</tr>\n\t</thead>\n\t<tbody>\n{body_html}\n\t</tbody>\n</table>"
                 )
             }
             MdBlockElement::BlockQuote { content } => {
@@ -154,10 +167,11 @@ impl ToHtml for MdBlockElement {
                     .iter()
                     .map(|el| el.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<blockquote>{inner_html}</blockquote>")
+
+                format!("<blockquote>\n{inner_html}\n</blockquote>")
             }
             MdBlockElement::RawHtml { content } => {
-                format!("{}\n", content.clone())
+                format!("{}\n", content)
             }
         }
     }
@@ -180,18 +194,22 @@ impl ToHtml for MdListItem {
                     .iter()
                     .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<ul>{inner_items}</ul>")
+                let inner_items = indent_html(&inner_items, 1);
+                format!("<ul>\n{inner_items}\n</ul>")
             }
             MdBlockElement::OrderedList { items } => {
                 let inner_items = items
                     .iter()
                     .map(|item| item.to_html(output_dir, input_dir, html_rel_path))
                     .collect::<String>();
-                format!("<ol>{inner_items}</ol>")
+                format!("<ol>\n{inner_items}\n</ol>")
             }
             _ => {
-                let inner_html = self.content.to_html(output_dir, input_dir, html_rel_path);
-                format!("<li>{inner_html}</li>")
+                let inner_html = indent_html(
+                    &self.content.to_html(output_dir, input_dir, html_rel_path),
+                    1,
+                );
+                format!("<li>\n{inner_html}\n</li>\n")
             }
         }
     }
