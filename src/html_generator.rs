@@ -225,6 +225,23 @@ fn format_title(file_name: &str) -> String {
         .join(" ")
 }
 
+/// Indents each line of the given HTML string by the specified number of tabs.
+pub fn indent_html(html: &str, level: usize) -> String {
+    let indent = "\t".repeat(level);
+    html.lines()
+        .map(|line| {
+            let first_non_whitespace_token = line.chars().find(|c| !c.is_whitespace());
+
+            match first_non_whitespace_token {
+                Some('<') => format!("{indent}{line}"),
+                Some(_) => line.to_string(),
+                None => line.to_string(), // If the line is empty or only whitespace, return it unchanged
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// Generates a default CSS stylesheet as a string.
 pub fn generate_default_css() -> String {
     r#"
