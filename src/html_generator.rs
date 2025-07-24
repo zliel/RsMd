@@ -29,8 +29,8 @@ pub fn generate_html(
 
     let head = generate_head(file_name, html_rel_path);
 
-    body.push_str(&generate_navbar(html_rel_path));
     let mut body = String::from("\t<body>\n");
+    body.push_str(&indent_html(&generate_navbar(html_rel_path), 2));
     body.push_str("\n\t\t<div id=\"content\">");
 
     let inner_html: String = md_elements
@@ -63,7 +63,7 @@ pub fn generate_html(
         inner_html
     };
 
-    body.push_str(&inner_html);
+    body.push_str(&indent_html(&inner_html, 3));
     body.push_str("\n\t\t</div>");
 
     if CONFIG.get().unwrap().html.use_prism {
@@ -79,7 +79,7 @@ pub fn generate_html(
         body.push_str("\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/show-language/prism-show-language.min.js\" integrity=\"sha512-d1t+YumgzdIHUL78me4B9NzNTu9Lcj6RdGVbdiFDlxRV9JTN9s+iBQRhUqLRq5xtWUp1AD+cW2sN2OlST716fw==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>");
     }
 
-    body.push_str("\n</body>\n");
+    body.push_str("\n\t</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
@@ -113,7 +113,7 @@ pub fn generate_index(file_names: &[String]) -> String {
         ));
     });
 
-    body.push_str("\n</div>\n</body>\n");
+    body.push_str("\n</div>\n\t</body>\n");
 
     html_output.push_str(&head);
     html_output.push_str(&body);
