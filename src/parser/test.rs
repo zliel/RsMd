@@ -1765,7 +1765,7 @@ mod html_generation {
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
-                "<h1>Heading 1</h1>"
+                "\n<h1>Heading 1</h1>\n"
             );
         }
 
@@ -1777,7 +1777,7 @@ mod html_generation {
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
-                "<h3>Heading 3</h3>"
+                "\n<h3>Heading 3</h3>\n"
             );
         }
 
@@ -1789,7 +1789,7 @@ mod html_generation {
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
-                "<h2>Heading 2 with <b>bold words</b></h2>"
+                "\n<h2>Heading 2 with <b>bold words</b></h2>\n"
             );
         }
 
@@ -1806,7 +1806,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<pre class=\"non_prism\"><code class=\"non_prism\">code block</code>\n<code class=\"non_prism\">second line</code></pre>"
+                "<pre class=\"non_prism\"><code class=\"non_prism\">code block</code><code class=\"non_prism\">second line</code></pre>"
             );
         }
 
@@ -1838,7 +1838,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ul><li><p>Item 1</p></li><li><p>Item 2</p></li></ul>" // Note that list items contain block-level elements, so text becomes paragraphs
+                "<ul>\n\t<li>\n\t\t<p>Item 1</p>\n\t</li>\n\t<li>\n\t\t<p>Item 2</p>\n\t</li>\n</ul>"
             );
         }
 
@@ -1855,7 +1855,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ul><li><p>Item 1</p></li><ul><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ul><li><p>Item 2</p></li></ul>"
+                "<ul>\n\t<li>\n\t\t<p>Item 1</p>\n\t</li>\n\t<ul>\n\t\t<li>\n\t\t\t<p>Nested Item 1.1</p>\n\t\t</li>\n\t\t<li>\n\t\t\t<p>Nested Item 1.2</p>\n\t\t</li>\n\t</ul><li>\n\t\t<p>Item 2</p>\n\t</li>\n</ul>"
             );
         }
 
@@ -1870,7 +1870,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ol><li><p>First</p></li><li><p>Second</p></li></ol>"
+                "<ol>\n\t<li>\n\t\t<p>First</p>\n\t</li>\n\t<li>\n\t\t<p>Second</p>\n\t</li>\n</ol>"
             );
         }
 
@@ -1887,7 +1887,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ol><li><p>Item 1</p></li><ol><li><p>Nested Item 1.1</p></li><li><p>Nested Item 1.2</p></li></ol><li><p>Item 2</p></li></ol>"
+                "<ol>\n\t<li>\n\t\t<p>Item 1</p>\n\t</li>\n\t<ol>\n\t<li>\n\t\t<p>Nested Item 1.1</p>\n\t</li>\n\t<li>\n\t\t<p>Nested Item 1.2</p>\n\t</li>\n\n\t</ol><li>\n\t\t<p>Item 2</p>\n\t</li>\n</ol>"
             );
         }
 
@@ -1904,7 +1904,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<ol><li><p><b>Bold Item 1</b></p></li><li><p><i>Italic Item 2</i></p></li><li><p><a href=\"http://example.com\" target=\"_blank\">Link Item 3⮺</a></p></li><li><p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p></li></ol>"
+                "<ol>\n\t<li>\n\t\t<p><b>Bold Item 1</b></p>\n\t</li>\n\t<li>\n\t\t<p><i>Italic Item 2</i></p>\n\t</li>\n\t<li>\n\t\t<p><a href=\"http://example.com\" target=\"_blank\">Link Item 3⮺</a></p>\n\t</li>\n\t<li>\n\t\t<p><img src=\"http://example.com/image.png\" alt=\"Image Item 4\" title=\"Some title\"/></p>\n\t</li>\n</ol>"
             );
         }
 
@@ -1918,7 +1918,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<blockquote><p>This is a blockquote.</p></blockquote>"
+                "<blockquote>\n<p>This is a blockquote.</p>\n</blockquote>"
             );
         }
 
@@ -1933,7 +1933,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<blockquote><p>This is a blockquote with a nested heading:</p><h1>Heading 1</h1></blockquote>"
+                "<blockquote>\n<p>This is a blockquote with a nested heading:</p>\n<h1>Heading 1</h1>\n\n</blockquote>"
             );
         }
 
@@ -1977,7 +1977,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<h1>This is a heading with <strong>bold text</strong> and <em>italic text</em>.</h1><div>Some raw HTML content</div>\n"
+                "\n<h1>This is a heading with <strong>bold text</strong> and <em>italic text</em>.</h1>\n<div>Some raw HTML content</div>\n"
             );
         }
 
@@ -2034,7 +2034,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:left;\"> Header 2 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 1 </td>\n\t\t\t<td style=\"text-align:left;\"> Cell 2 </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 3 </td>\n\t\t\t<td style=\"text-align:left;\"> Cell 4 </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
 
@@ -2051,7 +2051,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:center;\"> Header 2 </th><th style=\"text-align:right;\"> Header 3 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:center;\"> Cell 2 </td><td style=\"text-align:right;\"> Cell 3 </td></tr><tr><td style=\"text-align:left;\"> Cell 4 </td><td style=\"text-align:center;\"> Cell 5 </td><td style=\"text-align:right;\"> Cell 6 </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:center;\"> Header 2 </th>\n\t\t\t<th style=\"text-align:right;\"> Header 3 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 1 </td>\n\t\t\t<td style=\"text-align:center;\"> Cell 2 </td>\n\t\t\t<td style=\"text-align:right;\"> Cell 3 </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 4 </td>\n\t\t\t<td style=\"text-align:center;\"> Cell 5 </td>\n\t\t\t<td style=\"text-align:right;\"> Cell 6 </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
 
@@ -2068,7 +2068,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:left;\"> Header 2 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 1 </td>\n\t\t\t<td style=\"text-align:left;\"> Cell 2 </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 3 </td>\n\t\t\t<td style=\"text-align:left;\"> Cell 4 </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
 
@@ -2087,7 +2087,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> <b>Bold Cell</b> </td><td style=\"text-align:left;\"> <i>Italic Cell</i> </td></tr><tr><td style=\"text-align:left;\"> <a href=\"http://example.com\" target=\"_blank\">Link⮺</a> </td><td style=\"text-align:left;\"> <img src=\"http://example.com/image.png\" alt=\"Image\"/> </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:left;\"> Header 2 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> <b>Bold Cell</b> </td>\n\t\t\t<td style=\"text-align:left;\"> <i>Italic Cell</i> </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> <a href=\"http://example.com\" target=\"_blank\">Link⮺</a> </td>\n\t\t\t<td style=\"text-align:left;\"> <img src=\"http://example.com/image.png\" alt=\"Image\"/> </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
 
@@ -2104,7 +2104,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"></td></tr><tr><td style=\"text-align:left;\"></td><td style=\"text-align:left;\"> Cell 4 </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:left;\"> Header 2 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 1 </td>\n\t\t\t<td style=\"text-align:left;\"></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"></td>\n\t\t\t<td style=\"text-align:left;\"> Cell 4 </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
 
@@ -2121,7 +2121,7 @@ mod html_generation {
                 .iter()
                 .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                 .collect::<String>(),
-                "<table><thead><tr><th style=\"text-align:left;\"> Header 1 </th><th style=\"text-align:left;\"> Header 2 </th></tr></thead><tbody><tr><td style=\"text-align:left;\"> Cell 1 </td><td style=\"text-align:left;\"> Cell 2 </td></tr><tr><td style=\"text-align:left;\"> Cell 3 </td></tr></tbody></table>"
+                "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th style=\"text-align:left;\"> Header 1 </th>\n\t\t\t<th style=\"text-align:left;\"> Header 2 </th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 1 </td>\n\t\t\t<td style=\"text-align:left;\"> Cell 2 </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align:left;\"> Cell 3 </td>\n\t\t</tr>\n\t</tbody>\n</table>"
             );
         }
     }
