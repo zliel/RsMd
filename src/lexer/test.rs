@@ -1,13 +1,14 @@
 use std::sync::Once;
 
-use crate::config::init_config;
+use crate::CONFIG;
+use crate::config::Config;
 use crate::lexer::{Token::*, *};
 
 static INIT: Once = Once::new();
 
 fn init_test_config() {
     INIT.call_once(|| {
-        init_config("config.toml").expect("Failed to initialize test config");
+        CONFIG.get_or_init(Config::default);
     });
 }
 
