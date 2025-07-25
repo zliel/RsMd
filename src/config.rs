@@ -99,12 +99,12 @@ impl Config {
             return Ok(config);
         }
 
+        let config_path =
+            get_config_path().map_err(|e| format!("Failed to get config path: {}", e))?;
+
         // If the user did not provide a config file, check if a config file exists in the config
         // directory
         if does_config_exist()? {
-            let config_path =
-                get_config_path().map_err(|e| format!("Failed to get config path: {}", e))?;
-
             let contents = std::fs::read_to_string(&config_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
