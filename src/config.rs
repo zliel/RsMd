@@ -6,16 +6,29 @@ use crate::CONFIG;
 use crate::io::{does_config_exist, get_config_path, write_default_config};
 
 /// Represents the global configuration for the application.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Config {
+    #[serde(default)]
     pub lexer: LexerConfig,
+    #[serde(default)]
     pub html: HtmlConfig,
 }
 
 /// Manages all configuration for tokenization
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LexerConfig {
+    #[serde(default = "default_tab_size")]
     pub tab_size: usize,
+}
+
+impl Default for LexerConfig {
+    fn default() -> Self {
+        LexerConfig { tab_size: 4 }
+    }
+}
+
+fn default_tab_size() -> usize {
+    4
 }
 
 /// Manages all configuration for HTML generation
@@ -23,12 +36,36 @@ pub struct LexerConfig {
 pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
+    #[serde(default)]
     pub favicon_file: String,
-    #[serde(default = "bool::default")]
+    #[serde(default)]
     pub use_prism: bool,
-    #[serde(default = "String::new")]
+    #[serde(default = "default_prism_theme")]
     pub prism_theme: String,
+    #[serde(default = "sanitize_by_default")]
     pub sanitize_html: bool,
+}
+
+impl Default for HtmlConfig {
+    fn default() -> Self {
+        HtmlConfig {
+            css_file: default_css(),
+            favicon_file: "".to_string(),
+            use_prism: false,
+            prism_theme: default_prism_theme(),
+            sanitize_html: sanitize_by_default(),
+        }
+    }
+}
+
+/// Sets the default PrismJS theme to "vsc-dark-plus" in `config.toml`
+fn default_prism_theme() -> String {
+    "vsc-dark-plus".to_string()
+}
+
+/// Sets `sanitize_html` to true by default in `config.toml`
+fn sanitize_by_default() -> bool {
+    true
 }
 
 /// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
