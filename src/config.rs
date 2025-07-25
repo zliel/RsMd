@@ -109,17 +109,11 @@ impl Config {
 
             Ok(config)
         } else {
-            // Write the default config if it does not exist
-            let default_config = Config {
-                lexer: LexerConfig { tab_size: 4 },
-                html: HtmlConfig {
-                    css_file: default_css(),
-                    favicon_file: String::new(),
-                    use_prism: false,
-                    prism_theme: String::new(),
-                    sanitize_html: true,
-                },
-            };
+            warn!(
+                "No config file found, writing default config to: {}",
+                config_path.to_string_lossy()
+            );
+            let default_config = Config::default();
 
             write_default_config(&default_config)
                 .map_err(|e| format!("Failed to write default config: {}", e))?;
