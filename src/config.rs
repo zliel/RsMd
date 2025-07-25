@@ -1,5 +1,7 @@
 //! This module handles the configuration I/O for the application.
 use log::{error, info};
+
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::CONFIG;
@@ -92,6 +94,8 @@ impl Config {
             let config: Config = toml::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
+            validate_config(file_path, contents, &config)?;
+
             return Ok(config);
         }
 
@@ -107,6 +111,8 @@ impl Config {
             let config: Config = toml::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
+            validate_config(&config_path.to_string_lossy(), contents, &config)?;
+
             Ok(config)
         } else {
             warn!(
@@ -121,6 +127,27 @@ impl Config {
             Ok(default_config)
         }
     }
+}
+
+/// Validates the configuration by checking if the original config file matches the filled config
+///
+/// If the original config is missing fields, it updates the file with any missing fields
+fn validate_config(file_path: &str, contents: String, config: &Config) -> Result<(), String> {
+    let original: toml::Value =
+        toml::from_str(&contents).map_err(|e| format!("Failed to parse config file: {}", e))?;
+
+    let filled: toml::Value = toml::Value::try_from(config)
+        .map_err(|e| format!("Failed to convert config to TOML: {}", e))?;
+
+    if original != filled {
+        warn!("Config is missing fields, writing updated config to: {file_path}");
+        let serialized = toml::to_string_pretty(config)
+            .map_err(|e| format!("Failed to serialize config: {}", e))?;
+        std::fs::write(file_path, serialized)
+            .map_err(|e| format!("Failed to write config file: {}", e))?;
+    }
+
+    Ok(())
 }
 
 /// Initializes the global configuration from the specified file path
