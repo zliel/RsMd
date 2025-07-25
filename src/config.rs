@@ -175,6 +175,12 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
             missing_fields, file_path
         );
 
+        // Formats the file with sections like `[lexer]` and `tab_size = 4`
+        // previously it would be `lexer = { tab_size = 4 }`
+        doc.set_implicit(true);
+        doc["lexer"].as_table_mut().unwrap().set_position(0);
+        doc["html"].as_table_mut().unwrap().sort_values();
+
         std::fs::write(file_path, doc.to_string())
             .map_err(|e| format!("Failed to write config file: {}", e))?;
     }
