@@ -1,21 +1,37 @@
 //! This module handles the configuration I/O for the application.
-use log::{error, info};
+
+use std::str::FromStr;
+
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::CONFIG;
 use crate::io::{does_config_exist, get_config_path, write_default_config};
 
 /// Represents the global configuration for the application.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Config {
+    #[serde(default)]
     pub lexer: LexerConfig,
+    #[serde(default)]
     pub html: HtmlConfig,
 }
 
 /// Manages all configuration for tokenization
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LexerConfig {
+    #[serde(default = "default_tab_size")]
     pub tab_size: usize,
+}
+
+impl Default for LexerConfig {
+    fn default() -> Self {
+        LexerConfig { tab_size: 4 }
+    }
+}
+
+fn default_tab_size() -> usize {
+    4
 }
 
 /// Manages all configuration for HTML generation
@@ -23,12 +39,36 @@ pub struct LexerConfig {
 pub struct HtmlConfig {
     #[serde(default = "default_css")]
     pub css_file: String,
+    #[serde(default)]
     pub favicon_file: String,
-    #[serde(default = "bool::default")]
+    #[serde(default)]
     pub use_prism: bool,
-    #[serde(default = "String::new")]
+    #[serde(default = "default_prism_theme")]
     pub prism_theme: String,
+    #[serde(default = "sanitize_by_default")]
     pub sanitize_html: bool,
+}
+
+impl Default for HtmlConfig {
+    fn default() -> Self {
+        HtmlConfig {
+            css_file: default_css(),
+            favicon_file: "".to_string(),
+            use_prism: false,
+            prism_theme: default_prism_theme(),
+            sanitize_html: sanitize_by_default(),
+        }
+    }
+}
+
+/// Sets the default PrismJS theme to "vsc-dark-plus" in `config.toml`
+fn default_prism_theme() -> String {
+    "vsc-dark-plus".to_string()
+}
+
+/// Sets `sanitize_html` to true by default in `config.toml`
+fn sanitize_by_default() -> bool {
+    true
 }
 
 /// Sets the default CSS file to "default" in the case that the `css_file` field is omitted
@@ -55,34 +95,32 @@ impl Config {
             let config: Config = toml::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
+            validate_config(file_path, contents, &config)?;
+
             return Ok(config);
         }
+
+        let config_path =
+            get_config_path().map_err(|e| format!("Failed to get config path: {}", e))?;
 
         // If the user did not provide a config file, check if a config file exists in the config
         // directory
         if does_config_exist()? {
-            let config_path =
-                get_config_path().map_err(|e| format!("Failed to get config path: {}", e))?;
-
             let contents = std::fs::read_to_string(&config_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
             let config: Config = toml::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
+            validate_config(&config_path.to_string_lossy(), contents, &config)?;
+
             Ok(config)
         } else {
-            // Write the default config if it does not exist
-            let default_config = Config {
-                lexer: LexerConfig { tab_size: 4 },
-                html: HtmlConfig {
-                    css_file: default_css(),
-                    favicon_file: String::new(),
-                    use_prism: false,
-                    prism_theme: String::new(),
-                    sanitize_html: true,
-                },
-            };
+            warn!(
+                "No config file found, writing default config to: {}",
+                config_path.to_string_lossy()
+            );
+            let default_config = Config::default();
 
             write_default_config(&default_config)
                 .map_err(|e| format!("Failed to write default config: {}", e))?;
@@ -90,6 +128,64 @@ impl Config {
             Ok(default_config)
         }
     }
+}
+
+/// Validates the configuration by checking if the original config file matches the filled config
+///
+/// If the original config is missing fields, it updates the file with any missing fields
+fn validate_config(file_path: &str, contents: String, config: &Config) -> Result<(), String> {
+    let mut doc = toml_edit::DocumentMut::from_str(&contents)
+        .map_err(|e| format!("Failed to create TOML document: {}", e))?;
+
+    let filled: toml::Value = toml::Value::try_from(config)
+        .map_err(|e| format!("Failed to convert config to TOML: {}", e))?;
+
+    let filled_doc = toml_edit::Document::from_str(&toml::to_string(&filled).unwrap())
+        .map_err(|e| format!("Failed to create TOML document: {}", e))?;
+
+    let mut config_needs_update = false;
+    let mut missing_fields = Vec::new();
+    for (section, values) in filled_doc.iter() {
+        let value = values.as_table().unwrap_or_else(|| {
+            error!(
+                "Expected a table for field '{}', but found: {}",
+                section, values
+            );
+            panic!("Invalid configuration format for field '{}'", section);
+        });
+
+        for (sub_key, sub_value) in value.iter() {
+            if !doc.contains_key(section) {
+                doc[section] = filled_doc[section].clone();
+                config_needs_update = true;
+                missing_fields.push(section.to_string());
+            } else if !doc[section].is_table()
+                || !doc[section].as_table().unwrap().contains_key(sub_key)
+            {
+                doc[section][sub_key] = sub_value.clone();
+                config_needs_update = true;
+                missing_fields.push(format!("{}.{}", section, sub_key));
+            }
+        }
+    }
+
+    if config_needs_update {
+        warn!(
+            "Config is missing fields: {:?}, writing updated config to: {}",
+            missing_fields, file_path
+        );
+
+        // Formats the file with sections like `[lexer]` and `tab_size = 4`
+        // previously it would be `lexer = { tab_size = 4 }`
+        doc.set_implicit(true);
+        doc["lexer"].as_table_mut().unwrap().set_position(0);
+        doc["html"].as_table_mut().unwrap().sort_values();
+
+        std::fs::write(file_path, doc.to_string())
+            .map_err(|e| format!("Failed to write config file: {}", e))?;
+    }
+
+    Ok(())
 }
 
 /// Initializes the global configuration from the specified file path
