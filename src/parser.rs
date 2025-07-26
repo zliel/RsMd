@@ -156,7 +156,7 @@ fn parse_raw_html(line: &[Token]) -> MdBlockElement {
             Token::Newline => html_content.push('\n'),
             Token::OrderedListMarker(string) => html_content.push_str(string.as_str()),
             Token::EmphasisRun { delimiter, length } => {
-                html_content.push_str(delimiter.to_string().repeat(length).as_str())
+                html_content.push_str(delimiter.to_string().repeat(*length).as_str())
             }
             Token::OpenParenthesis => html_content.push('('),
             Token::CloseParenthesis => html_content.push(')'),
