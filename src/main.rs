@@ -78,7 +78,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     for (file_path, file_content) in file_contents {
         info!("Generating HTML for file: {}", file_path);
-        generate_static_site(&cli, &file_path, file_content)?;
+        generate_static_site(&cli, &file_path, &file_content)?;
         file_names.push(file_path);
     }
 
@@ -108,7 +108,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 fn generate_static_site(
     cli: &Cli,
     file_path: &str,
-    file_contents: String,
+    file_contents: &str,
 ) -> Result<(), Box<dyn Error>> {
     // Tokenizing
     let mut tokenized_lines: Vec<Vec<Token>> = Vec::new();
