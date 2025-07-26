@@ -118,7 +118,7 @@ fn generate_static_site(
 
     // Parsing
     let blocks = group_lines_to_blocks(tokenized_lines);
-    let parsed_elements = parse_blocks(blocks);
+    let parsed_elements = parse_blocks(&blocks);
 
     // HTML Generation
     let generated_html = generate_html(
