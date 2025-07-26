@@ -910,6 +910,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d1dee9dc43ac2aaf7d3b774e2fba5148212bf2bd9374f4e50152ebe9afd03d42"
 dependencies = [
  "indexmap",
+ "serde",
+ "serde_spanned",
  "toml_datetime",
  "toml_parser",
  "toml_writer",
