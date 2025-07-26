@@ -143,7 +143,7 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
     let mut config_needs_update = false;
     let mut missing_fields = Vec::new();
     for (section, values) in filled_doc.iter() {
-        let value = values.as_table().unwrap_or_else(|| {
+        let table = values.clone().into_table().unwrap_or_else(|_item| {
             error!(
                 "Expected a table for field '{}', but found: {}",
                 section, values
@@ -151,7 +151,7 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
             panic!("Invalid configuration format for field '{}'", section);
         });
 
-        for (sub_key, sub_value) in value.iter() {
+        for (sub_key, sub_value) in table.iter() {
             if !doc.contains_key(section) {
                 doc[section] = filled_doc[section].clone();
                 config_needs_update = true;
