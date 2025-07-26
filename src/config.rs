@@ -92,7 +92,7 @@ impl Config {
             let contents = std::fs::read_to_string(file_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-            let config: Config = toml::from_str(&contents)
+            let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
             validate_config(file_path, contents, &config)?;
@@ -109,7 +109,7 @@ impl Config {
             let contents = std::fs::read_to_string(&config_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-            let config: Config = toml::from_str(&contents)
+            let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
             validate_config(&config_path.to_string_lossy(), contents, &config)?;
@@ -137,11 +137,8 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
     let mut doc = toml_edit::DocumentMut::from_str(&contents)
         .map_err(|e| format!("Failed to create TOML document: {}", e))?;
 
-    let filled: toml::Value = toml::Value::try_from(config)
-        .map_err(|e| format!("Failed to convert config to TOML: {}", e))?;
-
-    let filled_doc = toml_edit::Document::from_str(&toml::to_string(&filled).unwrap())
-        .map_err(|e| format!("Failed to create TOML document: {}", e))?;
+    let filled_doc = toml_edit::ser::to_document(config)
+        .map_err(|e| format!("Failed to serialize config to TOML: {}", e))?;
 
     let mut config_needs_update = false;
     let mut missing_fields = Vec::new();
