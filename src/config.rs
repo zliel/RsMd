@@ -92,7 +92,7 @@ impl Config {
             let contents = std::fs::read_to_string(file_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-            let config: Config = toml::from_str(&contents)
+            let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
             validate_config(file_path, contents, &config)?;
@@ -109,7 +109,7 @@ impl Config {
             let contents = std::fs::read_to_string(&config_path)
                 .map_err(|e| format!("Failed to read config file: {}", e))?;
 
-            let config: Config = toml::from_str(&contents)
+            let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
             validate_config(&config_path.to_string_lossy(), contents, &config)?;
@@ -137,16 +137,13 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
     let mut doc = toml_edit::DocumentMut::from_str(&contents)
         .map_err(|e| format!("Failed to create TOML document: {}", e))?;
 
-    let filled: toml::Value = toml::Value::try_from(config)
-        .map_err(|e| format!("Failed to convert config to TOML: {}", e))?;
-
-    let filled_doc = toml_edit::Document::from_str(&toml::to_string(&filled).unwrap())
-        .map_err(|e| format!("Failed to create TOML document: {}", e))?;
+    let filled_doc = toml_edit::ser::to_document(config)
+        .map_err(|e| format!("Failed to serialize config to TOML: {}", e))?;
 
     let mut config_needs_update = false;
     let mut missing_fields = Vec::new();
     for (section, values) in filled_doc.iter() {
-        let value = values.as_table().unwrap_or_else(|| {
+        let table = values.clone().into_table().unwrap_or_else(|_item| {
             error!(
                 "Expected a table for field '{}', but found: {}",
                 section, values
@@ -154,7 +151,7 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
             panic!("Invalid configuration format for field '{}'", section);
         });
 
-        for (sub_key, sub_value) in value.iter() {
+        for (sub_key, sub_value) in table.iter() {
             if !doc.contains_key(section) {
                 doc[section] = filled_doc[section].clone();
                 config_needs_update = true;
@@ -177,8 +174,31 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
 
         // Formats the file with sections like `[lexer]` and `tab_size = 4`
         // previously it would be `lexer = { tab_size = 4 }`
-        doc.set_implicit(true);
+        if !doc["lexer"].is_table() {
+            doc["lexer"] = doc["lexer"]
+                .clone()
+                .into_table()
+                .unwrap_or_else(|_item| {
+                    error!(
+                        "Expected 'lexer' to be a table, but found: {}",
+                        doc["lexer"]
+                    );
+                    panic!("Invalid configuration format for 'lexer'");
+                })
+                .into();
+        }
         doc["lexer"].as_table_mut().unwrap().set_position(0);
+
+        if !doc["html"].is_table() {
+            doc["html"] = doc["html"]
+                .clone()
+                .into_table()
+                .unwrap_or_else(|_item| {
+                    error!("Expected 'html' to be a table, but found: {}", doc["html"]);
+                    panic!("Invalid configuration format for 'html'");
+                })
+                .into();
+        }
         doc["html"].as_table_mut().unwrap().sort_values();
 
         std::fs::write(file_path, doc.to_string())

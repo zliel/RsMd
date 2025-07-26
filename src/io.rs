@@ -296,7 +296,7 @@ pub fn write_default_config(default_config: &Config) -> Result<(), String> {
         )
     })?;
 
-    let default_config_content = toml::to_string_pretty(&default_config)
+    let default_config_content = toml_edit::ser::to_string_pretty(&default_config)
         .map_err(|e| format!("Failed to serialize default config: {}", e))?;
 
     file.write_all(default_config_content.as_bytes())
