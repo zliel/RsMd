@@ -174,10 +174,31 @@ fn validate_config(file_path: &str, contents: String, config: &Config) -> Result
 
         // Formats the file with sections like `[lexer]` and `tab_size = 4`
         // previously it would be `lexer = { tab_size = 4 }`
-        doc["lexer"] = doc["lexer"].clone().into_table().unwrap().into();
+        if !doc["lexer"].is_table() {
+            doc["lexer"] = doc["lexer"]
+                .clone()
+                .into_table()
+                .unwrap_or_else(|_item| {
+                    error!(
+                        "Expected 'lexer' to be a table, but found: {}",
+                        doc["lexer"]
+                    );
+                    panic!("Invalid configuration format for 'lexer'");
+                })
+                .into();
+        }
         doc["lexer"].as_table_mut().unwrap().set_position(0);
 
-        doc["html"] = doc["html"].clone().into_table().unwrap().into();
+        if !doc["html"].is_table() {
+            doc["html"] = doc["html"]
+                .clone()
+                .into_table()
+                .unwrap_or_else(|_item| {
+                    error!("Expected 'html' to be a table, but found: {}", doc["html"]);
+                    panic!("Invalid configuration format for 'html'");
+                })
+                .into();
+        }
         doc["html"].as_table_mut().unwrap().sort_values();
 
         std::fs::write(file_path, doc.to_string())
