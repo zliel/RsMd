@@ -84,7 +84,7 @@ fn parse_indented_codeblock(line: &[Token]) -> MdBlockElement {
     let mut line_buffer: String = String::new();
 
     let lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     lines_split_by_newline.iter().for_each(|token_line| {
@@ -188,7 +188,7 @@ fn parse_raw_html(line: &[Token]) -> MdBlockElement {
 /// if the content is empty.
 fn parse_blockquote(line: &[Token]) -> MdBlockElement {
     let lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     let inner_blocks: Vec<Vec<Token>> = lines_split_by_newline
@@ -281,7 +281,7 @@ where
     G: Fn(Vec<MdListItem>) -> MdBlockElement,
 {
     let lists_split_by_newline = list
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
     let mut list_items: Vec<MdListItem> = Vec::new();
 
@@ -357,7 +357,7 @@ fn parse_codeblock(line: &[Token]) -> MdBlockElement {
     let mut language = None;
     let mut line_buffer: String = String::new();
     let mut lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     if let Some(Token::Text(string)) = line.get(1) {
@@ -457,7 +457,7 @@ fn parse_heading(line: &[Token]) -> MdBlockElement {
 /// Parses GitHub-style tables from the input vector of tokens.
 pub fn parse_table(line: &[Token]) -> MdBlockElement {
     let rows = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     if rows.len() < 3 {
@@ -534,10 +534,9 @@ pub fn parse_table(line: &[Token]) -> MdBlockElement {
 ///
 /// By removing the starting and ending "|" characters, it ensures that the row is
 /// split into the proper number of cells.
-fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
-    let mut cells: Vec<Vec<Token>> = row
-        .split(|token| *token == Token::TableCellSeparator)
-        .map(|tokens| tokens.to_vec())
+fn split_row(row: &[Token]) -> Vec<&[Token]> {
+    let mut cells: Vec<&[Token]> = row
+        .split(|token| token == &Token::TableCellSeparator)
         .collect();
 
     if let Some(first) = cells.first() {
