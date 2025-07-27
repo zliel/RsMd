@@ -95,7 +95,7 @@ fn parse_indented_codeblock(line: &[Token]) -> MdBlockElement {
         for token in &token_line[1..] {
             match token {
                 Token::Tab => {
-                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                    line_buffer.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
                 }
                 Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
                 Token::Whitespace => line_buffer.push(' '),
@@ -104,11 +104,11 @@ fn parse_indented_codeblock(line: &[Token]) -> MdBlockElement {
                     line_buffer.clear();
                 }
                 Token::Escape(esc_char) => {
-                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                    line_buffer.push_str(&format!("\\{esc_char}"));
                 }
-                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::OrderedListMarker(string) => line_buffer.push_str(string),
                 Token::EmphasisRun { delimiter, length } => {
-                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                    line_buffer.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenParenthesis => line_buffer.push('('),
                 Token::CloseParenthesis => line_buffer.push(')'),
@@ -122,7 +122,7 @@ fn parse_indented_codeblock(line: &[Token]) -> MdBlockElement {
                 Token::RawHtmlTag(tag_content) => {
                     // This should never be the first token, but inline html is allowed
                     let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
-                    line_buffer.push_str(escaped_tag.as_str());
+                    line_buffer.push_str(&escaped_tag);
                 }
             }
         }
@@ -147,16 +147,16 @@ fn parse_raw_html(line: &[Token]) -> MdBlockElement {
     let mut html_content = String::new();
     for token in line {
         match token {
-            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content.as_str()),
+            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content),
             Token::Text(string) | Token::Punctuation(string) => html_content.push_str(string),
             Token::Whitespace => html_content.push(' '),
             Token::Escape(esc_char) => {
-                html_content.push_str(format!("\\{esc_char}").as_str());
+                html_content.push_str(&format!("\\{esc_char}"));
             }
             Token::Newline => html_content.push('\n'),
-            Token::OrderedListMarker(string) => html_content.push_str(string.as_str()),
+            Token::OrderedListMarker(string) => html_content.push_str(string),
             Token::EmphasisRun { delimiter, length } => {
-                html_content.push_str(delimiter.to_string().repeat(*length).as_str())
+                html_content.push_str(&delimiter.to_string().repeat(*length))
             }
             Token::OpenParenthesis => html_content.push('('),
             Token::CloseParenthesis => html_content.push(')'),
@@ -167,7 +167,7 @@ fn parse_raw_html(line: &[Token]) -> MdBlockElement {
             Token::CodeFence => html_content.push_str("```"),
             Token::BlockQuoteMarker => html_content.push('>'),
             Token::Tab => {
-                html_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                html_content.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
             }
             Token::ThematicBreak => html_content.push_str("---"),
         }
@@ -379,14 +379,14 @@ fn parse_codeblock(line: &[Token]) -> MdBlockElement {
                     line_buffer.clear();
                 }
                 Token::Tab => {
-                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                    line_buffer.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
                 }
                 Token::Escape(esc_char) => {
-                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                    line_buffer.push_str(&format!("\\{esc_char}"));
                 }
-                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::OrderedListMarker(string) => line_buffer.push_str(string),
                 Token::EmphasisRun { delimiter, length } => {
-                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                    line_buffer.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenParenthesis => line_buffer.push('('),
                 Token::CloseParenthesis => line_buffer.push(')'),
@@ -398,7 +398,7 @@ fn parse_codeblock(line: &[Token]) -> MdBlockElement {
                 Token::BlockQuoteMarker => line_buffer.push('>'),
                 Token::RawHtmlTag(tag_content) => {
                     let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
-                    line_buffer.push_str(escaped_tag.as_str());
+                    line_buffer.push_str(&escaped_tag);
                 }
                 Token::ThematicBreak => line_buffer.push_str("---"),
             }
@@ -505,7 +505,7 @@ pub fn parse_table(line: &[Token]) -> MdBlockElement {
         .into_iter()
         .enumerate()
         .map(|(i, cell_content)| MdTableCell {
-            content: parse_inline(&cell_content),
+            content: parse_inline(cell_content),
             alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
             is_header: true,
         })
@@ -519,7 +519,7 @@ pub fn parse_table(line: &[Token]) -> MdBlockElement {
                 .into_iter()
                 .enumerate()
                 .map(|(i, cell_tokens)| MdTableCell {
-                    content: parse_inline(&cell_tokens),
+                    content: parse_inline(cell_tokens),
                     alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
                     is_header: false,
                 })
@@ -644,9 +644,9 @@ pub fn parse_inline(markdown_tokens: &[Token]) -> Vec<MdInlineElement> {
 
                 parsed_inline_elements.push(image);
             }
-            Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
-            Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
-            Token::OrderedListMarker(string) => buffer.push_str(string.as_str()),
+            Token::Escape(esc_char) => buffer.push_str(&format!("\\{esc_char}")),
+            Token::Text(string) | Token::Punctuation(string) => buffer.push_str(&string),
+            Token::OrderedListMarker(string) => buffer.push_str(&string),
             Token::Whitespace => buffer.push(' '),
             Token::CloseBracket => buffer.push(']'),
             Token::OpenParenthesis => buffer.push('('),
@@ -654,7 +654,7 @@ pub fn parse_inline(markdown_tokens: &[Token]) -> Vec<MdInlineElement> {
             Token::ThematicBreak => buffer.push_str("---"),
             Token::TableCellSeparator => buffer.push('|'),
             Token::BlockQuoteMarker => buffer.push('>'),
-            Token::RawHtmlTag(tag_content) => buffer.push_str(tag_content.as_str()),
+            Token::RawHtmlTag(tag_content) => buffer.push_str(&tag_content),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -686,19 +686,17 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::CodeTick => break,
             Token::Text(string) | Token::Punctuation(string) => code_content.push_str(string),
             Token::OrderedListMarker(string) => code_content.push_str(string),
-            Token::Escape(ch) => code_content.push_str(format!("\\{ch}").as_str()),
+            Token::Escape(ch) => code_content.push_str(&format!("\\{ch}")),
             Token::OpenParenthesis => code_content.push('('),
             Token::CloseParenthesis => code_content.push(')'),
             Token::OpenBracket => code_content.push('['),
             Token::CloseBracket => code_content.push(']'),
             Token::TableCellSeparator => code_content.push('|'),
             Token::EmphasisRun { delimiter, length } => {
-                code_content.push_str(delimiter.to_string().repeat(*length).as_str())
+                code_content.push_str(&delimiter.to_string().repeat(*length))
             }
             Token::Whitespace => code_content.push(' '),
-            Token::Tab => {
-                code_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str())
-            }
+            Token::Tab => code_content.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size)),
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
             Token::BlockQuoteMarker => code_content.push('>'),
@@ -788,7 +786,7 @@ where
             }
             Token::Text(s) | Token::Punctuation(s) => label_buffer.push_str(s),
             Token::OrderedListMarker(s) => label_buffer.push_str(s),
-            Token::Escape(ch) => label_buffer.push_str(format!("\\{ch}").as_str()),
+            Token::Escape(ch) => label_buffer.push_str(&format!("\\{ch}")),
             Token::Whitespace => label_buffer.push(' '),
             Token::ThematicBreak => label_buffer.push_str("---"),
             Token::OpenParenthesis => label_buffer.push('('),
@@ -833,7 +831,7 @@ where
                 Token::CloseParenthesis => break,
                 Token::Text(s) | Token::Punctuation(s) => uri.push_str(s),
                 Token::OrderedListMarker(s) => uri.push_str(s),
-                Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
+                Token::Escape(ch) => uri.push_str(&format!("\\{ch}")),
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
@@ -855,9 +853,9 @@ where
                 }
                 Token::Text(s) | Token::Punctuation(s) => title.push_str(s),
                 Token::OrderedListMarker(s) => title.push_str(s),
-                Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
+                Token::Escape(ch) => title.push_str(&format!("\\{ch}")),
                 Token::EmphasisRun { delimiter, length } => {
-                    title.push_str(delimiter.to_string().repeat(*length).as_str())
+                    title.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenBracket => title.push('['),
                 Token::CloseBracket => title.push(']'),
@@ -1412,7 +1410,7 @@ fn group_lines_with_leading_whitespace(
                     // Check if the previous line has non-whitespace content
                     if line
                         .iter()
-                        .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
+                        .any(|t| !matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
                     {
                         attach_to_previous_block(
                             blocks,
