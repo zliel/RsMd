@@ -95,7 +95,7 @@ impl Config {
             let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
-            validate_config(file_path, contents, &config)?;
+            validate_config(file_path, &contents, &config)?;
 
             return Ok(config);
         }
@@ -112,7 +112,7 @@ impl Config {
             let config: Config = toml_edit::de::from_str(&contents)
                 .map_err(|e| format!("Failed to parse config file: {}", e))?;
 
-            validate_config(&config_path.to_string_lossy(), contents, &config)?;
+            validate_config(&config_path.to_string_lossy(), &contents, &config)?;
 
             Ok(config)
         } else {
@@ -120,9 +120,8 @@ impl Config {
                 "No config file found, writing default config to: {}",
                 config_path.to_string_lossy()
             );
-            let default_config = Config::default();
 
-            write_default_config(&default_config)
+            let default_config = write_default_config()
                 .map_err(|e| format!("Failed to write default config: {}", e))?;
 
             Ok(default_config)
@@ -133,8 +132,8 @@ impl Config {
 /// Validates the configuration by checking if the original config file matches the filled config
 ///
 /// If the original config is missing fields, it updates the file with any missing fields
-fn validate_config(file_path: &str, contents: String, config: &Config) -> Result<(), String> {
-    let mut doc = toml_edit::DocumentMut::from_str(&contents)
+fn validate_config(file_path: &str, contents: &str, config: &Config) -> Result<(), String> {
+    let mut doc = toml_edit::DocumentMut::from_str(contents)
         .map_err(|e| format!("Failed to create TOML document: {}", e))?;
 
     let filled_doc = toml_edit::ser::to_document(config)

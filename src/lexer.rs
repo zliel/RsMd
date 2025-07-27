@@ -31,8 +31,8 @@ pub fn tokenize(markdown_line: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut buffer: String = String::new();
 
-    let str_len = markdown_line.graphemes(true).count();
     let chars = Vec::from_iter(markdown_line.graphemes(true));
+    let str_len = chars.len();
 
     // Loop through each character, and perform foward lookups for *
     let mut i = 0;

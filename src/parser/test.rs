@@ -20,7 +20,7 @@ mod inline {
     fn text() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("Plain text.")),
+            parse_inline(&tokenize("Plain text.")),
             vec![Text {
                 content: String::from("Plain text.")
             }]
@@ -31,7 +31,7 @@ mod inline {
     fn escape_char() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("\\*escaped char\\*")),
+            parse_inline(&tokenize("\\*escaped char\\*")),
             vec![Text {
                 content: String::from("\\*escaped char\\*")
             }]
@@ -42,7 +42,7 @@ mod inline {
     fn bold() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("**Bold** text")),
+            parse_inline(&tokenize("**Bold** text")),
             vec![
                 Bold {
                     content: vec![Text {
@@ -60,7 +60,7 @@ mod inline {
     fn italic() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("*Italic* text")),
+            parse_inline(&tokenize("*Italic* text")),
             vec![
                 Italic {
                     content: vec![Text {
@@ -78,7 +78,7 @@ mod inline {
     fn multiple_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("This is **bold** and *italic* text.")),
+            parse_inline(&tokenize("This is **bold** and *italic* text.")),
             vec![
                 Text {
                     content: String::from("This is ")
@@ -107,7 +107,7 @@ mod inline {
     fn mixed_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("**_Bold and italic._**")),
+            parse_inline(&tokenize("**_Bold and italic._**")),
             vec![Bold {
                 content: vec![Italic {
                     content: vec![Text {
@@ -122,7 +122,7 @@ mod inline {
     fn mixed_emphasis_separated() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("_Italic **and bold**_")),
+            parse_inline(&tokenize("_Italic **and bold**_")),
             vec![Italic {
                 content: vec![
                     Text {
@@ -142,7 +142,7 @@ mod inline {
     fn link() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("[link text](http://example.com)")),
+            parse_inline(&tokenize("[link text](http://example.com)")),
             vec![Link {
                 text: vec![Text {
                     content: String::from("link text")
@@ -157,7 +157,7 @@ mod inline {
     fn link_with_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("[**bold link text**](http://example.com)")),
+            parse_inline(&tokenize("[**bold link text**](http://example.com)")),
             vec![Link {
                 text: vec![Bold {
                     content: vec![Text {
@@ -174,7 +174,7 @@ mod inline {
     fn link_with_internal_hashes() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("[link text with #hash](http://example.com)")),
+            parse_inline(&tokenize("[link text with #hash](http://example.com)")),
             vec![Link {
                 text: vec![Text {
                     content: String::from("link text with #hash")
@@ -189,7 +189,7 @@ mod inline {
     fn link_with_mixed_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize(
+            parse_inline(&tokenize(
                 "[_italic, **bold and italic**_](http://example.com)"
             )),
             vec![Link {
@@ -215,7 +215,7 @@ mod inline {
     fn link_with_title() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("[link text](http://example.com \"Title\")")),
+            parse_inline(&tokenize("[link text](http://example.com \"Title\")")),
             vec![Link {
                 text: vec![Text {
                     content: String::from("link text")
@@ -230,7 +230,7 @@ mod inline {
     fn link_with_emphasized_title() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize(
+            parse_inline(&tokenize(
                 "[**bold link text**](http://example.com \"Title with **bold**\")"
             )),
             vec![Link {
@@ -249,7 +249,7 @@ mod inline {
     fn image() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("![alt text](http://example.com/image.png)")),
+            parse_inline(&tokenize("![alt text](http://example.com/image.png)")),
             vec![Image {
                 alt_text: String::from("alt text"),
                 title: None,
@@ -262,7 +262,7 @@ mod inline {
     fn image_with_title() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize(
+            parse_inline(&tokenize(
                 "![alt text](http://example.com/image.png \"Title\")"
             )),
             vec![Image {
@@ -277,7 +277,7 @@ mod inline {
     fn image_with_empty_alt_text() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("![](http://example.com/image.png)")),
+            parse_inline(&tokenize("![](http://example.com/image.png)")),
             vec![Image {
                 alt_text: String::from(""),
                 title: None,
@@ -290,7 +290,7 @@ mod inline {
     fn image_with_emphasized_alt_text() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize(
+            parse_inline(&tokenize(
                 "![**bold alt text**](http://example.com/image.png)"
             )),
             vec![Image {
@@ -305,7 +305,7 @@ mod inline {
     fn image_with_emphasized_title() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize(
+            parse_inline(&tokenize(
                 "![alt text](http://example.com/image.png \"**bold title**\")"
             )),
             vec![Image {
@@ -320,7 +320,7 @@ mod inline {
     fn raw_inline_html() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("<span>Inline HTML</span>")),
+            parse_inline(&tokenize("<span>Inline HTML</span>")),
             vec![Text {
                 content: String::from("<span>Inline HTML</span>")
             }]
@@ -331,7 +331,7 @@ mod inline {
     fn malformed_raw_html_no_closing_bracket() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("<span Malformed HTML")),
+            parse_inline(&tokenize("<span Malformed HTML")),
             vec![Text {
                 content: String::from("<span Malformed HTML")
             }]
@@ -342,7 +342,7 @@ mod inline {
     fn malformed_raw_html_no_closing_tag() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("<span>Unclosed HTML")),
+            parse_inline(&tokenize("<span>Unclosed HTML")),
             vec![Text {
                 content: String::from("<span>Unclosed HTML")
             }]
@@ -353,7 +353,7 @@ mod inline {
     fn malformed_raw_html_mismatched_tags() {
         init_test_config();
         assert_eq!(
-            parse_inline(tokenize("<span>Unmatched </div> tags")),
+            parse_inline(&tokenize("<span>Unmatched </div> tags")),
             vec![Text {
                 content: String::from("<span>Unmatched </div> tags")
             }]
@@ -373,7 +373,7 @@ mod block {
     fn heading() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("# Heading 1")),
+            parse_block(&tokenize("# Heading 1")),
             Some(Header {
                 level: 1,
                 content: vec![Text {
@@ -387,7 +387,7 @@ mod block {
     fn multilevel_heading() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("### Heading 3")),
+            parse_block(&tokenize("### Heading 3")),
             Some(Header {
                 level: 3,
                 content: vec![Text {
@@ -401,7 +401,7 @@ mod block {
     fn heading_with_internal_hashes() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("## Heading 2 with #internal #hashes")),
+            parse_block(&tokenize("## Heading 2 with #internal #hashes")),
             Some(Header {
                 level: 2,
                 content: vec![Text {
@@ -415,7 +415,7 @@ mod block {
     fn heading_with_emphases() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("## Heading 2 with **bold words**")),
+            parse_block(&tokenize("## Heading 2 with **bold words**")),
             Some(Header {
                 level: 2,
                 content: vec![
@@ -436,7 +436,7 @@ mod block {
     fn paragraph() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("This is a paragraph.")),
+            parse_block(&tokenize("This is a paragraph.")),
             Some(Paragraph {
                 content: vec![Text {
                     content: String::from("This is a paragraph.")
@@ -449,7 +449,7 @@ mod block {
     fn multiple_paragraphs() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("First paragraph."),
                 tokenize("Second paragraph.")
             ])),
@@ -465,7 +465,7 @@ mod block {
     fn multiline_paragraphs() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("First line.\nSecond line.")),
+            parse_block(&tokenize("First line.\nSecond line.")),
             Some(Paragraph {
                 content: vec![
                     Text {
@@ -483,7 +483,7 @@ mod block {
     fn paragraph_with_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("This is a paragraph with **bold text**.")),
+            parse_block(&tokenize("This is a paragraph with **bold text**.")),
             Some(Paragraph {
                 content: vec![
                     Text {
@@ -506,7 +506,7 @@ mod block {
     fn paragraph_with_mixed_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize(
+            parse_block(&tokenize(
                 "This is a paragraph with **bold text** and *italic text*."
             )),
             Some(Paragraph {
@@ -539,7 +539,7 @@ mod block {
     fn paragraph_with_link() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize(
+            parse_block(&tokenize(
                 "This is a paragraph with [a link](http://example.com)."
             )),
             Some(Paragraph {
@@ -566,7 +566,7 @@ mod block {
     fn paragraph_with_image_and_emphasis() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize(
+            parse_block(&tokenize(
                 "This is a paragraph with ![an image](http://example.com/image.png) and **bold text**."
             )),
             Some(Paragraph {
@@ -599,7 +599,7 @@ mod block {
     fn complex_paragraph() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize(
                     "This is a paragraph with **bold text**, *italic text*, and [a link](http://example.com)."
                 ),
@@ -683,7 +683,7 @@ mod block {
     fn unordered_list() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("- Item 1"),
                 tokenize("- Item 2")
             ])),
@@ -712,7 +712,7 @@ mod block {
     fn unordered_list_with_nested_items() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("- Item 1"),
                 tokenize("    - Nested Item 1.1"),
                 tokenize("    - Nested Item 1.2"),
@@ -763,7 +763,7 @@ mod block {
     fn unordered_list_with_inlines() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("1. **Bold Item 1**"),
                 tokenize("2. *Italic Item 2*"),
                 tokenize("3. [Link Item 3](http://example.com)"),
@@ -818,7 +818,7 @@ mod block {
     fn ordered_list() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("1. First"),
                 tokenize("2. Second")
             ])),
@@ -847,7 +847,7 @@ mod block {
     fn ordered_list_with_nested_items() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("1. Item 1"),
                 tokenize("    1. Nested Item 1.1"),
                 tokenize("    2. Nested Item 1.2"),
@@ -898,7 +898,7 @@ mod block {
     fn ordered_list_with_inlines() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("1. **Bold Item 1**"),
                 tokenize("2. *Italic Item 2*"),
                 tokenize("3. [Link Item 3](http://example.com)"),
@@ -953,7 +953,7 @@ mod block {
     fn blockquote() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("> This is a blockquote.")),
+            parse_block(&tokenize("> This is a blockquote.")),
             Some(BlockQuote {
                 content: vec![Paragraph {
                     content: vec![Text {
@@ -968,7 +968,7 @@ mod block {
     fn blockquote_with_nested_block_elements() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("> This is a blockquote with a nested list:"),
                 tokenize("> - Item 1"),
                 tokenize("> - Item 2")
@@ -1007,7 +1007,7 @@ mod block {
     fn code_block() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("```\ncode block\n```")),
+            parse_block(&tokenize("```\ncode block\n```")),
             Some(CodeBlock {
                 language: None,
                 lines: vec![String::from("code block")]
@@ -1019,7 +1019,7 @@ mod block {
     fn fenced_code_block_with_language() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("```rust\nfn main() {}\n```")),
+            parse_block(&tokenize("```rust\nfn main() {}\n```")),
             Some(CodeBlock {
                 language: Some(String::from("rust")),
                 lines: vec![String::from("fn main() {}")]
@@ -1031,7 +1031,7 @@ mod block {
     fn raw_html_basic() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("<div>Raw HTML content</div>")),
+            parse_block(&tokenize("<div>Raw HTML content</div>")),
             Some(RawHtml {
                 content: String::from("<div>Raw HTML content</div>")
             })
@@ -1042,7 +1042,7 @@ mod block {
     fn raw_html_with_attributes() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("<img src=\"image.png\" alt=\"Image\"/>")),
+            parse_block(&tokenize("<img src=\"image.png\" alt=\"Image\"/>")),
             Some(RawHtml {
                 content: String::from("<img src=\"image.png\" alt=\"Image\"/>")
             })
@@ -1053,7 +1053,7 @@ mod block {
     fn raw_inline_html() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("This is <span>inline HTML</span> content.")),
+            parse_block(&tokenize("This is <span>inline HTML</span> content.")),
             Some(Paragraph {
                 content: vec![Text {
                     content: String::from("This is <span>inline HTML</span> content.")
@@ -1066,7 +1066,7 @@ mod block {
     fn mixed_markdown_and_html() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize(
+            parse_block(&tokenize(
                 "This is a paragraph with strong <strong>HTML</strong> and **Markdown**."
             )),
             Some(Paragraph {
@@ -1093,7 +1093,7 @@ mod block {
     fn malformed_raw_html_no_closing_bracket() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("<div Malformed HTML")),
+            parse_block(&tokenize("<div Malformed HTML")),
             Some(Paragraph {
                 content: vec![Text {
                     content: String::from("<div Malformed HTML")
@@ -1106,7 +1106,7 @@ mod block {
     fn malformed_raw_html_no_closing_tag() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("<div>Unclosed HTML")),
+            parse_block(&tokenize("<div>Unclosed HTML")),
             Some(RawHtml {
                 content: String::from("<div>Unclosed HTML")
             })
@@ -1117,7 +1117,7 @@ mod block {
     fn malformed_raw_html_mismatched_tags() {
         init_test_config();
         assert_eq!(
-            parse_block(tokenize("<div>Unmatched </span> tags")),
+            parse_block(&tokenize("<div>Unmatched </span> tags")),
             Some(RawHtml {
                 content: String::from("<div>Unmatched </span> tags")
             })
@@ -1128,7 +1128,7 @@ mod block {
     fn table_all_left_align() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 |"),
                 tokenize("| :-- | :-- |"),
                 tokenize("| Cell 1 | Cell 2 |"),
@@ -1193,7 +1193,7 @@ mod block {
     fn table_mixed_align() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 | Header 3 |"),
                 tokenize("| :-- | :-: | --: |"),
                 tokenize("| Cell 1 | Cell 2 | Cell 3 |"),
@@ -1280,7 +1280,7 @@ mod block {
         init_test_config();
 
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 |"),
                 tokenize("| -- | -- |"),
                 tokenize("| Cell 1 | Cell 2 |"),
@@ -1345,7 +1345,7 @@ mod block {
     fn table_with_inline_content() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 |"),
                 tokenize("| :-- | :-- |"),
                 tokenize("| **Bold Cell** | *Italic Cell* |"),
@@ -1452,7 +1452,7 @@ mod block {
     fn table_with_empty_cells() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 |"),
                 tokenize("| :-- | :-- |"),
                 tokenize("| Cell 1 ||"),
@@ -1513,7 +1513,7 @@ mod block {
     fn table_with_missing_cell() {
         init_test_config();
         assert_eq!(
-            parse_blocks(group_lines_to_blocks(vec![
+            parse_blocks(&group_lines_to_blocks(vec![
                 tokenize("| Header 1 | Header 2 |"),
                 tokenize("| -- | -- |"),
                 tokenize("| Cell 1 | Cell 2 |"),
@@ -1578,7 +1578,7 @@ mod html_generation {
         fn text() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("Plain text."))
+                parse_inline(&tokenize("Plain text."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1590,7 +1590,7 @@ mod html_generation {
         fn escape_char() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("\\*escaped chars work\\*"))
+                parse_inline(&tokenize("\\*escaped chars work\\*"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1602,7 +1602,7 @@ mod html_generation {
         fn bold() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("**Bold** text"))
+                parse_inline(&tokenize("**Bold** text"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1614,7 +1614,7 @@ mod html_generation {
         fn italic() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("*Italic* text"))
+                parse_inline(&tokenize("*Italic* text"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1626,7 +1626,7 @@ mod html_generation {
         fn mixed_emphasis() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("This is **bold** and *italic* text."))
+                parse_inline(&tokenize("This is **bold** and *italic* text."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1638,7 +1638,7 @@ mod html_generation {
         fn link() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("[link text](http://example.com)"))
+                parse_inline(&tokenize("[link text](http://example.com)"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1650,7 +1650,7 @@ mod html_generation {
         fn image() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("![alt text](http://example.com/image.png)"))
+                parse_inline(&tokenize("![alt text](http://example.com/image.png)"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1662,7 +1662,7 @@ mod html_generation {
         fn code_span() {
             init_test_config();
             assert_eq!(
-                parse_inline(tokenize("This is `inline code`."))
+                parse_inline(&tokenize("This is `inline code`."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1678,7 +1678,7 @@ mod html_generation {
         fn plain_text_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("Plain text."))
+                parse_block(&tokenize("Plain text."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1690,7 +1690,7 @@ mod html_generation {
         fn bold_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("**Bold** text"))
+                parse_block(&tokenize("**Bold** text"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1702,7 +1702,7 @@ mod html_generation {
         fn italic_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("*Italic* text"))
+                parse_block(&tokenize("*Italic* text"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1714,7 +1714,7 @@ mod html_generation {
         fn mixed_emphasis_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("This is **bold** and *italic* text."))
+                parse_block(&tokenize("This is **bold** and *italic* text."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1726,7 +1726,7 @@ mod html_generation {
         fn link_in_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("[link text](http://example.com)"))
+                parse_block(&tokenize("[link text](http://example.com)"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1738,7 +1738,7 @@ mod html_generation {
         fn image_in_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("![alt text](http://example.com/image.png)"))
+                parse_block(&tokenize("![alt text](http://example.com/image.png)"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1750,7 +1750,7 @@ mod html_generation {
         fn code_span_in_paragraph() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("This is `inline code`."))
+                parse_block(&tokenize("This is `inline code`."))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1762,7 +1762,7 @@ mod html_generation {
         fn heading() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("# Heading 1"))
+                parse_block(&tokenize("# Heading 1"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1774,7 +1774,7 @@ mod html_generation {
         fn multilevel_heading() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("### Heading 3"))
+                parse_block(&tokenize("### Heading 3"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1786,7 +1786,7 @@ mod html_generation {
         fn heading_with_emphasis() {
             init_test_config();
             assert_eq!(
-                parse_block(tokenize("## Heading 2 with **bold words**"))
+                parse_block(&tokenize("## Heading 2 with **bold words**"))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -1798,7 +1798,7 @@ mod html_generation {
         fn code_block() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(
+                parse_blocks(&group_lines_to_blocks(
                     ["```\n", "code block", "second line", "```"]
                         .iter()
                         .map(|tokens| tokenize(tokens))
@@ -1815,7 +1815,7 @@ mod html_generation {
         fn code_block_with_language() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(
+                parse_blocks(&group_lines_to_blocks(
                     ["```rust", "fn main() {}", "```"]
                         .iter()
                         .map(|tokens| tokenize(tokens))
@@ -1832,7 +1832,7 @@ mod html_generation {
         fn unordered_list() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("- Item 1"),
                     tokenize("- Item 2")
                 ]))
@@ -1847,7 +1847,7 @@ mod html_generation {
         fn unordered_list_with_nested_items() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("- Item 1"),
                     tokenize("    - Nested Item 1.1"),
                     tokenize("    - Nested Item 1.2"),
@@ -1864,7 +1864,7 @@ mod html_generation {
         fn ordered_list() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("1. First"),
                     tokenize("2. Second")
                 ]))
@@ -1879,7 +1879,7 @@ mod html_generation {
         fn ordered_list_with_nested_items() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("1. Item 1"),
                     tokenize("    1. Nested Item 1.1"),
                     tokenize("    2. Nested Item 1.2"),
@@ -1896,7 +1896,7 @@ mod html_generation {
         fn ordered_list_with_inlines() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("1. **Bold Item 1**"),
                     tokenize("2. *Italic Item 2*"),
                     tokenize("3. [Link Item 3](http://example.com)"),
@@ -1913,7 +1913,7 @@ mod html_generation {
         fn blockquote() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                parse_blocks(&group_lines_to_blocks(vec![tokenize(
                     "> This is a blockquote."
                 )]))
                 .iter()
@@ -1927,7 +1927,7 @@ mod html_generation {
         fn blockquote_with_nested_block_element() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("> This is a blockquote with a nested heading:"),
                     tokenize("> # Heading 1"),
                 ]))
@@ -1942,7 +1942,7 @@ mod html_generation {
         fn raw_html_basic() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("<br>",),
                     tokenize("<h1>Hello, world!</h1>")
                 ]))
@@ -1957,7 +1957,7 @@ mod html_generation {
         fn raw_html_with_attributes() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                parse_blocks(&group_lines_to_blocks(vec![tokenize(
                     "<img src=\"image.jpg\" alt=\"An image\"/>"
                 )]))
                 .iter()
@@ -1971,7 +1971,7 @@ mod html_generation {
         fn mixed_markdown_and_html() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("# This is a heading with <strong>bold text</strong> and <em>italic text</em>."),
                     tokenize("<div>Some raw HTML content</div>")
                 ]))
@@ -1986,7 +1986,7 @@ mod html_generation {
         fn malformed_raw_html_no_closing_bracket() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                parse_blocks(&group_lines_to_blocks(vec![tokenize(
                     "<div Missing bracket"
                 )]))
                 .iter()
@@ -2000,7 +2000,7 @@ mod html_generation {
         fn malformed_raw_html_closing_tag() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![tokenize("<div>Unclosed tag")]))
+                parse_blocks(&group_lines_to_blocks(vec![tokenize("<div>Unclosed tag")]))
                     .iter()
                     .map(|el| el.to_html("test_output", "test_input", "test_rel_path"))
                     .collect::<String>(),
@@ -2012,7 +2012,7 @@ mod html_generation {
         fn malformed_raw_html_mismatched_tags() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![tokenize(
+                parse_blocks(&group_lines_to_blocks(vec![tokenize(
                     "<div>Unmatched <span> tags"
                 )]))
                 .iter()
@@ -2026,7 +2026,7 @@ mod html_generation {
         fn table_all_left_align() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 |"),
                     tokenize("| :-- | :-- |"),
                     tokenize("| Cell 1 | Cell 2 |"),
@@ -2043,7 +2043,7 @@ mod html_generation {
         fn table_mixed_align() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 | Header 3 |"),
                     tokenize("| :-- | :-: | --: |"),
                     tokenize("| Cell 1 | Cell 2 | Cell 3 |"),
@@ -2060,7 +2060,7 @@ mod html_generation {
         fn table_no_align() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 |"),
                     tokenize("| -- | -- |"),
                     tokenize("| Cell 1 | Cell 2 |"),
@@ -2077,7 +2077,7 @@ mod html_generation {
         fn table_with_inline_content() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 |"),
                     tokenize("| :-- | :-- |"),
                     tokenize("| **Bold Cell** | *Italic Cell* |"),
@@ -2096,7 +2096,7 @@ mod html_generation {
         fn table_with_empty_cells() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 |"),
                     tokenize("| :-- | :-- |"),
                     tokenize("| Cell 1 ||"),
@@ -2113,7 +2113,7 @@ mod html_generation {
         fn table_with_missing_cell() {
             init_test_config();
             assert_eq!(
-                parse_blocks(group_lines_to_blocks(vec![
+                parse_blocks(&group_lines_to_blocks(vec![
                     tokenize("| Header 1 | Header 2 |"),
                     tokenize("| -- | -- |"),
                     tokenize("| Cell 1 | Cell 2 |"),

@@ -20,7 +20,7 @@ use crate::utils::push_buffer_to_collection;
 ///
 /// # Returns
 /// A vector of parsed block-level Markdown elements.
-pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
+pub fn parse_blocks(markdown_lines: &[Vec<Token>]) -> Vec<MdBlockElement> {
     let mut block_elements: Vec<MdBlockElement> = Vec::new();
 
     for line in markdown_lines {
@@ -39,7 +39,7 @@ pub fn parse_blocks(markdown_lines: Vec<Vec<Token>>) -> Vec<MdBlockElement> {
 ///
 /// # Returns
 /// An `Option<MdBlockElement>`, returning `None` for empty lines
-fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
+fn parse_block(line: &[Token]) -> Option<MdBlockElement> {
     let first_token = line.first();
 
     match first_token {
@@ -79,12 +79,12 @@ fn parse_block(line: Vec<Token>) -> Option<MdBlockElement> {
 ///
 /// # Returns
 /// An `MdBlockElement::CodeBlock` containing the parsed code content.
-fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
+fn parse_indented_codeblock(line: &[Token]) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
     let mut line_buffer: String = String::new();
 
     let lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     lines_split_by_newline.iter().for_each(|token_line| {
@@ -95,7 +95,7 @@ fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
         for token in &token_line[1..] {
             match token {
                 Token::Tab => {
-                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                    line_buffer.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
                 }
                 Token::Text(string) | Token::Punctuation(string) => line_buffer.push_str(string),
                 Token::Whitespace => line_buffer.push(' '),
@@ -104,11 +104,11 @@ fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
                     line_buffer.clear();
                 }
                 Token::Escape(esc_char) => {
-                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                    line_buffer.push_str(&format!("\\{esc_char}"));
                 }
-                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::OrderedListMarker(string) => line_buffer.push_str(string),
                 Token::EmphasisRun { delimiter, length } => {
-                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                    line_buffer.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenParenthesis => line_buffer.push('('),
                 Token::CloseParenthesis => line_buffer.push(')'),
@@ -122,7 +122,7 @@ fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
                 Token::RawHtmlTag(tag_content) => {
                     // This should never be the first token, but inline html is allowed
                     let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
-                    line_buffer.push_str(escaped_tag.as_str());
+                    line_buffer.push_str(&escaped_tag);
                 }
             }
         }
@@ -143,20 +143,20 @@ fn parse_indented_codeblock(line: Vec<Token>) -> MdBlockElement {
 ///
 /// # Returns
 /// An `MdBlockElement::RawHtml` containing the parsed HTML content.
-fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
+fn parse_raw_html(line: &[Token]) -> MdBlockElement {
     let mut html_content = String::new();
     for token in line {
         match token {
-            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content.as_str()),
-            Token::Text(string) | Token::Punctuation(string) => html_content.push_str(&string),
+            Token::RawHtmlTag(tag_content) => html_content.push_str(tag_content),
+            Token::Text(string) | Token::Punctuation(string) => html_content.push_str(string),
             Token::Whitespace => html_content.push(' '),
             Token::Escape(esc_char) => {
-                html_content.push_str(format!("\\{esc_char}").as_str());
+                html_content.push_str(&format!("\\{esc_char}"));
             }
             Token::Newline => html_content.push('\n'),
-            Token::OrderedListMarker(string) => html_content.push_str(string.as_str()),
+            Token::OrderedListMarker(string) => html_content.push_str(string),
             Token::EmphasisRun { delimiter, length } => {
-                html_content.push_str(delimiter.to_string().repeat(length).as_str())
+                html_content.push_str(&delimiter.to_string().repeat(*length))
             }
             Token::OpenParenthesis => html_content.push('('),
             Token::CloseParenthesis => html_content.push(')'),
@@ -167,7 +167,7 @@ fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
             Token::CodeFence => html_content.push_str("```"),
             Token::BlockQuoteMarker => html_content.push('>'),
             Token::Tab => {
-                html_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                html_content.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
             }
             Token::ThematicBreak => html_content.push_str("---"),
         }
@@ -186,9 +186,9 @@ fn parse_raw_html(line: Vec<Token>) -> MdBlockElement {
 /// # Returns
 /// An `MdBlockElement::BlockQuote` containing the parsed content, or a `MdBlockElement::Paragraph`
 /// if the content is empty.
-fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
+fn parse_blockquote(line: &[Token]) -> MdBlockElement {
     let lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     let inner_blocks: Vec<Vec<Token>> = lines_split_by_newline
@@ -210,7 +210,7 @@ fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
 
     let grouped_inner_blocks = group_lines_to_blocks(inner_blocks);
 
-    let content = parse_blocks(grouped_inner_blocks);
+    let content = parse_blocks(&grouped_inner_blocks);
 
     if content.is_empty() {
         MdBlockElement::Paragraph {
@@ -230,7 +230,7 @@ fn parse_blockquote(line: Vec<Token>) -> MdBlockElement {
 ///
 /// # Returns
 /// An `MdBlockElement` representing the ordered list.
-fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
+fn parse_ordered_list(list: &[Token]) -> MdBlockElement {
     parse_list(
         list,
         |tokens| {
@@ -252,7 +252,7 @@ fn parse_ordered_list(list: Vec<Token>) -> MdBlockElement {
 ///
 /// # Returns
 /// An `MdBlockElement` representing the unordered list.
-fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
+fn parse_unordered_list(list: &[Token]) -> MdBlockElement {
     parse_list(
         list,
         |tokens| {
@@ -275,13 +275,13 @@ fn parse_unordered_list(list: Vec<Token>) -> MdBlockElement {
 ///
 /// # Returns
 /// An `MdBlockElement` representing either an ordered or unordered list, depending on the passed in constructor.
-fn parse_list<F, G>(list: Vec<Token>, is_list_item: F, make_block: G) -> MdBlockElement
+fn parse_list<F, G>(list: &[Token], is_list_item: F, make_block: G) -> MdBlockElement
 where
     F: Fn(&[Token]) -> bool,
     G: Fn(Vec<MdListItem>) -> MdBlockElement,
 {
     let lists_split_by_newline = list
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
     let mut list_items: Vec<MdListItem> = Vec::new();
 
@@ -290,7 +290,7 @@ where
         let line = lists_split_by_newline[i];
         if is_list_item(line) {
             let content_tokens = line[2..].to_vec();
-            if let Some(content) = parse_block(content_tokens) {
+            if let Some(content) = parse_block(&content_tokens) {
                 list_items.push(MdListItem { content })
             }
 
@@ -324,9 +324,9 @@ where
                 // Recursively parse nested list, try ordered first, fallback to unordered
                 let nested_block = if let Some(Token::OrderedListMarker(_)) = nested_tokens.first()
                 {
-                    parse_ordered_list(nested_tokens)
+                    parse_ordered_list(&nested_tokens)
                 } else {
-                    parse_unordered_list(nested_tokens)
+                    parse_unordered_list(&nested_tokens)
                 };
 
                 list_items.push(MdListItem {
@@ -352,12 +352,12 @@ where
 ///
 /// # Returns
 /// An `MdBlockElement` representing the code block.
-fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
+fn parse_codeblock(line: &[Token]) -> MdBlockElement {
     let mut code_content: Vec<String> = Vec::new();
     let mut language = None;
     let mut line_buffer: String = String::new();
     let mut lines_split_by_newline = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     if let Some(Token::Text(string)) = line.get(1) {
@@ -379,14 +379,14 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
                     line_buffer.clear();
                 }
                 Token::Tab => {
-                    line_buffer.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str());
+                    line_buffer.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size));
                 }
                 Token::Escape(esc_char) => {
-                    line_buffer.push_str(format!("\\{esc_char}").as_str());
+                    line_buffer.push_str(&format!("\\{esc_char}"));
                 }
-                Token::OrderedListMarker(string) => line_buffer.push_str(string.as_str()),
+                Token::OrderedListMarker(string) => line_buffer.push_str(string),
                 Token::EmphasisRun { delimiter, length } => {
-                    line_buffer.push_str(delimiter.to_string().repeat(*length).as_str())
+                    line_buffer.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenParenthesis => line_buffer.push('('),
                 Token::CloseParenthesis => line_buffer.push(')'),
@@ -398,7 +398,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
                 Token::BlockQuoteMarker => line_buffer.push('>'),
                 Token::RawHtmlTag(tag_content) => {
                     let escaped_tag = tag_content.replace("<", "&lt;").replace(">", "&gt;");
-                    line_buffer.push_str(escaped_tag.as_str());
+                    line_buffer.push_str(&escaped_tag);
                 }
                 Token::ThematicBreak => line_buffer.push_str("---"),
             }
@@ -424,7 +424,7 @@ fn parse_codeblock(line: Vec<Token>) -> MdBlockElement {
 ///
 /// # Returns
 /// An `MdBlockElement` representing the heading, or a paragraph if the heading is invalid.
-fn parse_heading(line: Vec<Token>) -> MdBlockElement {
+fn parse_heading(line: &[Token]) -> MdBlockElement {
     let mut heading_level = 0;
     let mut i = 0;
     while let Some(token) = line.get(i) {
@@ -450,14 +450,14 @@ fn parse_heading(line: Vec<Token>) -> MdBlockElement {
 
     MdBlockElement::Header {
         level: heading_level,
-        content: parse_inline(line[i + 1..].to_vec()),
+        content: parse_inline(&line[i + 1..]),
     }
 }
 
 /// Parses GitHub-style tables from the input vector of tokens.
-pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
+pub fn parse_table(line: &[Token]) -> MdBlockElement {
     let rows = line
-        .split(|token| *token == Token::Newline)
+        .split(|token| token == &Token::Newline)
         .collect::<Vec<_>>();
 
     if rows.len() < 3 {
@@ -484,9 +484,9 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
                 .filter_map(|token| match token {
                     Token::Text(s) => {
                         warn!("Table alignment should not contain text as it could result in unexpected behavior: {s}");
-                        Some(s.clone())
+                        Some(s.to_owned())
                     }
-                    Token::Punctuation(s) => Some(s.clone()),
+                    Token::Punctuation(s) => Some(s.to_owned()),
                     Token::ThematicBreak => Some("---".to_string()),
                     _ => None,
                 })
@@ -505,7 +505,7 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
         .into_iter()
         .enumerate()
         .map(|(i, cell_content)| MdTableCell {
-            content: parse_inline(cell_content.to_vec()),
+            content: parse_inline(cell_content),
             alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
             is_header: true,
         })
@@ -519,7 +519,7 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
                 .into_iter()
                 .enumerate()
                 .map(|(i, cell_tokens)| MdTableCell {
-                    content: parse_inline(cell_tokens.to_vec()),
+                    content: parse_inline(cell_tokens),
                     alignment: alignments.get(i).cloned().unwrap_or(TableAlignment::None),
                     is_header: false,
                 })
@@ -534,10 +534,9 @@ pub fn parse_table(line: Vec<Token>) -> MdBlockElement {
 ///
 /// By removing the starting and ending "|" characters, it ensures that the row is
 /// split into the proper number of cells.
-fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
-    let mut cells: Vec<Vec<Token>> = row
-        .split(|token| *token == Token::TableCellSeparator)
-        .map(|tokens| tokens.to_vec())
+fn split_row(row: &[Token]) -> Vec<&[Token]> {
+    let mut cells: Vec<&[Token]> = row
+        .split(|token| token == &Token::TableCellSeparator)
         .collect();
 
     if let Some(first) = cells.first() {
@@ -562,11 +561,11 @@ fn split_row(row: &[Token]) -> Vec<Vec<Token>> {
 ///
 /// # Returns
 /// A vector of parsed inline Markdown elements.
-pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
+pub fn parse_inline(markdown_tokens: &[Token]) -> Vec<MdInlineElement> {
     let mut parsed_inline_elements: Vec<MdInlineElement> = Vec::new();
 
     let mut cursor: TokenCursor = TokenCursor {
-        tokens: markdown_tokens,
+        tokens: markdown_tokens.to_vec(),
         current_position: 0,
     };
 
@@ -638,16 +637,16 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
 
                 let image =
                     parse_link_type(&mut cursor, |label, title, url| MdInlineElement::Image {
-                        alt_text: flatten_inline(label),
+                        alt_text: flatten_inline(&label),
                         title,
                         url,
                     });
 
                 parsed_inline_elements.push(image);
             }
-            Token::Escape(esc_char) => buffer.push_str(format!("\\{esc_char}").as_str()),
-            Token::Text(string) | Token::Punctuation(string) => buffer.push_str(string.as_str()),
-            Token::OrderedListMarker(string) => buffer.push_str(string.as_str()),
+            Token::Escape(esc_char) => buffer.push_str(&format!("\\{esc_char}")),
+            Token::Text(string) | Token::Punctuation(string) => buffer.push_str(&string),
+            Token::OrderedListMarker(string) => buffer.push_str(&string),
             Token::Whitespace => buffer.push(' '),
             Token::CloseBracket => buffer.push(']'),
             Token::OpenParenthesis => buffer.push('('),
@@ -655,7 +654,7 @@ pub fn parse_inline(markdown_tokens: Vec<Token>) -> Vec<MdInlineElement> {
             Token::ThematicBreak => buffer.push_str("---"),
             Token::TableCellSeparator => buffer.push('|'),
             Token::BlockQuoteMarker => buffer.push('>'),
-            Token::RawHtmlTag(tag_content) => buffer.push_str(tag_content.as_str()),
+            Token::RawHtmlTag(tag_content) => buffer.push_str(&tag_content),
             _ => push_buffer_to_collection(&mut parsed_inline_elements, &mut buffer),
         }
 
@@ -687,19 +686,17 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
             Token::CodeTick => break,
             Token::Text(string) | Token::Punctuation(string) => code_content.push_str(string),
             Token::OrderedListMarker(string) => code_content.push_str(string),
-            Token::Escape(ch) => code_content.push_str(format!("\\{ch}").as_str()),
+            Token::Escape(ch) => code_content.push_str(&format!("\\{ch}")),
             Token::OpenParenthesis => code_content.push('('),
             Token::CloseParenthesis => code_content.push(')'),
             Token::OpenBracket => code_content.push('['),
             Token::CloseBracket => code_content.push(']'),
             Token::TableCellSeparator => code_content.push('|'),
             Token::EmphasisRun { delimiter, length } => {
-                code_content.push_str(delimiter.to_string().repeat(*length).as_str())
+                code_content.push_str(&delimiter.to_string().repeat(*length))
             }
             Token::Whitespace => code_content.push(' '),
-            Token::Tab => {
-                code_content.push_str(" ".repeat(CONFIG.get().unwrap().lexer.tab_size).as_str())
-            }
+            Token::Tab => code_content.push_str(&" ".repeat(CONFIG.get().unwrap().lexer.tab_size)),
             Token::Newline => code_content.push('\n'),
             Token::ThematicBreak => code_content.push_str("---"),
             Token::BlockQuoteMarker => code_content.push('>'),
@@ -716,7 +713,7 @@ fn parse_code_span(cursor: &mut TokenCursor) -> String {
 /// Helper function used in `parse_link_type` to circumvent Rust's limitation on closure recursion
 fn make_image(label: Vec<MdInlineElement>, title: Option<String>, uri: String) -> MdInlineElement {
     MdInlineElement::Image {
-        alt_text: flatten_inline(label),
+        alt_text: flatten_inline(&label),
         title,
         url: uri,
     }
@@ -789,7 +786,7 @@ where
             }
             Token::Text(s) | Token::Punctuation(s) => label_buffer.push_str(s),
             Token::OrderedListMarker(s) => label_buffer.push_str(s),
-            Token::Escape(ch) => label_buffer.push_str(format!("\\{ch}").as_str()),
+            Token::Escape(ch) => label_buffer.push_str(&format!("\\{ch}")),
             Token::Whitespace => label_buffer.push(' '),
             Token::ThematicBreak => label_buffer.push_str("---"),
             Token::OpenParenthesis => label_buffer.push('('),
@@ -807,7 +804,7 @@ where
     // If we didn't find a closing bracket, treat it as text
     if cursor.current() != Some(&Token::CloseBracket) {
         return MdInlineElement::Text {
-            content: format!("[{}", flatten_inline(label_elements)),
+            content: format!("[{}", flatten_inline(&label_elements)),
         };
     }
 
@@ -816,7 +813,7 @@ where
     if cursor.peek_ahead(1) != Some(&Token::OpenParenthesis) {
         cursor.advance();
         return MdInlineElement::Text {
-            content: format!("[{}]", flatten_inline(label_elements)),
+            content: format!("[{}]", flatten_inline(&label_elements)),
         };
     }
 
@@ -834,7 +831,7 @@ where
                 Token::CloseParenthesis => break,
                 Token::Text(s) | Token::Punctuation(s) => uri.push_str(s),
                 Token::OrderedListMarker(s) => uri.push_str(s),
-                Token::Escape(ch) => uri.push_str(format!("\\{ch}").as_str()),
+                Token::Escape(ch) => uri.push_str(&format!("\\{ch}")),
                 Token::Whitespace => is_building_title = true,
                 Token::ThematicBreak => uri.push_str("---"),
                 Token::TableCellSeparator => uri.push('|'),
@@ -856,9 +853,9 @@ where
                 }
                 Token::Text(s) | Token::Punctuation(s) => title.push_str(s),
                 Token::OrderedListMarker(s) => title.push_str(s),
-                Token::Escape(ch) => title.push_str(format!("\\{ch}").as_str()),
+                Token::Escape(ch) => title.push_str(&format!("\\{ch}")),
                 Token::EmphasisRun { delimiter, length } => {
-                    title.push_str(delimiter.to_string().repeat(*length).as_str())
+                    title.push_str(&delimiter.to_string().repeat(*length))
                 }
                 Token::OpenBracket => title.push('['),
                 Token::CloseBracket => title.push(']'),
@@ -885,11 +882,11 @@ where
     // If we didn't find a closing parenthesis or if the title is invalid, treat it as text
     if cursor.current() != Some(&Token::CloseParenthesis) {
         return MdInlineElement::Text {
-            content: format!("[{}]({} ", flatten_inline(label_elements), uri),
+            content: format!("[{}]({} ", flatten_inline(&label_elements), uri),
         };
     } else if !title.is_empty() && !is_valid_title {
         return MdInlineElement::Text {
-            content: format!("[{}]({} {})", flatten_inline(label_elements), uri, title),
+            content: format!("[{}]({} {})", flatten_inline(&label_elements), uri, title),
         };
     }
 
@@ -903,16 +900,16 @@ where
 ///
 /// # Returns
 /// A string containing the concatenated content of all inline elements
-fn flatten_inline(elements: Vec<MdInlineElement>) -> String {
+fn flatten_inline(elements: &[MdInlineElement]) -> String {
     let mut result = String::new();
     for element in elements {
         match element {
-            MdInlineElement::Text { content } => result.push_str(&content),
+            MdInlineElement::Text { content } => result.push_str(content),
             MdInlineElement::Bold { content } => result.push_str(&flatten_inline(content)),
             MdInlineElement::Italic { content } => result.push_str(&flatten_inline(content)),
-            MdInlineElement::Code { content } => result.push_str(&content),
+            MdInlineElement::Code { content } => result.push_str(content),
             MdInlineElement::Link { text, .. } => result.push_str(&flatten_inline(text)),
-            MdInlineElement::Image { alt_text, .. } => result.push_str(&alt_text),
+            MdInlineElement::Image { alt_text, .. } => result.push_str(alt_text),
             _ => {}
         }
     }
@@ -1195,7 +1192,7 @@ fn group_table_rows(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if let Some(previous_line_start) = previous_block.first() {
         if previous_line_start == &Token::TableCellSeparator {
@@ -1220,7 +1217,7 @@ fn group_text_lines(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if !previous_block.is_empty() {
         if matches!(previous_block.first(), Some(Token::Text(_))) {
@@ -1266,7 +1263,7 @@ fn group_ordered_list(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if let Some(previous_line_start) = previous_block.first() {
         match previous_line_start {
@@ -1287,7 +1284,7 @@ fn group_ordered_list(
 fn attach_to_previous_block(
     blocks: &mut Vec<Vec<Token>>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
     separator: Option<Token>,
 ) {
     if let Some(separator) = separator {
@@ -1314,7 +1311,7 @@ fn group_tabbed_lines(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if line.len() == 1 {
         current_block.extend(line.to_owned());
@@ -1330,16 +1327,16 @@ fn group_tabbed_lines(
             && matches!(previous_block.first(), Some(Token::RawHtmlTag(_)))
         {
             // If the first token is a raw HTML tag, we attach the line to the previous block
-            let mut line_to_attach = line
+            let line_to_attach = line
                 .iter()
                 .skip_while(|t| matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
                 .cloned()
-                .collect();
+                .collect::<Vec<Token>>();
 
             attach_to_previous_block(
                 blocks,
                 previous_block,
-                &mut line_to_attach,
+                &line_to_attach,
                 Some(Token::Newline),
             );
 
@@ -1401,7 +1398,7 @@ fn group_lines_with_leading_whitespace(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if let Some(first_content_token) = line
         .iter()
@@ -1413,7 +1410,7 @@ fn group_lines_with_leading_whitespace(
                     // Check if the previous line has non-whitespace content
                     if line
                         .iter()
-                        .any(|t| !matches!(&t, Token::Whitespace | Token::Tab | Token::Newline))
+                        .any(|t| !matches!(t, Token::Whitespace | Token::Tab | Token::Newline))
                     {
                         attach_to_previous_block(
                             blocks,
@@ -1482,7 +1479,7 @@ fn group_dashed_lines(
     blocks: &mut Vec<Vec<Token>>,
     current_block: &mut Vec<Token>,
     previous_block: &mut Vec<Token>,
-    line: &mut Vec<Token>,
+    line: &[Token],
 ) {
     if let Some(previous_line_start) = previous_block.first() {
         match previous_line_start {
