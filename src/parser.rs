@@ -484,9 +484,9 @@ pub fn parse_table(line: &[Token]) -> MdBlockElement {
                 .filter_map(|token| match token {
                     Token::Text(s) => {
                         warn!("Table alignment should not contain text as it could result in unexpected behavior: {s}");
-                        Some(s.clone())
+                        Some(s.to_owned())
                     }
-                    Token::Punctuation(s) => Some(s.clone()),
+                    Token::Punctuation(s) => Some(s.to_owned()),
                     Token::ThematicBreak => Some("---".to_string()),
                     _ => None,
                 })
