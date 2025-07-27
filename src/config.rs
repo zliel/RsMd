@@ -120,9 +120,8 @@ impl Config {
                 "No config file found, writing default config to: {}",
                 config_path.to_string_lossy()
             );
-            let default_config = Config::default();
 
-            write_default_config(&default_config)
+            let default_config = write_default_config()
                 .map_err(|e| format!("Failed to write default config: {}", e))?;
 
             Ok(default_config)

@@ -276,7 +276,7 @@ pub fn does_config_exist() -> Result<bool, String> {
 
 /// Writes the default configuration to the configuration file to the OS-specific default configuration
 /// path.
-pub fn write_default_config(default_config: &Config) -> Result<(), String> {
+pub fn write_default_config() -> Result<Config, String> {
     let config_path = get_config_path()?;
 
     if does_config_exist()? {
@@ -296,6 +296,8 @@ pub fn write_default_config(default_config: &Config) -> Result<(), String> {
         )
     })?;
 
+    let default_config = Config::default();
+
     let default_config_content = toml_edit::ser::to_string_pretty(&default_config)
         .map_err(|e| format!("Failed to serialize default config: {}", e))?;
 
@@ -304,5 +306,5 @@ pub fn write_default_config(default_config: &Config) -> Result<(), String> {
 
     info!("Default config file created at: {}", config_path.display());
 
-    Ok(())
+    Ok(default_config)
 }
