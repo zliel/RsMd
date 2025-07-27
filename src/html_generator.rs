@@ -20,7 +20,7 @@ use crate::utils::build_rel_prefix;
 /// Returns a `String` containing the generated HTML.
 pub fn generate_html(
     file_name: &str,
-    md_elements: Vec<MdBlockElement>,
+    md_elements: &[MdBlockElement],
     output_dir: &str,
     input_dir: &str,
     html_rel_path: &str,
@@ -162,7 +162,10 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
     let css_href = css_path.to_string_lossy();
 
     if css_file == "default" {
-        head.push_str(format!("\t\t<link rel=\"stylesheet\" href=\"{}\">\n", css_href).as_str());
+        head.push_str(&format!(
+            "\t\t<link rel=\"stylesheet\" href=\"{}\">\n",
+            css_href
+        ));
     } else {
         head.push_str(&format!(
             "\t\t<link rel=\"stylesheet\" href=\"{}\">\n",
@@ -178,7 +181,7 @@ fn generate_head(file_name: &str, html_rel_path: &str) -> String {
                 config.html.prism_theme.clone()
             };
 
-            head.push_str(format!("\t\t<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme).as_str());
+            head.push_str(&format!("\t\t<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/prism-themes/1.9.0/prism-{}.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />", theme));
         } else {
             head.push_str("\t\t<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-okaidia.min.css\">");
         }
@@ -198,7 +201,10 @@ fn generate_navbar(html_rel_path: &str) -> String {
     home_path.push("index.html");
     let home_href = home_path.to_string_lossy();
 
-    navbar.push_str(format!("\t\t\t<li><a href=\"{}\">Home</a></li>", home_href).as_str());
+    navbar.push_str(&format!(
+        "\t\t\t<li><a href=\"{}\">Home</a></li>",
+        home_href
+    ));
     navbar.push_str("\n\t\t</ul>\n\t</nav>\n</header>\n\n");
     navbar
 }

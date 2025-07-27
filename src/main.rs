@@ -123,7 +123,7 @@ fn generate_static_site(
     // HTML Generation
     let generated_html = generate_html(
         file_path,
-        parsed_elements,
+        &parsed_elements,
         &cli.output_dir,
         &cli.input_dir,
         file_path,
