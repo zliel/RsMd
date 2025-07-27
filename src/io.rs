@@ -279,10 +279,6 @@ pub fn does_config_exist() -> Result<bool, String> {
 pub fn write_default_config() -> Result<Config, String> {
     let config_path = get_config_path()?;
 
-    if does_config_exist()? {
-        return Ok(());
-    }
-
     info!(
         "Config file does not exist, creating default config at: {}",
         config_path.display()
